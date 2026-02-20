@@ -1,0 +1,104 @@
+services:
+  deepagents:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # LangChain/LangSmith
+      - LANGCHAIN_TRACING_V2=true
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      - LANGCHAIN_PROJECT=deepagents-five
+      
+      # OpenAI
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      
+      # DeepAgents config
+      - DEEPAGENTS_MODEL=openai:gpt-4o
+      - PERSISTENCE_BACKEND=sqlite
+      
+    volumes:
+      # Data persistence
+      - /data/deepagents:/app/data
+      - /data/deepagents/snapshots:/app/snapshots
+      - /data/deepagents/logs:/app/logs
+      
+      # Git configuration
+      - ~/.gitconfig:/root/.gitconfig:ro
+      - ~/.ssh:/root/.ssh:ro
+      
+      # Mount repositories (adjust path as needed)
+      - /home/alex/repos:/repos
+      
+    working_dir: /repos
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  manus-inspector:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.inspector
+    restart: unless-stopped
+    depends_on:
+      - deepagents
+    environment:
+      # Access to DeepAgents data
+      - DEEPAGENTS_SNAPSHOT_DIR=/app/snapshots
+      - DEEPAGENTS_LOGS_DIR=/app/logs
+      - DEEPAGENTS_DATA_DIR=/app/data
+      
+      # Manus API keys (for remote inspection)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      
+    volumes:
+      # Shared volumes with deepagents for inspection
+      - /data/deepagents:/app/data:ro
+      - /data/deepagents/snapshots:/app/snapshots:ro
+      - /data/deepagents/logs:/app/logs:ro
+      
+      # Debug packages export
+      - /data/deepagents/debug-packages:/app/debug-packages
+      
+    ports:
+      - "8888:8888"  # Manus inspection API
+    
+    command: python -m deepagents.inspector_service
+
+  manus-feedback-agent:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.inspector
+    restart: unless-stopped
+    depends_on:
+      - deepagents
+    environment:
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LANGCHAIN_PROJECT=deepagents-five
+      
+    volumes:
+      # Tickets storage
+      - /data/deepagents/tickets:/app/tickets
+      
+    command: python -m deepagents.manus_feedback_agent --project deepagents-five --tickets-dir /app/tickets --interval 60
+
+  feedback-dashboard:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.inspector
+    restart: unless-stopped
+    depends_on:
+      - manus-feedback-agent
+    environment:
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      
+    volumes:
+      # Read-only access to tickets
+      - /data/deepagents/tickets:/app/tickets:ro
+      
+    ports:
+      - "8889:8889"
+    
+    command: python -m deepagents.feedback_dashboard

@@ -1,0 +1,125 @@
+# LangChain Cloud Deployment - API Keys
+# Generated: 2025-01-26
+# 
+# Instructions:
+# 1. Register for LangChain Cloud Plus: https://www.langchain.com/pricing
+# 2. Generate each API key as described in LANGCHAIN_CLOUD_DEPLOYMENT.md
+# 3. Fill in the values below
+# 4. Share this file with Manus via chat
+# 
+# Security: These keys will only be used by Manus to deploy and test DeepAgents
+# You can revoke/rotate them anytime
+
+# ============================================================================
+# REQUIRED KEYS
+# ============================================================================
+
+# LangSmith API Key
+# Where: https://smith.langchain.com → Settings → API Keys
+# Name: deepagents-deployment
+LANGCHAIN_API_KEY=ls-
+
+# GitHub Personal Access Token
+# Where: https://github.com/settings/tokens
+# Name: langchain-cloud-deployment
+# Scopes: repo (full control of private repositories)
+GITHUB_TOKEN=ghp_
+
+# OpenAI API Key
+# Where: https://platform.openai.com/api-keys
+# Name: deepagents-langchain
+OPENAI_API_KEY=sk-
+
+# ============================================================================
+# OPTIONAL KEYS (Recommended)
+# ============================================================================
+
+# Anthropic API Key (for Claude models)
+# Where: https://console.anthropic.com/settings/keys
+# Name: deepagents-langchain
+ANTHROPIC_API_KEY=sk-ant-
+
+# ============================================================================
+# ACCOUNT INFORMATION
+# ============================================================================
+
+# Your LangChain organization name
+LANGCHAIN_ORG=
+
+# Your LangChain workspace name
+LANGCHAIN_WORKSPACE=
+
+# GitHub repository for DeepAgents
+# (Should be: akarelin/CRAP)
+GITHUB_REPO=akarelin/CRAP
+
+# GitHub branch to deploy from
+# (Should be: master)
+GITHUB_BRANCH=master
+
+# Path to DeepAgents in repo
+# (Should be: DeepAgents)
+GITHUB_PATH=DeepAgents
+
+# ============================================================================
+# DEPLOYMENT CONFIGURATION
+# ============================================================================
+
+# LangSmith project name for traces
+LANGSMITH_PROJECT=deepagents-testing
+
+# Deployment name
+DEPLOYMENT_NAME=deepagents-dev
+
+# Deployment size (dev or prod)
+DEPLOYMENT_SIZE=dev
+
+# ============================================================================
+# REPOSITORY ACCESS
+# ============================================================================
+
+# Repositories to mount for testing
+# (Manus will need read access to these via GitHub token)
+REPO_RAN=akarelin/RAN
+REPO_CRAP=akarelin/CRAP
+REPO_UNDERSCORE=akarelin/_
+REPO_GPPU=akarelin/gppu
+
+# ============================================================================
+# CHECKLIST
+# ============================================================================
+
+# Before sharing with Manus, verify:
+# [ ] Registered for LangChain Cloud Plus ($39/month)
+# [ ] Generated LANGCHAIN_API_KEY
+# [ ] Generated GITHUB_TOKEN with 'repo' scope
+# [ ] Generated OPENAI_API_KEY
+# [ ] Generated ANTHROPIC_API_KEY (optional)
+# [ ] Filled in LANGCHAIN_ORG and LANGCHAIN_WORKSPACE
+# [ ] All keys are valid and active
+# [ ] Ready for Manus to deploy
+
+# ============================================================================
+# NEXT STEPS
+# ============================================================================
+
+# 1. Save this file with your keys filled in
+# 2. Share with Manus via chat
+# 3. Manus will deploy DeepAgents to LangChain Cloud
+# 4. Manus will run 10 test cases
+# 5. Manus will iterate until all tests pass
+# 6. Manus will deliver working system with results
+# 
+# You can monitor progress in LangSmith dashboard:
+# https://smith.langchain.com
+
+# ============================================================================
+# SUPPORT
+# ============================================================================
+
+# If you have issues:
+# - LangChain support: support@langchain.dev
+# - Manus support: Via this chat session
+# 
+# Timeline: ~1 week from keys to working system
+# Cost: ~$50 for Month 1 (LangChain + API calls)

@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  deepagents:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    container_name: deepagents-cli
+    environment:
+      # LangChain/LangSmith
+      - LANGCHAIN_TRACING_V2=true
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      - LANGCHAIN_PROJECT=deepagents-production
+      
+      # OpenAI
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      
+      # DeepAgents config
+      - DEEPAGENTS_MODEL=openai:gpt-4o
+      - PERSISTENCE_BACKEND=postgres
+      - POSTGRES_CONN_STRING=postgresql://deepagents:${DB_PASSWORD}@postgres:5432/deepagents
+      
+    volumes:
+      - ./data:/app/data
+      - ./snapshots:/app/snapshots
+      - ./logs:/app/logs
+      - ~/.gitconfig:/root/.gitconfig:ro
+      - ~/.ssh:/root/.ssh:ro
+      - ${REPO_PATH:-/home/ubuntu/repos}:/repos
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - deepagents-network
+    command: deepagents daemon --port 8000
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: deepagents-postgres
+    environment:
+      - POSTGRES_DB=deepagents
+      - POSTGRES_USER=deepagents
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deepagents"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - deepagents-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: deepagents-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - deepagents
+    restart: unless-stopped
+    networks:
+      - deepagents-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  deepagents-network:
+    driver: bridge

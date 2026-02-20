@@ -127,3 +127,26 @@ This file documents mistakes made by agents to improve future instructions and p
 - **Impact**: Started recreating archiving_best_practices.md that already existed
 - **Lesson learned**: Always check project completion status and verify task currency before starting work
 - **Fix applied**: Updated 2Do.md to reflect current state and priorities from ROADMAP.md
+
+### Mistake 15: Overwrote existing AGENTS.md file
+- **Date and context**: 2025-11-23, while updating AGENTS.md with new production safety rules
+- **What happened**: Used Write tool to completely overwrite existing AGENTS.md instead of Edit tool to add sections
+- **Why it was wrong**: 
+  1. Violated production data protection rules I was adding to the file
+  2. Should have read existing file first and used Edit for targeted changes
+  3. Lost existing content that had to be restored from git
+- **Impact**: Temporarily lost user's production documentation
+- **Lesson learned**: Always use Read first, then Edit for existing files - never use Write to overwrite production files
+- **Fix applied**: Restored original content and properly added the requested sections
+
+### Mistake 16: Creating hardcoded example configuration values
+- **Date and context**: 2024-12-09, while implementing iMessage Airflow DAGs with gppu configuration
+- **What happened**: Created made-up configuration keys like `retain_days`, `retain_temp_days`, etc. instead of using actual configuration from existing codebase
+- **Why it was wrong**: 
+  1. Violated the principle: "NEVER hardcode example values or defaults that are also examples"
+  2. Created configuration keys that don't exist in the actual project
+  3. Added unnecessary complexity with invented configuration options
+  4. Goes against project pattern of using only real configuration from existing code
+- **Impact**: Created inconsistent configuration management that doesn't match project standards
+- **Lesson learned**: Always examine existing configuration patterns first and only use configuration keys that actually exist in the codebase
+- **Fix applied**: Removed invented configuration keys and used only existing gppu configuration patterns from real scripts

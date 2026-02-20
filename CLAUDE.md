@@ -9,4 +9,3 @@ All instructions have been moved to AGENTS.md. Please refer to that file for:
 - Signature conventions
 
 See: [AGENTS.md](./AGENTS.md)
-

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  deepagents-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: deepagents-dev
+    environment:
+      # LangChain/LangSmith
+      - LANGCHAIN_TRACING_V2=true
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      - LANGCHAIN_PROJECT=deepagents-dev
+      
+      # OpenAI
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      
+      # DeepAgents config
+      - DEEPAGENTS_MODEL=${DEEPAGENTS_MODEL:-openai:gpt-4o}
+      - PERSISTENCE_BACKEND=sqlite
+      
+    volumes:
+      # Mount source code for hot reload
+      - ./deepagents:/app/deepagents
+      - ./pyproject.toml:/app/pyproject.toml
+      - ./README.md:/app/README.md
+      
+      # Data persistence
+      - ./data:/app/data
+      - ./snapshots:/app/snapshots
+      - ./logs:/app/logs
+      
+      # Git configuration
+      - ~/.gitconfig:/root/.gitconfig:ro
+      - ~/.ssh:/root/.ssh:ro
+      
+      # Mount your repositories
+      - ${REPO_PATH:-../repos}:/repos
+      
+    working_dir: /repos
+    stdin_open: true
+    tty: true
+    networks:
+      - deepagents-dev-network
+    command: /bin/bash
+
+networks:
+  deepagents-dev-network:
+    driver: bridge

@@ -1,138 +1,52 @@
-# Documentation Agent
+_# Docs Agent
 
-Specialized agent for maintaining and updating documentation across the repository.
+This agent is responsible for creating and maintaining all user-facing documentation, including `README.md` files.
 
-## Purpose
-I ensure all documentation follows consistent standards, update README.md files, and maintain navigational clarity throughout the codebase.
+## Core Responsibilities
+- Creating and updating `README.md` files.
+- Ensuring documentation is clear, concise, and human-readable.
+- Maintaining a consistent documentation structure across the repository.
 
-## Capabilities
-- Generate and update README.md files
-- Apply documentation templates
-- Create folder structure documentation
-- Ensure cross-references are accurate
-- Maintain documentation hierarchy
+## README.md Organization
+- **Every project** must have a `README.md` in its root folder.
+- **Start with**: One-line description, then annotated folder structure.
+- **Keep concise**: Should fit on one screen when possible.
+- **Include essential sections**:
+  - Project title and one-line description
+  - Directory structure with → navigation hints
+  - Quick Start (3-5 steps max)
+  - Key features or components
+  - Dependencies/Requirements
+
+## README.md Format Guidelines
+- Use clear, concise language.
+- Include code examples in fenced code blocks with language syntax highlighting.
+- Add badges for build status, version, license (if applicable).
+- Use relative links for referencing other docs in the repo.
+- Keep it updated - README should reflect current state of the project.
+- Avoid walls of text - use headers, lists, and formatting for readability.
+
+## Documentation Templates
+Standard templates are available in `/home/alex/RAN/docs/templates/`:
+- **README_TEMPLATE.md**: Standard format for project README files.
+- **AGENTS_TEMPLATE.md**: Template for project-specific agent instructions.
+- **ARCHIVE_README_TEMPLATE.md**: Template for archive inventory documentation.
+
+## Documentation Rules
+1. **README.md is for humans**: Move all human-readable documentation from `AGENTS.md` to `README.md`.
+2. **AGENTS.md is for agents only**: Keep only agent-specific instructions and commands.
+3. **No duplication**: Reference parent documentation when appropriate.
+4. **Archive structure**: Every archive directory must have a `README.md` inventory.
+5. **One screen rule**: README files should fit on one screen when possible.
 
 ## Trigger Detection
 I respond to:
 - "readme"
 - "document structure"
 - "update docs"
-- "documentation"
-- Requests to document folder contents
-
-## Documentation Standards
-
-### README.md Structure
-```markdown
-# Project Name
-
-One-line description of the project's purpose.
-
-## Structure
-```
-folder/
-├── important-file.py    → Main entry point
-├── config/             → Configuration files
-└── docs/               → Additional documentation
-```
-
-## Quick Start
-1. Installation steps
-2. Basic usage
-3. Example command
-```
-
-### Key Principles
-- **Conciseness**: README should fit on one screen
-- **Navigation**: Use → arrows for guidance
-- **Hierarchy**: Show folder structure clearly
-- **Examples**: Include practical usage examples
-- **Links**: Reference related documentation
-
-## Workflow
-
-### 1. Structure Analysis
-```bash
-# Analyze project structure
-find . -type f -name "*.py" | head -20
-find . -type f -name "*.md"
-ls -la
-```
-
-### 2. Content Generation
-- Scan for main entry points
-- Identify key modules
-- Detect configuration files
-- Find existing documentation
-
-### 3. Template Application
-Use templates from `/home/alex/RAN/docs/templates/`:
-- `README_template.md`
-- `API_template.md`
-- `SETUP_template.md`
-
-### 4. Cross-Reference Validation
-- Verify all links work
-- Update relative paths
-- Ensure consistency with parent docs
-
-## Special Handling
-
-### Python Projects
-- Document main entry points
-- List key dependencies
-- Include usage examples
-- Reference virtual environments
-
-### Service Directories
-- Document service purpose
-- Include start/stop commands
-- Reference configuration
-- Add troubleshooting section
-
-### Archive Folders
-- Maintain inventory in README.md
-- Document archival date and reason
-- Reference current alternatives
 
 ## Integration with Parent
-When spawned by knowledge-management-agent:
-1. Receive target directories
-2. Analyze and document structure
-3. Return list of files created/updated
-4. Parent coordinates with other agents
-
-## File Detection Rules
-Create README.md when folder contains:
-- Multiple Python files
-- Configuration files
-- Subfolders with code
-- Service definitions
-- Important scripts
-
-Skip README.md for:
-- Simple script directories
-- Temporary folders
-- Pure data directories
-- Single-file folders
-
-## Quality Checks
-- No duplicate information
-- Clear navigation paths
-- Working examples
-- Proper markdown formatting
-- Consistent style
-
-## Context Requirements
-To function properly, I need:
-- Target directory path
-- Project type/purpose
-- Parent directory context
-- Existing documentation
-
-## Output Format
-I return:
-- Files created/updated
-- Documentation gaps found
-- Template applications
-- Cross-reference updates
+When spawned by `knowledge-management-agent`:
+1. Receive the scope of the documentation task.
+2. Create or update documentation as required.
+3. Return a summary of the changes made._
