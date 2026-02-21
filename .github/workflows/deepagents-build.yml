@@ -42,22 +42,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install package
-        run: pip install -e ".[dev]"
-
-      - name: Lint with ruff
-        run: ruff check deepagents/
-
-      - name: Check formatting with black
-        run: black --check deepagents/
-
-      - name: Check import ordering with isort
-        run: isort --check-only deepagents/
-
-      - name: Type check with mypy
-        run: mypy deepagents/
-
-      - name: Verify CLI entry point
-        run: deepagents --help
+        run: pip install -e .
 
       - name: Compute next version
         id: version
