@@ -5,12 +5,12 @@ cd ~/AGENTS.md
 
 KARELIN_REPO="akarelin/AGENTS.md"
 XSOLLA_REPO="chairman-projects/AGENTS.md"
+KARELIN_REPO="git@github.com:$KARELIN_REPO.git"
+XSOLLA_REPO="git@github.com:$XSOLLA_REPO.git"
 
 # Ensure remotes are set
-git remote set-url karelin "git@github.com:$KARELIN_REPO.git" 2>/dev/null \
-  || git remote add karelin "git@github.com:$KARELIN_REPO.git"
-git remote set-url xsolla "git@github.com:$XSOLLA_REPO.git" 2>/dev/null \
-  || git remote add xsolla "git@github.com:$XSOLLA_REPO.git"
+git remote set-url karelin "$KARELIN_REPO" 2>/dev/null || git remote add karelin "$KARELIN_REPO"
+git remote set-url xsolla "$XSOLLA_REPO" 2>/dev/null || git remote add xsolla "$XSOLLA_REPO"
 
 # Fetch latest from karelin
 git fetch karelin
@@ -21,10 +21,9 @@ git push xsolla --all
 
 existing_releases=$(gh release list --repo "$XSOLLA_REPO" --limit 100 --json tagName -q '.[].tagName' 2>/dev/null || echo "")
 
-gh release list --repo "git@github.com:$KARELIN_REPO.git" --limit 100 --json tagName,name,body,isDraft,isPrerelease -q '.[]' | while read -r line; do :; done || true
+gh release list --repo "$KARELIN_REPO" --limit 100 --json tagName,name,body,isDraft,isPrerelease -q '.[]' | while read -r line; do :; done || true
 
-# Use JSON array approach for reliable parsing
-releases_json=$(gh release list --repo "git@github.com:$KARELIN_REPO.git" --json tagName -q '.[].tagName')
+releases_json=$(gh release list --repo "$KARELIN_REPO" --json tagName -q '.[].tagName')
 
 while IFS= read -r tag; do
     [ -z "$tag" ] && continue
@@ -34,10 +33,10 @@ while IFS= read -r tag; do
         continue
     fi
 
-    echo "  Creating release $tag on $XSOLLA_REMOTE..."
+    echo "  Creating release $tag on xsolla..."
 
     # Get release details from karelin
-    release_json=$(gh release view "$tag" --repo "git@github.com:$KARELIN_REPO.git" --json name,body,isDraft,isPrerelease,tagName)
+    release_json=$(gh release view "$tag" --repo "$KARELIN_REPO" --json name,body,isDraft,isPrerelease,tagName)
     name=$(echo "$release_json" | jq -r '.name')
     body=$(echo "$release_json" | jq -r '.body')
     is_draft=$(echo "$release_json" | jq -r '.isDraft')
@@ -50,7 +49,7 @@ while IFS= read -r tag; do
     # Download release assets to a temp dir
     tmpdir=$(mktemp -d)
     trap "rm -rf '$tmpdir'" EXIT
-    gh release download "$tag" --repo "git@github.com:$KARELIN_REPO.git" --dir "$tmpdir" 2>/dev/null || true
+    gh release download "$tag" --repo "$KARELIN_REPO" --dir "$tmpdir" 2>/dev/null || true
 
     asset_flags=()
     for f in "$tmpdir"/*; do
@@ -58,7 +57,7 @@ while IFS= read -r tag; do
     done
 
     gh release create "$tag" \
-        --repo "git@github.com:$XSOLLA_REPO.git" \
+        --repo "$XSOLLA_REPO" \
         --title "$name" \
         --notes "$body" \
         "${flags[@]}" \
