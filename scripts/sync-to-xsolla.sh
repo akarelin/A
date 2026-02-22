@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cd ~/AGENTS.md
+
 KARELIN_REMOTE="karelin"
 XSOLLA_REMOTE="xsolla"
 KARELIN_REPO="akarelin/AGENTS.md"
 XSOLLA_REPO="chairman-projects/AGENTS.md"
+REPO="AGENTS.md"
+
+# Ensure remotes are set
+git remote set-url karelin "git@github.com:$KARELIN_REPO.git" 2>/dev/null \
+  || git remote add karelin "git@github.com:$KARELIN_REPO.git"
+git remote set-url xsolla "git@github.com:$XSOLLA_REPO.git" 2>/dev/null \
+  || git remote add xsolla "git@github.com:$XSOLLA_REPO.git"
 
 echo "=== Syncing from $KARELIN_REMOTE to $XSOLLA_REMOTE ==="
 
