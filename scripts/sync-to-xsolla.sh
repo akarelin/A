@@ -3,11 +3,8 @@ set -euo pipefail
 
 cd ~/AGENTS.md
 
-KARELIN_REMOTE="karelin"
-XSOLLA_REMOTE="xsolla"
 KARELIN_REPO="akarelin/AGENTS.md"
 XSOLLA_REPO="chairman-projects/AGENTS.md"
-REPO="AGENTS.md"
 
 # Ensure remotes are set
 git remote set-url karelin "git@github.com:$KARELIN_REPO.git" 2>/dev/null \
@@ -15,42 +12,32 @@ git remote set-url karelin "git@github.com:$KARELIN_REPO.git" 2>/dev/null \
 git remote set-url xsolla "git@github.com:$XSOLLA_REPO.git" 2>/dev/null \
   || git remote add xsolla "git@github.com:$XSOLLA_REPO.git"
 
-echo "=== Syncing from $KARELIN_REMOTE to $XSOLLA_REMOTE ==="
-
 # Fetch latest from karelin
-echo "Fetching from $KARELIN_REMOTE..."
-git fetch "$KARELIN_REMOTE"
+git fetch karelin
+git pull karelin master --rebase
 
-# Push all branches
-echo "Pushing all branches to $XSOLLA_REMOTE..."
-git push "$XSOLLA_REMOTE" --all
-
-# Push all tags
-echo "Pushing all tags to $XSOLLA_REMOTE..."
-git push "$XSOLLA_REMOTE" --tags
-
-# Sync GitHub releases
-echo "Syncing GitHub releases..."
+git push xsolla --all
+git push xsolla --all
 
 existing_releases=$(gh release list --repo "$XSOLLA_REPO" --limit 100 --json tagName -q '.[].tagName' 2>/dev/null || echo "")
 
-gh release list --repo "$KARELIN_REPO" --limit 100 --json tagName,name,body,isDraft,isPrerelease -q '.[]' | while read -r line; do :; done || true
+gh release list --repo "git@github.com:$KARELIN_REPO.git" --limit 100 --json tagName,name,body,isDraft,isPrerelease -q '.[]' | while read -r line; do :; done || true
 
 # Use JSON array approach for reliable parsing
-releases_json=$(gh release list --repo "$KARELIN_REPO" --limit 100 --json tagName -q '.[].tagName')
+releases_json=$(gh release list --repo "git@github.com:$KARELIN_REPO.git" --json tagName -q '.[].tagName')
 
 while IFS= read -r tag; do
     [ -z "$tag" ] && continue
 
     if echo "$existing_releases" | grep -qxF "$tag"; then
-        echo "  Release $tag already exists on $XSOLLA_REMOTE, skipping."
+        echo "  Release $tag already exists on xsolla, skipping."
         continue
     fi
 
     echo "  Creating release $tag on $XSOLLA_REMOTE..."
 
     # Get release details from karelin
-    release_json=$(gh release view "$tag" --repo "$KARELIN_REPO" --json name,body,isDraft,isPrerelease,tagName)
+    release_json=$(gh release view "$tag" --repo "git@github.com:$KARELIN_REPO.git" --json name,body,isDraft,isPrerelease,tagName)
     name=$(echo "$release_json" | jq -r '.name')
     body=$(echo "$release_json" | jq -r '.body')
     is_draft=$(echo "$release_json" | jq -r '.isDraft')
@@ -63,7 +50,7 @@ while IFS= read -r tag; do
     # Download release assets to a temp dir
     tmpdir=$(mktemp -d)
     trap "rm -rf '$tmpdir'" EXIT
-    gh release download "$tag" --repo "$KARELIN_REPO" --dir "$tmpdir" 2>/dev/null || true
+    gh release download "$tag" --repo "git@github.com:$KARELIN_REPO.git" --dir "$tmpdir" 2>/dev/null || true
 
     asset_flags=()
     for f in "$tmpdir"/*; do
@@ -71,7 +58,7 @@ while IFS= read -r tag; do
     done
 
     gh release create "$tag" \
-        --repo "$XSOLLA_REPO" \
+        --repo "git@github.com:$XSOLLA_REPO.git" \
         --title "$name" \
         --notes "$body" \
         "${flags[@]}" \
