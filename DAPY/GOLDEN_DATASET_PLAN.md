@@ -464,7 +464,7 @@ For you to mark past conversations as golden:
    - Process queue regularly
    - Build golden dataset over time
 
-### For Manus (AI)
+### For AI Agent
 
 **Monitor and Improve:**
 

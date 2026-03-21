@@ -48,7 +48,7 @@ services:
       - DAPY_LOGS_DIR=/app/logs
       - DAPY_DATA_DIR=/app/data
       
-      # Manus API keys (for remote inspection)
+      # API keys (for remote inspection)
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
       
@@ -62,7 +62,7 @@ services:
       - /data/dapy/debug-packages:/app/debug-packages
       
     ports:
-      - "8888:8888"  # Manus inspection API
+      - "8888:8888"  # Remote inspection API
     
     command: python -m dapy.inspector_service
 

@@ -42,7 +42,18 @@
       "Bash(.venv/bin/python -c \"import da\")",
       "Bash(cd:*)",
       "Bash(.venv/bin/python -m build)",
-      "Bash(gh release:*)"
+      "Bash(gh release:*)",
+      "Bash(find /home/alex/AGENTS.md -type f -name .env* -o -name *secret* -o -name *credential* -o -name *password* -o -name *key*)",
+      "Bash(find .git/objects -type f -exec ls -lh {})",
+      "Bash(sort -k2)",
+      "Bash(find /home/alex/AGENTS.md -type f \\\\\\(-name *.json -o -name *.yaml -o -name *.yml -o -name *.toml -o -name *.config \\\\\\) ! -path */.venv/* ! -path */.git/* ! -path */node_modules/*)",
+      "Bash(grep -E \"\\(password|pwd|passwd|user|email|@.*\\\\.com|@.*\\\\..{2,}\\).*=|://.*@|:.*@\")",
+      "Bash(grep -iE '\\\\.\\(env|pem|key|pub|secret\\)$|credentials')",
+      "Bash(grep -v \"=$|=\\\\.\\\\.\\\\.$|=-$\")",
+      "Bash(find . -maxdepth 2 -name *.env* -o -name *credentials* -o -name *secret*)",
+      "Bash(find /home/alex/AGENTS.md -type f -name *.md ! -path */.venv/* ! -path */.git/* -exec grep -l \"sk-\\\\|BEGIN.*KEY\\\\|password\\\\|secret\" {})",
+      "Bash(2)",
+      "Bash(find /home/alex/AGENTS.md -name \"*.md\" -type f ! -path \"*/.venv/*\" ! -path \"*/archive/*\" -exec wc -l {} +)"
     ],
     "additionalDirectories": [
       "/mnt/d/SD/.claude"

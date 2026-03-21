@@ -1,6 +1,6 @@
 # DAPY - Server Five Deployment
 
-This deployment configuration sets up DAPY on server "five" with Manus remote inspection capabilities for collaborative debugging.
+This deployment configuration sets up DAPY on server "five" with remote inspection capabilities for collaborative debugging.
 
 ## Architecture
 
@@ -12,7 +12,7 @@ Server Five
 │   ├── Logs → /data/dapy/logs
 │   └── Working directory → /repos
 │
-└── manus-inspector (container)     # Manus inspection service
+└── manus-inspector (container)     # Remote inspection service
     ├── API on port 8888
     ├── Read-only access to snapshots/logs
     └── Debug package generation
@@ -67,12 +67,12 @@ dapy ask "What should I work on?"
    - Note the issue (invalid tool use, unexpected behavior, etc.)
    - Execution state is automatically captured in snapshots
 
-3. **Give Manus access**
+3. **Give remote agent access**
    - Ensure port 8888 is accessible (you handle firewall)
-   - Provide Manus with server IP and port
+   - Provide the remote agent with server IP and port
    - Example: `http://your-server-five-ip:8888`
 
-4. **Manus inspects remotely**
+4. **Agent inspects remotely**
    - Reviews recent executions
    - Analyzes snapshots
    - Identifies root cause
@@ -88,9 +88,9 @@ dapy ask "What should I work on?"
    - Test the fix
    - Repeat if needed
 
-### Manus Workflow
+### Inspector Workflow
 
-When you provide access, Manus can:
+When you provide access, the remote agent can:
 
 1. **Check system status**
    ```bash
@@ -124,7 +124,7 @@ When you provide access, Manus can:
    curl -O http://your-server:8888/api/debug-package/download/debug_package_20251126.tar.gz
    ```
 
-## Manus Inspector API Endpoints
+## Remote Inspector API Endpoints
 
 ### Status and Health
 
@@ -169,7 +169,7 @@ All data is stored in `/data/dapy/`:
 # View DAPY logs
 docker-compose logs -f dapy
 
-# View Manus inspector logs
+# View inspector logs
 docker-compose logs -f manus-inspector
 ```
 
@@ -230,7 +230,7 @@ docker-compose config
 ls -la /data/dapy
 ```
 
-### Can't Access Manus Inspector
+### Can't Access Remote Inspector
 
 ```bash
 # Check if service is running
@@ -240,7 +240,7 @@ docker-compose ps manus-inspector
 curl http://localhost:8888/health
 
 # Check firewall (you handle this)
-# Ensure port 8888 is open for Manus access
+# Ensure port 8888 is open for remote inspection access
 ```
 
 ### Out of Disk Space
@@ -266,14 +266,14 @@ find /data/dapy/debug-packages -name "*.tar.gz" -mtime +7 -delete
    docker-compose exec dapy dapy export-debug "Description of issue"
    ```
 
-2. **Or use Manus inspector API**
+2. **Or use the inspector API**
    ```bash
    curl -X POST http://localhost:8888/api/debug-package/create
    ```
 
-3. **Give Manus access to inspect**
+3. **Give remote agent access to inspect**
    - Provide server IP and port 8888
-   - Manus will analyze and suggest fixes
+   - The agent will analyze and suggest fixes
 
 4. **Apply fixes to prompts/tools**
    ```bash
@@ -291,7 +291,7 @@ find /data/dapy/debug-packages -name "*.tar.gz" -mtime +7 -delete
 
 1. **API Keys** - Stored in .env file, not committed to git
 2. **Firewall** - You control access to port 8888
-3. **Read-only Access** - Manus inspector has read-only access to snapshots/logs
+3. **Read-only Access** - The inspector has read-only access to snapshots/logs
 4. **SSH Keys** - Mounted read-only for git operations
 5. **Data Isolation** - Each service runs in isolated container
 
@@ -309,15 +309,15 @@ This deployment follows the same pattern as other services in `RAN/Services/`:
 1. Deploy to server five: `./deploy.sh`
 2. Test basic operations: `dapy next`
 3. Configure firewall for port 8888
-4. Test Manus inspector access
+4. Test remote inspector access
 5. Start using DAPY for your workflows
 
 ## Support
 
 For issues with:
 - **Deployment**: Check logs and this README
-- **DAPY behavior**: Use Manus inspector for collaborative debugging
-- **Manus access**: Ensure firewall allows port 8888
+- **DAPY behavior**: Use the remote inspector for collaborative debugging
+- **Inspector access**: Ensure firewall allows port 8888
 
 ## Example Session
 
@@ -337,14 +337,14 @@ dapy ask "Setup new project with README and structure"
 # 4. If something goes wrong
 dapy export-debug "Setup command created wrong structure"
 
-# 5. Give Manus access (from another terminal)
-# Manus can now access: http://your-server-five:8888
+# 5. Give remote agent access (from another terminal)
+# Agent can now access: http://your-server-five:8888
 
-# 6. Manus inspects remotely
+# 6. Agent inspects remotely
 curl http://your-server-five:8888/api/executions/recent
 curl http://your-server-five:8888/api/analysis/summary
 
-# 7. Apply fixes suggested by Manus
+# 7. Apply fixes suggested by the agent
 exit  # Exit container
 nano ../../dapy/prompts/system_prompt.md
 docker-compose build dapy
@@ -356,4 +356,4 @@ cd /repos/my-project
 dapy ask "Setup new project with README and structure"
 ```
 
-This workflow enables rapid iteration and debugging with Manus's help!
+This workflow enables rapid iteration and debugging with remote agent assistance!

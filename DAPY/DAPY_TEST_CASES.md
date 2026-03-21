@@ -684,7 +684,7 @@ Tests replicate exact commands user gives to Claude Code. This ensures DAPY work
 
 ### Iteration Expected
 
-First run will likely have failures. This is normal. Manus will iterate until all tests pass.
+First run will likely have failures. This is normal. The agent will iterate until all tests pass.
 
 ### Timeline Flexible
 
@@ -698,10 +698,10 @@ User can watch all testing in LangSmith dashboard in real-time. Full transparenc
 
 ## Ready to Start
 
-Once user provides API keys, Manus will:
+Once user provides API keys, the agent will:
 1. Deploy DAPY
 2. Run these 10 tests
 3. Iterate on failures
 4. Deliver when all pass
 
-**User won't touch anything until Manus shows 10 passing tests!**
+**User won't touch anything until the agent shows 10 passing tests!**

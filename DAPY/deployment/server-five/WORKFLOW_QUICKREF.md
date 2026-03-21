@@ -15,16 +15,16 @@ dapy ask "Your query here"
 # No action needed - everything is logged
 ```
 
-### 3. Give Manus Access
+### 3. Give Remote Agent Access
 ```bash
 # Ensure firewall allows port 8888
-# Provide Manus with: http://your-server-five-ip:8888
+# Provide the remote agent with: http://your-server-five-ip:8888
 ```
 
-### 4. While Manus Inspects
+### 4. While the Agent Inspects
 ```bash
 # You can continue working or wait
-# All data is read-only for Manus
+# All data is read-only for the inspector
 ```
 
 ### 5. Apply Fixes
@@ -32,7 +32,7 @@ dapy ask "Your query here"
 # Exit container
 exit
 
-# Edit prompts/tools as suggested by Manus
+# Edit prompts/tools as suggested by the agent
 nano ../../dapy/prompts/system_prompt.md
 nano ../../dapy/tools/your_tool.py
 
@@ -47,7 +47,7 @@ dapy ask "Same query to test fix"
 
 ---
 
-## Manus Side (Inspector)
+## Inspector Side (Remote Agent)
 
 ### 1. Access System
 ```bash
@@ -116,19 +116,19 @@ cat snapshots/snapshot_TIMESTAMP.json | jq .
 ## Common Issues and Fixes
 
 ### Issue: Tool using wrong arguments
-**Manus inspects**: Snapshot shows tool call with incorrect args
+**Agent inspects**: Snapshot shows tool call with incorrect args
 **Fix**: Update tool description in `dapy/prompts/system_prompt.md`
 
 ### Issue: Unexpected tool selection
-**Manus inspects**: Analysis shows wrong tool chosen for task
+**Agent inspects**: Analysis shows wrong tool chosen for task
 **Fix**: Clarify tool descriptions and when to use each tool
 
 ### Issue: Tool execution failure
-**Manus inspects**: Snapshot shows exception in tool result
+**Agent inspects**: Snapshot shows exception in tool result
 **Fix**: Update tool implementation in `dapy/tools/tool_name.py`
 
 ### Issue: Incorrect workflow state
-**Manus inspects**: Workflow state shows unexpected transitions
+**Agent inspects**: Workflow state shows unexpected transitions
 **Fix**: Update workflow logic in `dapy/workflows/workflow_name.py`
 
 ---
@@ -152,10 +152,10 @@ cat snapshots/snapshot_TIMESTAMP.json | jq .
 
 | Data Type | Location | Access |
 |-----------|----------|--------|
-| Snapshots | `/data/dapy/snapshots/` | Read-only for Manus |
-| Logs | `/data/dapy/logs/` | Read-only for Manus |
-| Debug Packages | `/data/dapy/debug-packages/` | Read-write for Manus |
-| Database | `/data/dapy/dapy.db` | Not exposed to Manus |
+| Snapshots | `/data/dapy/snapshots/` | Read-only for inspector |
+| Logs | `/data/dapy/logs/` | Read-only for inspector |
+| Debug Packages | `/data/dapy/debug-packages/` | Read-write for inspector |
+| Database | `/data/dapy/dapy.db` | Not exposed to inspector |
 
 ---
 
@@ -164,19 +164,19 @@ cat snapshots/snapshot_TIMESTAMP.json | jq .
 ```bash
 # User reports: "dapy ask 'Setup project' created wrong structure"
 
-# Manus: Check recent executions
+# Agent: Check recent executions
 curl http://server-five:8888/api/executions/recent | jq '.executions[0]'
 
-# Manus: Get that snapshot
+# Agent: Get that snapshot
 curl http://server-five:8888/api/snapshot/snapshot_20251126_143022.json | jq .
 
-# Manus: Sees tool call with args: {"structure": "flat"}
+# Agent: Sees tool call with args: {"structure": "flat"}
 # Should be: {"structure": "nested"}
 
-# Manus: Check prompt
+# Agent: Check prompt
 # Finds: system_prompt.md describes structure incorrectly
 
-# Manus suggests:
+# Agent suggests:
 # "Update dapy/prompts/system_prompt.md line 45"
 # "Change: 'Use flat structure by default'"
 # "To: 'Use nested structure with src/ and tests/ directories'"
@@ -200,7 +200,7 @@ dapy ask "Setup project"
 - Provide clear description when exporting debug packages
 - Test fixes immediately after applying
 
-**For Manus:**
+**For the Inspector:**
 - Start with `/api/analysis/summary` for overview
 - Check recent snapshots for immediate context
 - Create debug package for complex issues
@@ -211,7 +211,7 @@ dapy ask "Setup project"
 
 ## Firewall Configuration
 
-User needs to allow Manus access to port 8888:
+User needs to allow remote agent access to port 8888:
 
 ```bash
 # Example using ufw
@@ -221,4 +221,4 @@ sudo ufw allow from MANUS_IP to any port 8888
 sudo iptables -A INPUT -p tcp -s MANUS_IP --dport 8888 -j ACCEPT
 ```
 
-Replace `MANUS_IP` with actual Manus access IP.
+Replace `MANUS_IP` with the actual remote agent IP.

@@ -35,18 +35,15 @@
 - Interactive breakpoints
 - Snapshot inspection
 - Debug package export
-- Remote inspection API for Manus
 
 **Feedback System**
 - CLI feedback submission
 - LangSmith storage
-- Manus monitoring agent
 - Feedback dashboard
 - Ticket tracking
 
 **Deployment**
 - Local Docker Compose
-- Server five deployment with Manus inspection
 - GCP VM configuration
 - LangChain Cloud configuration
 
@@ -247,7 +244,6 @@ View feature requests in the dashboard at `http://localhost:8889`
 - 3 LangGraph workflows
 - Full observability with LangSmith
 - Interactive debugging with breakpoints
-- Feedback system with Manus monitoring
 - Server five deployment
 - Remote inspection API
 - Feedback dashboard
@@ -291,8 +287,6 @@ dapy feedback submit
 ```
 
 Or via the dashboard at `http://localhost:8889`
-
-Manus monitors all feedback and creates tickets for implementation.
 
 ---
 

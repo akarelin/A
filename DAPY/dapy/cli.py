@@ -282,9 +282,9 @@ def inspect(ctx: click.Context, limit: int) -> None:
 def feedback(ctx: click.Context) -> None:
     """
     Submit and manage feedback.
-    
+
     Report issues, request features, or provide suggestions.
-    Feedback is tracked in LangSmith for Manus to review.
+    Feedback is tracked in LangSmith for review.
     """
     pass
 
@@ -375,12 +375,12 @@ def version(ctx: click.Context) -> None:
 def export_debug(ctx: click.Context, description: Optional[str], output: Optional[str], snapshots: int) -> None:
     """
     Export debug package for troubleshooting.
-    
+
     Creates a comprehensive package with snapshots, logs, and environment info
-    that can be shared with Manus for remote inspection.
-    
+    that can be shared for remote inspection.
+
     DESCRIPTION: Optional description of the issue
-    
+
     Examples:
         dapy export-debug "Tool X failed with error Y"
         dapy export-debug --output my-debug.tar.gz

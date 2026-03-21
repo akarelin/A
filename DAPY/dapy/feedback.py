@@ -2,8 +2,8 @@
 Feedback system for DAPY
 
 Allows users to submit feedback about issues, unexpected behavior,
-or suggestions. Feedback is stored in LangSmith for Manus to review
-and create tickets.
+or suggestions. Feedback is stored in LangSmith for review
+and ticket creation.
 """
 
 from typing import Optional, Dict, Any, List
@@ -81,7 +81,7 @@ class FeedbackManager:
             feedback_key = f"user_feedback_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
             # Store in LangSmith dataset for feedback tracking
-            # This creates a record that Manus can query
+            # This creates a record for agent queries
             dataset_name = f"{self.project_name}_feedback"
             
             # Create or get dataset

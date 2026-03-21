@@ -97,7 +97,7 @@ router = LLMRouterChain(
 **Option 1: LangSmith-First (Recommended for Now)**
 - Use LangSmith UI for all observability
 - Keep DAPY as primary interface
-- Manus monitors via LangSmith API
+- Agent monitors via LangSmith API
 - Defer chat interface to Phase 1 (Q1 2026)
 
 **Option 2: Build Chat Interface Now**
@@ -160,7 +160,7 @@ When we build the chat interface (Q1 2026), we'll create:
 2. ✅ Use LangSmith for tracing (already integrated)
 3. ✅ Use LangSmith API for feedback (already implemented)
 4. ❌ Remove custom feedback dashboard
-5. ✅ Manus agent uses LangSmith API
+5. ✅ Monitoring agent uses LangSmith API
 
 ### Phase 1 (Q1 2026) - Chat Interface
 1. Fork agent-chat-ui or build custom
@@ -193,9 +193,9 @@ When we build the chat interface (Q1 2026), we'll create:
    - Nice-to-have: Use PWA
    - Not needed: Skip
 
-### For Manus
+### For AI Agent
 - Can access LangSmith via API for monitoring
-- No UI needed for Manus (API-only)
+- No UI needed for AI agent (API-only)
 - Ticket system can stay local or use LangSmith annotations
 
 ---
@@ -207,7 +207,7 @@ When we build the chat interface (Q1 2026), we'll create:
 2. Use their UI for all observability and feedback
 3. Keep DAPY as main interface
 4. Defer chat interface to Phase 1
-5. Manus monitors via LangSmith API
+5. Agent monitors via LangSmith API
 
 This gives you professional tools immediately while we focus on perfecting DAPY core functionality.
 
@@ -218,5 +218,5 @@ This gives you professional tools immediately while we focus on perfecting DAPY 
 1. Decide on LangSmith subscription tier
 2. Update architecture to remove custom dashboard
 3. Document LangSmith UI usage
-4. Update Manus agent to use LangSmith API fully
+4. Update monitoring agent to use LangSmith API fully
 5. Plan Phase 1 chat interface details

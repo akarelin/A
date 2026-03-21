@@ -9,7 +9,7 @@ Ingest your LLM conversation logs (MD/JSON) into LangSmith, annotate them, and a
 Your LLM Logs (MD/JSON) 
   → Ingest to LangSmith
   → You Annotate (mark golden)
-  → Manus Queries (generate tests)
+  → Agent Queries (generate tests)
   → Automated Test Cases
 ```
 
