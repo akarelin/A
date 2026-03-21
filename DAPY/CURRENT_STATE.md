@@ -117,13 +117,13 @@ All code and documentation has been pushed to this repository.
 
 **Files Created:**
 - `feedback.py` - Feedback submission module
-- `manus_feedback_agent.py` - Manus monitoring agent
+- `manus_feedback_agent.py` - Feedback monitoring agent
 - `feedback_dashboard.py` - Feedback dashboard (may be removed for LangSmith native)
 
 **Features:**
 - CLI feedback command
 - LangSmith feedback API integration
-- Manus agent monitors feedback
+- AI agent monitors feedback
 - Creates tickets for issues
 
 **Status:** NOT TESTED, NOT APPROVED
@@ -136,12 +136,12 @@ All code and documentation has been pushed to this repository.
 
 **Files Created:**
 - `debug_export.py` - Debug package exporter
-- `inspector_service.py` - Manus remote inspection API
+- `inspector_service.py` - Remote inspection API
 - `inspect.py` - Inspection helper
 
 **Features:**
 - Export debug packages
-- Remote inspection API for Manus
+- Remote inspection API for AI agent
 - Snapshot and trace access
 
 **Status:** NOT TESTED, NOT APPROVED
@@ -197,8 +197,8 @@ All code and documentation has been pushed to this repository.
 
 **Services:**
 - `dapy` - Main CLI service
-- `manus-inspector` - Remote inspection API
-- `manus-feedback-agent` - Feedback monitoring
+- `manus-inspector` - Remote inspection API service
+- `manus-feedback-agent` - Feedback monitoring service
 - `feedback-dashboard` - Dashboard (may be removed)
 
 **Status:** NOT DEPLOYED, NOT TESTED
@@ -422,7 +422,7 @@ dapy/
 **Status:** DECIDED, NOT STARTED
 
 ### 3. Log Ingestion Approach
-**Decision:** Ingest MD/JSON logs to LangSmith, user annotates, Manus queries for test generation.
+**Decision:** Ingest MD/JSON logs to LangSmith, user annotates, AI agent queries for test generation.
 
 **Rationale:** Better than manual extraction, enables continuous improvement.
 
@@ -441,7 +441,7 @@ dapy/
 
 ### From User's Statements:
 
-1. **Manus takes ownership:**
+1. **AI agent takes ownership:**
    > "I expect that you will deploy, run, manage and interact with dapy. I wont try it until you can deliver good results on 10 simple test use cases."
 
 2. **Iterative debugging:**
@@ -451,20 +451,20 @@ dapy/
    > "I will start using zpage and CLI and if something goes wrong, I invoke your session and you can go and look and collect everything and suggest some answers."
 
 4. **Checkpoint and handoff:**
-   > "What you're doing is you're creating the proper context for another instance of Manos to take over from you."
+   > "What you're doing is you're creating the proper context for another instance of the agent to take over from you."
 
 ---
 
-## Critical Notes for Next Manus
+## Critical Notes for Next Agent
 
 ### 1. Nothing is Done Until User Approves
 All code exists but is considered **NOT DONE** until user explicitly says it's done.
 
 ### 2. User Will Test First
-User expects to use DAPY and encounter issues. Next Manus should be ready to debug.
+User expects to use DAPY and encounter issues. Next agent should be ready to debug.
 
 ### 3. Collaborative Debugging Expected
-User will provide access (IP, logs, snapshots) when issues occur. Next Manus should inspect and suggest fixes.
+User will provide access (IP, logs, snapshots) when issues occur. Next agent should inspect and suggest fixes.
 
 ### 4. Test Cases from Real Data
 User wants test cases generated from their actual LLM logs, not synthetic examples.
@@ -473,7 +473,7 @@ User wants test cases generated from their actual LLM logs, not synthetic exampl
 User chose LangChain Cloud but said "don't start it yet". Wait for explicit go-ahead.
 
 ### 6. Feedback Loop Critical
-User wants to provide feedback via CLI and have Manus monitor and create tickets. This is a core workflow.
+User wants to provide feedback via CLI and have the monitoring agent review and create tickets. This is a core workflow.
 
 ---
 

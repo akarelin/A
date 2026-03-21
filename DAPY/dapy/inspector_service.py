@@ -1,8 +1,8 @@
 """
-Manus Inspector Service
+Inspector Service
 
-FastAPI service that allows Manus to remotely inspect DAPY executions,
-review snapshots, analyze failures, and suggest fixes.
+FastAPI service that allows remote inspection of DAPY executions,
+review of snapshots, failure analysis, and fix suggestions.
 """
 
 from fastapi import FastAPI, HTTPException

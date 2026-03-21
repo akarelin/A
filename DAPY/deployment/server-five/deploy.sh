@@ -2,7 +2,7 @@
 set -e
 
 # DAPY Deployment Script for Server Five
-# This script deploys DAPY with Manus inspector service
+# This script deploys DAPY with remote inspector service
 
 echo "================================================"
 echo "DAPY - Server Five Deployment"

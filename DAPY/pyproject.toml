@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
-    {name = "Alex Karelin", email = "alex@karelin.com"}
+    {name = "Alex Karelin"}
 ]
 keywords = ["ai", "cli", "agent", "langchain", "langgraph"]
 classifiers = [

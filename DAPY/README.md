@@ -77,7 +77,7 @@ DAPY/
 │   ├── inspector_service.py       # FastAPI inspector service
 │   ├── feedback.py                # Feedback collection
 │   ├── feedback_dashboard.py      # Feedback dashboard
-│   ├── manus_feedback_agent.py    # Feedback agent
+│   ├── manus_feedback_agent.py    # Feedback monitoring agent
 │   ├── debug_export.py            # Debug export utility
 │   ├── middleware/
 │   │   ├── snapshot.py            # State capture

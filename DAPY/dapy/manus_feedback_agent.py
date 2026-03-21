@@ -1,5 +1,5 @@
 """
-Manus Feedback Monitoring Agent
+Feedback Monitoring Agent
 
 Monitors LangSmith for new user feedback, analyzes issues,
 creates tickets, and tracks resolutions.
@@ -64,8 +64,8 @@ class Ticket:
 
 class FeedbackMonitoringAgent:
     """
-    Manus agent that monitors feedback and creates tickets.
-    
+    Agent that monitors feedback and creates tickets.
+
     Runs as a background service, checking for new feedback
     periodically and creating tickets for resolution.
     """

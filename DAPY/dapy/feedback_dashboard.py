@@ -2,7 +2,7 @@
 Feedback Dashboard
 
 Web-based dashboard for tracking feedback submissions and resolutions.
-Shows what's been submitted, ticket status, and Manus activity.
+Shows what's been submitted, ticket status, and agent activity.
 """
 
 from fastapi import FastAPI, Request

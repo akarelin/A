@@ -51,13 +51,13 @@
 
 > And I expect that at the beginning, it will not behave as expected. And what I'd like to do, I'd like to be able to like, to immediately look at what happened and make corrections. So my workflow will be, so I will get through like several basic operations. Let's say set map ID for a new project, you know, like stuff that I usually do. And I want to stop whenever I get a dissatisfactory response or I see a link invalid.
 
-> Or I see invalid tool use, so I want to stop and then what's most importantly is I want to provide to you, Manus, all of the access or all of the data that you will need to troubleshoot 1.1 from.
+> Or I see invalid tool use, so I want to stop and then what's most importantly is I want to provide to you, the AI agent, all of the access or all of the data that you will need to troubleshoot 1.1 from.
 
 ### Collaborative Debugging
 
 > So let's say I deploy it to a private cloud, to a Docker container, I can expose that IP to your container and can you interact in a way where I will give you all the access you need. I will start using zpage and CLI and if something goes wrong, I invoke your session and you can go and look and collect everything and suggest some answers.
 
-### Manus Ownership
+### Agent Ownership
 
 > I expect that you will deploy, run, manage and interact with dapy. I wont try it until you can deliver good results on 10 simple test use cases.
 
