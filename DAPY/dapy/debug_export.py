@@ -1,7 +1,7 @@
 """
 Debug package exporter for collaborative troubleshooting
 
-Creates comprehensive debug packages that can be shared with Manus
+Creates comprehensive debug packages that can be shared
 for remote inspection and troubleshooting.
 """
 
