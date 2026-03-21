@@ -46,33 +46,33 @@ A personal multi-agent system built directly on the Anthropic SDK (no LangChain)
 
 The main view on launch — ASCII banner, model info, tool count, and an input prompt. Tabs across the top switch between DA chat, Sessions, and Obsidian. The footer shows keybindings for navigation, session management, and merge operations.
 
-<p align="center"><img src="DA/docs/da-chat.png" width="800" alt="DA Chat — agent conversation view with ASCII banner and tab bar"></p>
+<p align="center"><img src="docs/da-chat.png" width="800" alt="DA Chat — agent conversation view with ASCII banner and tab bar"></p>
 
 #### Sessions — Claude Session Browser
 
 Browse Claude Code sessions from `.claude/` directories across multiple machines. The left panel shows a tree organized by machine and project, with session timestamps and first messages. The right panel shows session detail — ID, machine, project, date, size, message counts by role, subagent count, tool results, and whether a local copy exists.
 
-<p align="center"><img src="DA/docs/sessions-claude.png" width="800" alt="Sessions — Claude session tree with detail panel"></p>
+<p align="center"><img src="docs/sessions-claude.png" width="800" alt="Sessions — Claude session tree with detail panel"></p>
 
 Session actions include delete with confirmation dialog, resume, rename, move, and merge.
 
-<p align="center"><img src="DA/docs/sessions-delete.png" width="800" alt="Sessions — delete confirmation dialog"></p>
+<p align="center"><img src="docs/sessions-delete.png" width="800" alt="Sessions — delete confirmation dialog"></p>
 
 The tree expands to show full session history with timestamps. Selected sessions show recent conversation messages and available actions in the detail panel.
 
-<p align="center"><img src="DA/docs/sessions-detail.png" width="800" alt="Sessions — expanded tree with session detail and recent messages"></p>
+<p align="center"><img src="docs/sessions-detail.png" width="800" alt="Sessions — expanded tree with session detail and recent messages"></p>
 
 #### Obsidian Vault Browser
 
 Navigate the Obsidian vault interactively: folder tree on the left with expandable sections, full markdown note preview on the right with rendered content. Search across the vault, browse by folder, or jump to recent notes. The status bar shows the current note path and metadata.
 
-<p align="center"><img src="DA/docs/obsidian.png" width="800" alt="Obsidian — vault browser with folder tree and note preview"></p>
+<p align="center"><img src="docs/obsidian.png" width="800" alt="Obsidian — vault browser with folder tree and note preview"></p>
 
 #### Config Editor
 
 A tree-based browser for tools, agents, and YAML config files. The left panel organizes tools by category (shell, git, docker, ssh, files, search, sessions) and lists all agent types with their status (implemented vs stub). The right panel shows a live YAML preview of the selected config file with syntax highlighting. Slash commands `/validate` and `/refresh` for config management.
 
-<p align="center"><img src="DA/docs/config.png" width="800" alt="Config Editor — tool and agent tree with YAML config preview"></p>
+<p align="center"><img src="docs/config.png" width="800" alt="Config Editor — tool and agent tree with YAML config preview"></p>
 
 ### CLI Commands
 
