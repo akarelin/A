@@ -44,43 +44,35 @@ A personal multi-agent system built directly on the Anthropic SDK (no LangChain)
 
 #### Agent Chat
 
-The main conversation view — send messages to the orchestrator agent, watch tool calls execute in real time, and browse conversation history. The Rich TUI (`da rich`) provides a 5-tab layout with a menu bar, status line, and context-sensitive input prompt.
+The main view on launch — ASCII banner, model info, tool count, and an input prompt. Tabs across the top switch between DA chat, Sessions, and Obsidian. The footer shows keybindings for navigation, session management, and merge operations.
 
-<p align="center"><img src="docs/screenshots/da-chat.svg" width="800" alt="DA Chat — agent conversation view with ASCII banner and menu bar"></p>
+<p align="center"><img src="DA/docs/da-chat.png" width="800" alt="DA Chat — agent conversation view with ASCII banner and tab bar"></p>
 
-The sidebar TUI (`da tui`) takes a different approach: a persistent session list on the left with tabbed DA and Claude session panels, and the conversation on the right.
+#### Sessions — Claude Session Browser
 
-<p align="center"><img src="docs/screenshots/tui-sidebar.svg" width="800" alt="DA TUI — sidebar layout with session list and conversation"></p>
+Browse Claude Code sessions from `.claude/` directories across multiple machines. The left panel shows a tree organized by machine and project, with session timestamps and first messages. The right panel shows session detail — ID, machine, project, date, size, message counts by role, subagent count, tool results, and whether a local copy exists.
 
-#### Projects
+<p align="center"><img src="DA/docs/sessions-claude.png" width="800" alt="Sessions — Claude session tree with detail panel"></p>
 
-Browse Obsidian notes tagged with `type: Project` in their YAML frontmatter. Color-coded status indicators (active/on-hold/archived), priority levels, categories, and owners — all extracted from note metadata. Filter by text, show only active projects, or drill into a full note preview.
+Session actions include delete with confirmation dialog, resume, rename, move, and merge.
 
-<p align="center"><img src="docs/screenshots/projects.svg" width="800" alt="Projects view — Obsidian project notes with status, priority, and category"></p>
+<p align="center"><img src="DA/docs/sessions-delete.png" width="800" alt="Sessions — delete confirmation dialog"></p>
 
-#### Sessions
+The tree expands to show full session history with timestamps. Selected sessions show recent conversation messages and available actions in the detail panel.
 
-A unified session browser showing both DA sessions (from SQLite) and Claude Code sessions (from `.claude/` directories across multiple machines). The left panel is a sortable data table with type, machine, project, date, message count, and name. The right panel shows detail for the selected session — stats for DA sessions, file info and subagent counts for Claude sessions. Switch to a DA session with `/switch`, or copy and launch a Claude session locally with `/launch`.
-
-<p align="center"><img src="docs/screenshots/sessions.svg" width="800" alt="Sessions view — unified DA and Claude session browser with detail panel"></p>
+<p align="center"><img src="DA/docs/sessions-detail.png" width="800" alt="Sessions — expanded tree with session detail and recent messages"></p>
 
 #### Obsidian Vault Browser
 
-Navigate the full Obsidian vault interactively: folder listing with note counts, recent notes, full markdown preview with tag extraction, full-text search with context snippets, and a tag cloud. Type a number to drill into a folder or note, `/search` to find content, `/tags` for the tag cloud.
+Navigate the Obsidian vault interactively: folder tree on the left with expandable sections, full markdown note preview on the right with rendered content. Search across the vault, browse by folder, or jump to recent notes. The status bar shows the current note path and metadata.
 
-<p align="center"><img src="docs/screenshots/obsidian.svg" width="800" alt="Obsidian view — vault browser with folders and note counts"></p>
+<p align="center"><img src="DA/docs/obsidian.png" width="800" alt="Obsidian — vault browser with folder tree and note preview"></p>
 
 #### Config Editor
 
-A tree-based browser for tools, agents, and YAML config files. The left panel organizes tools by category (shell, git, docker, ssh, files, search, sessions) and lists all agent types. Select a tool to see its description, parameters, and source file. Select a config file to see a validated YAML preview, then press Enter to open an inline editor with syntax highlighting and line numbers.
+A tree-based browser for tools, agents, and YAML config files. The left panel organizes tools by category (shell, git, docker, ssh, files, search, sessions) and lists all agent types with their status (implemented vs stub). The right panel shows a live YAML preview of the selected config file with syntax highlighting. Slash commands `/validate` and `/refresh` for config management.
 
-<p align="center"><img src="docs/screenshots/config.svg" width="800" alt="Config Editor — tool and agent browser with YAML preview"></p>
-
-#### Session Manager
-
-A dedicated TUI (`da manage`) for session housekeeping. Two tabs — DA Sessions (table with rename/delete) and Claude Sessions (tree view organized by machine and project). The right panel shows global stats: total sessions, message counts by role, date ranges, and top projects. Claude sessions can be copied or moved across machines.
-
-<p align="center"><img src="docs/screenshots/session-manager.svg" width="800" alt="Session Manager — DA and Claude session management with global stats"></p>
+<p align="center"><img src="DA/docs/config.png" width="800" alt="Config Editor — tool and agent tree with YAML config preview"></p>
 
 ### CLI Commands
 
