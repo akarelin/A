@@ -1,9 +1,6 @@
 name: DA Build
 
 on:
-  pull_request:
-    branches: [master]
-    paths: ['DA/**', 'DA/pyproject.toml']
   workflow_dispatch:
     inputs:
       bump:
@@ -17,7 +14,7 @@ on:
       run_tests:
         description: 'Run tests before release'
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: write
@@ -29,7 +26,6 @@ defaults:
 jobs:
   test:
     runs-on: [self-hosted, linux]
-    if: github.event_name == 'pull_request' || inputs.run_tests
     steps:
       - uses: actions/checkout@v6
         with:
