@@ -56,7 +56,16 @@
       "Bash(find /home/alex/AGENTS.md -name \"*.md\" -type f ! -path \"*/.venv/*\" ! -path \"*/archive/*\" -exec wc -l {} +)",
       "Bash(ls /home/alex/AGENTS.md/DA/da/*.py)",
       "Bash(gh workflow:*)",
-      "Bash(gh secret:*)"
+      "Bash(gh secret:*)",
+      "Bash(pip show:*)",
+      "Bash(da diag:*)",
+      "Bash(pip install:*)",
+      "Bash(SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0 pip install -e . 2>&1)",
+      "Bash(da sessions:*)",
+      "Read(//mnt/d/SD/**)",
+      "Read(//c/Users/Alex/.claude/projects/**)",
+      "Bash(where da.exe)",
+      "Read(//c/Users/Alex/**)"
     ],
     "additionalDirectories": [
       "/mnt/d/SD/.claude"
