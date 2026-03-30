@@ -15,11 +15,11 @@
       "homepage": "https://github.com/akarelin/AGENTS.md/tree/master/skills/plugins/organize"
     },
     {
-      "name": "work-m365",
-      "description": "User-level Microsoft 365 operations via Graph beta API — Mail, Calendar, Teams Chat, Channels, Files, Tasks, Contacts, OneNote, Meetings, Presence.",
-      "source": "./skills/plugins/work-m365",
+      "name": "work",
+      "description": "Workplace tools with sub-skills: M365 (Mail, Calendar, Teams, Files, Tasks), Slack, and Jira.",
+      "source": "./skills/plugins/work",
       "category": "productivity",
-      "homepage": "https://github.com/akarelin/AGENTS.md/tree/master/skills/plugins/work-m365"
+      "homepage": "https://github.com/akarelin/AGENTS.md/tree/master/skills/plugins/work"
     },
     {
       "name": "devops-m365",
@@ -29,25 +29,18 @@
       "homepage": "https://github.com/akarelin/AGENTS.md/tree/master/skills/plugins/devops-m365"
     },
     {
+      "name": "search",
+      "description": "Search plugin with sub-skills: Everything (local file search via MCP) and M365 (cross-entity Microsoft 365 search).",
+      "source": "./skills/plugins/search",
+      "category": "productivity",
+      "homepage": "https://github.com/akarelin/AGENTS.md/tree/master/skills/plugins/search"
+    },
+    {
       "name": "session-manager",
       "description": "Manage Claude Code session folders across repos and hosts — sync, list, resume, rename, and clean up sessions.",
       "source": "./skills/plugins/session-manager",
       "category": "productivity",
       "homepage": "https://github.com/akarelin/AGENTS.md/tree/master/skills/plugins/session-manager"
-    },
-    {
-      "name": "search-everything",
-      "description": "Fast file search using voidtools Everything (1.4/1.5a) via MCP server. Windows only.",
-      "source": "./skills/plugins/search-everything",
-      "category": "productivity",
-      "homepage": "https://github.com/akarelin/AGENTS.md/tree/master/skills/plugins/search-everything"
-    },
-    {
-      "name": "search-m365",
-      "description": "Cross-entity Microsoft 365 search — emails, files, events, chat messages, SharePoint sites and lists in one query.",
-      "source": "./skills/plugins/search-m365",
-      "category": "productivity",
-      "homepage": "https://github.com/akarelin/AGENTS.md/tree/master/skills/plugins/search-m365"
     },
     {
       "name": "skill-manager",

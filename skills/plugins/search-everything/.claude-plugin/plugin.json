@@ -1,8 +1,0 @@
-{
-  "name": "search-everything",
-  "description": "Fast file search using voidtools Everything (1.4 and 1.5a) via MCP server. Windows only.",
-  "author": {
-    "name": "Alex Karelin"
-  },
-  "keywords": ["search", "files", "everything", "voidtools", "windows", "mcp"]
-}

@@ -1,0 +1,8 @@
+{
+  "name": "work",
+  "description": "Workplace productivity tools with sub-skills: M365 (Mail, Calendar, Teams, Files, Tasks), Slack messaging, and Jira issue tracking.",
+  "author": {
+    "name": "Alex Karelin"
+  },
+  "keywords": ["work", "m365", "microsoft", "outlook", "email", "calendar", "teams", "slack", "jira", "atlassian", "productivity"]
+}

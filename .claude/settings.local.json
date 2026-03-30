@@ -67,7 +67,13 @@
       "Bash(where da.exe)",
       "Read(//c/Users/Alex/**)",
       "Bash(ls:*)",
-      "Bash(python -m json.tool C:/Users/Alex/AGENTS.md/.claude-plugin/marketplace.json)"
+      "Bash(python -m json.tool C:/Users/Alex/AGENTS.md/.claude-plugin/marketplace.json)",
+      "Bash(find C:/Users/Alex/AppData/Roaming/Claude -maxdepth 3 -name *.plugin -o -name *.zip)",
+      "Bash(find C:/Users/Alex/.claude/plugins/marketplaces -path *jira* -o -path *atlassian*)",
+      "Read(//tmp/slack-mcp-plugin/skills/slack-messaging/**)",
+      "Read(//tmp/slack-mcp-plugin/skills/slack-search/**)",
+      "Read(//tmp/slack-mcp-plugin/**)",
+      "WebSearch"
     ],
     "additionalDirectories": [
       "/mnt/d/SD/.claude",

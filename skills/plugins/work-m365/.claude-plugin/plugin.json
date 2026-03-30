@@ -1,8 +1,0 @@
-{
-  "name": "work-m365",
-  "description": "User-level Microsoft 365 operations via Graph beta API — Mail, Calendar, Teams Chat, Channels, Files (OneDrive), Tasks, Contacts, OneNote, Meetings, Presence.",
-  "author": {
-    "name": "Alex Karelin"
-  },
-  "keywords": ["m365", "microsoft", "outlook", "email", "calendar", "teams", "onedrive", "graph", "office365", "tasks", "contacts", "onenote", "presence"]
-}
