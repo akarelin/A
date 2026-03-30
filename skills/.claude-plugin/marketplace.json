@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "akarelin-skills",
-  "description": "Personal productivity plugins for Claude Code — file organization, search, session management, and medical document processing.",
+  "description": "Personal productivity plugins for Claude Code — file organization, search, session management, medical document processing, and Microsoft 365 integration.",
   "owner": {
     "name": "Alex Karelin",
     "email": "alex@karelin.ai"
