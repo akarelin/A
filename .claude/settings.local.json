@@ -69,7 +69,8 @@
       "Bash(ls:*)"
     ],
     "additionalDirectories": [
-      "/mnt/d/SD/.claude"
+      "/mnt/d/SD/.claude",
+      "C:\\Users\\Alex\\.claude"
     ]
   }
 }
