@@ -1,0 +1,329 @@
+"""Ingest stage — discover new JSONLs across configured sources and create
+canonical SessionRecord rows in state='ingested'.
+
+Sources (from sessionskills.yaml `sources`):
+  - claude-code: ~/.claude/projects/<slug>/*.jsonl
+  - openclaw:    ~/.openclaw/agents/<agent>/sessions/*.jsonl
+  - langfuse:    pull traces via API (only when --backfill or enabled)
+
+Per file:
+  - Extract sessionId (filename stem; honor Claude Code inline `custom-title`)
+  - Extract agent (openclaw: path-derived) or project (claude-code: path-derived)
+  - Parse first + last timestamps, message count, model
+  - Compute content_hash (first 64KB). If existing record has same hash and
+    state > 'ingested', skip. If hash differs, re-upsert as 'ingested' so
+    downstream stages re-process.
+
+Idempotent: re-running produces processed=0 on unchanged files.
+"""
+from __future__ import annotations
+
+import fnmatch
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Iterable
+
+from .. import config as cfgmod
+from ..orchestrator import StageResult
+from ..record import SessionRecord, compute_content_hash
+from ..store import SessionStore
+
+
+# ────────────────────────────────────────────────────────────────── helpers ──
+
+def _iter_files(root: Path, patterns: list[str], excludes: list[str]) -> Iterable[Path]:
+    """Walk root matching any of `patterns` but not `excludes` (glob)."""
+    for pat in patterns:
+        for p in root.glob(pat):
+            if not p.is_file():
+                continue
+            name = p.name
+            if any(fnmatch.fnmatch(name, ex) for ex in excludes):
+                continue
+            yield p
+
+
+def _parse_ts(s: str | None) -> str | None:
+    if not s:
+        return None
+    # Most sources produce ISO8601 already; just normalize
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00")).astimezone(timezone.utc).isoformat()
+    except ValueError:
+        return s
+
+
+def _parse_jsonl_head_tail(path: Path, head_lines: int = 200,
+                           tail_lines: int = 50) -> tuple[list[dict], list[dict]]:
+    """Read first N and last M JSONL entries — enough to extract stats without
+    loading GB files."""
+    head: list[dict] = []
+    tail: list[dict] = []
+    try:
+        with open(path, "rb") as f:
+            for i, line in enumerate(f):
+                if i >= head_lines:
+                    break
+                try:
+                    head.append(json.loads(line))
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    pass
+        # Tail via seek from end — conservative: only last 256KB
+        size = path.stat().st_size
+        with open(path, "rb") as f:
+            if size > 262144:
+                f.seek(size - 262144)
+                f.readline()  # discard partial
+            data = f.read()
+        for line in data.splitlines()[-tail_lines:]:
+            try:
+                tail.append(json.loads(line))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                pass
+    except OSError:
+        pass
+    return head, tail
+
+
+# ────────────────────────────────────────────────────────────── claude-code ──
+
+def _extract_claude_code(path: Path, source_cfg: dict) -> SessionRecord:
+    """Claude Code: ~/.claude/projects/<slug>/<session-uuid>.jsonl.
+
+    Format per line:
+      {"type":"user"|"assistant"|"tool_result", "message":{...}, "cwd":"...",
+       "gitBranch":"...", "sessionId":"..."}
+    May contain inline {"type":"custom-title","customTitle":"..."} entries.
+    """
+    head, tail = _parse_jsonl_head_tail(path)
+    session_id = path.stem
+    project = None
+    # project slug = parent dir name under ~/.claude/projects/
+    try:
+        project = path.parent.name
+    except Exception:
+        pass
+
+    cwd = None
+    git_branch = None
+    model = None
+    provider = None
+    started_at = None
+    ended_at = None
+    custom_title = None
+    user_turns = 0
+    message_count = 0
+
+    for entry in head:
+        t = entry.get("type")
+        if t == "custom-title":
+            custom_title = entry.get("customTitle")
+        if cwd is None:
+            cwd = entry.get("cwd")
+        if git_branch is None:
+            git_branch = entry.get("gitBranch")
+        ts = entry.get("timestamp")
+        if ts and started_at is None:
+            started_at = _parse_ts(ts)
+        if t == "user":
+            user_turns += 1
+            message_count += 1
+        elif t == "assistant":
+            message_count += 1
+            if model is None:
+                msg = entry.get("message") or {}
+                model = msg.get("model") or entry.get("model")
+
+    for entry in tail:
+        if entry.get("timestamp"):
+            ended_at = _parse_ts(entry["timestamp"])
+            break
+
+    rec = SessionRecord(
+        source="claude-code",
+        source_id=session_id,
+        agent=None,
+        project=project,
+        cwd=cwd,
+        started_at=started_at,
+        ended_at=ended_at,
+        model=model,
+        provider=provider,
+        turn_count=user_turns,
+        message_count=message_count,
+        paths={"raw_jsonl": str(path)},
+        state="ingested",
+    )
+    if custom_title:
+        rec.classification["custom_title"] = custom_title
+    return rec
+
+
+# ──────────────────────────────────────────────────────────────── openclaw ──
+
+def _extract_openclaw(path: Path, source_cfg: dict) -> SessionRecord:
+    """OpenClaw: ~/.openclaw/agents/<agent>/sessions/<uuid>(-topic-<ts>)?.jsonl.
+
+    Format per line (version 3):
+      {"type":"session", "id":"...", "timestamp":"...", "cwd":"..."}
+      {"type":"model_change", "provider":"...", "modelId":"..."}
+      {"type":"message", "message":{"role":"user"|"assistant"|"toolResult",...}}
+    """
+    head, tail = _parse_jsonl_head_tail(path)
+    session_id = path.stem
+    # agent derived from path: ~/.openclaw/agents/<agent>/sessions/...
+    agent = None
+    try:
+        # .../agents/<agent>/sessions/file.jsonl
+        parts = path.parts
+        if "agents" in parts:
+            agent = parts[parts.index("agents") + 1]
+    except (IndexError, ValueError):
+        pass
+
+    # detect -topic-<ts> suffix (same session_group as base)
+    session_group = None
+    if "-topic-" in path.stem:
+        base = path.stem.split("-topic-", 1)[0]
+        session_group = f"openclaw:{base}"
+
+    cwd = None
+    model = None
+    provider = None
+    started_at = None
+    ended_at = None
+    user_turns = 0
+    message_count = 0
+
+    for entry in head:
+        t = entry.get("type")
+        if t == "session":
+            started_at = _parse_ts(entry.get("timestamp"))
+            cwd = cwd or entry.get("cwd")
+        elif t == "model_change":
+            provider = provider or entry.get("provider")
+            model = model or entry.get("modelId")
+        elif t == "message":
+            message_count += 1
+            msg = entry.get("message") or {}
+            if msg.get("role") == "user":
+                user_turns += 1
+
+    for entry in tail:
+        ts = entry.get("timestamp")
+        if ts:
+            ended_at = _parse_ts(ts)
+            break
+
+    return SessionRecord(
+        source="openclaw",
+        source_id=session_id,
+        agent=agent,
+        project=None,
+        cwd=cwd,
+        started_at=started_at,
+        ended_at=ended_at,
+        model=model,
+        provider=provider,
+        turn_count=user_turns,
+        message_count=message_count,
+        session_group=session_group,
+        paths={"raw_jsonl": str(path)},
+        state="ingested",
+    )
+
+
+EXTRACTORS = {
+    "claude-code": _extract_claude_code,
+    "openclaw": _extract_openclaw,
+}
+
+
+# ──────────────────────────────────────────────────────────────────── main ──
+
+def run(store: SessionStore, cfg: dict, *,
+        limit: int | None = None,
+        dry_run: bool = False,
+        force: bool = False,
+        source: str | None = None,
+        source_id: str | None = None,
+        backfill: bool = False,
+        **_: object) -> StageResult:
+    result = StageResult(stage="ingest")
+
+    for src in cfg.get("sources", []):
+        if source is not None and src["name"] != source:
+            continue
+        kind = src.get("kind")
+        if kind == "api":
+            # Langfuse pull — only run when backfill flag set
+            if not backfill and not src.get("enabled", False):
+                continue
+            print(f"[ingest] {src['name']} (api pull) — not yet implemented; skipping")
+            continue
+        if kind != "jsonl":
+            continue
+
+        root = Path(cfgmod.expand(src["root"]))
+        if not root.exists():
+            continue
+        patterns = src.get("patterns", [])
+        excludes = src.get("exclude_patterns", []) + src.get("exclude", [])
+        extractor = EXTRACTORS.get(src["name"])
+        if extractor is None:
+            print(f"[ingest] no extractor for source={src['name']}; skipping")
+            continue
+
+        for path in _iter_files(root, patterns, excludes):
+            if limit is not None and result.processed >= limit:
+                break
+            # Idempotence: skip if hash matches existing record's content_hash
+            # AND record state is already past 'ingested' AND not force.
+            try:
+                h = compute_content_hash(str(path))
+            except OSError:
+                result.errors += 1
+                continue
+
+            if source_id is not None and path.stem != source_id:
+                continue
+
+            existing = store.get(src["name"], path.stem)
+            if existing and existing.content_hash == h and not force:
+                if existing.state != "new":
+                    result.skipped += 1
+                    continue
+
+            if dry_run:
+                print(f"[ingest] would ingest: {src['name']}:{path.stem} ({path})")
+                result.processed += 1
+                continue
+
+            try:
+                rec = extractor(path, src)
+                rec.content_hash = h
+                # Preserve existing classification / paths on re-ingest
+                if existing:
+                    rec.id = existing.id
+                    rec.first_seen = existing.first_seen
+                    merged_paths = dict(existing.paths)
+                    merged_paths.update(rec.paths)
+                    rec.paths = merged_paths
+                    if existing.classification:
+                        merged_cls = dict(existing.classification)
+                        merged_cls.update(rec.classification)
+                        rec.classification = merged_cls
+                rec.transition("ingested", stage="ingest",
+                               notes=f"file={path.name}")
+                store.upsert(rec)
+                result.processed += 1
+            except Exception as e:
+                print(f"[ingest] error on {path}: {e}")
+                result.errors += 1
+
+        if limit is not None and result.processed >= limit:
+            break
+
+    return result

@@ -1,0 +1,7 @@
+#!/bin/bash
+# SessionSkills HITL review CLI
+set -e
+VENV_PY="/Users/alex/RAN/AI/SessionManager/.venv/bin/python3"
+REPO="/Users/alex/A/SessionManager"
+cd "$REPO"
+exec "$VENV_PY" -m sessions.review_tui "$@"

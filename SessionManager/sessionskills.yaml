@@ -1,0 +1,50 @@
+# SessionSkills orchestrator manifest
+# See: docs/sessionskills-ADR.md
+
+store:
+  path: ~/.sessionskills/store.sqlite
+  review_queue: ~/.sessionskills/review_queue.json
+
+llm:
+  host: http://127.0.0.1:11434
+  model_chat: qwen3:8b           # verify tag with `ollama list` — user said "qwen3.5"
+  model_embed: nomic-embed-text
+  fallback: cloud                # cloud | heuristic | skip
+  cloud_provider: anthropic-vertex
+
+sources:
+  - name: claude-code
+    kind: jsonl
+    root: ~/.claude/projects
+    patterns: ["**/*.jsonl"]
+    exclude: ["audit.jsonl", "history.jsonl"]
+
+  - name: openclaw
+    kind: jsonl
+    root: ~/.openclaw/agents
+    patterns: ["*/sessions/*.jsonl"]
+    exclude_patterns: ["*.jsonl.reset.*", "*.jsonl.deleted.*"]  # merge stage handles
+    agent_from_path: "agents/{agent}/sessions/"
+
+  - name: langfuse
+    kind: api
+    host: https://langfuse.karelin.ai
+    pull_since: 7d
+    auth_env: [LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY]
+    enabled: false                # turn on after local ingest is stable
+
+pipeline:
+  default:  [ingest, merge, name, analyze, write_to_memory, cluster, classify, review]
+  nightly:  [cluster, classify]
+  weekly:   [prune, archive]
+
+thresholds:
+  name_min_confidence: 0.6
+  classify_min_confidence: 0.65
+  merge_min_similarity: 0.88
+  prune_age_days: 30
+  archive_age_days: 180
+  review_window_days: 7          # prune candidates wait this long before moving
+
+subagent_merge:
+  strategy: session_group        # group_only | fold_into_parent | ignore

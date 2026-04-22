@@ -1,0 +1,13 @@
+#!/bin/bash
+# SessionSkills orchestrator entry point.
+# Uses the macOS venv at /Users/alex/RAN/AI/SessionManager/.venv for now
+# (followup: build A/SessionManager its own .venv).
+set -e
+VENV_PY="/Users/alex/RAN/AI/SessionManager/.venv/bin/python3"
+REPO="/Users/alex/A/SessionManager"
+if [[ ! -x "$VENV_PY" ]]; then
+    echo "venv python not found at $VENV_PY" >&2
+    exit 1
+fi
+cd "$REPO"
+exec "$VENV_PY" -m sessions.orchestrator "$@"
