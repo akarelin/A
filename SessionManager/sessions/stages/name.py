@@ -91,57 +91,22 @@ def _collect_named_claude_code() -> dict[tuple[str, str], str]:
     return result
 
 
-def run(store: SessionStore, cfg: dict, *,
-        limit: int | None = None,
-        dry_run: bool = False,
-        force: bool = False,
-        source: str | None = None,
-        source_id: str | None = None,
-        **_: object) -> StageResult:
-    result = StageResult(stage="name")
-
-    host = cfg["llm"]["host"]
-    model = cfg["llm"]["model_chat"]
-
-    # Invoke rename_sessions.py once per source kind (covers all agents/projects)
-    for src_kind, rs_source in (("openclaw", "openclaw-jsonl"), ("claude-code", "claude-code")):
-        if source is not None and source != src_kind:
-            continue
-        rc, out, err = _invoke_rename(rs_source, None, llm=True,
-                                      host=host, model=model, dry_run=dry_run)
-        # rename_sessions.py writes summary to stderr; stdout carries per-file lines
-        if rc != 0 and "No source dirs" not in err:
-            print(f"[name] rename_sessions rc={rc} stderr tail:\n{err[-500:]}")
-            result.errors += 1
-
-    if dry_run:
-        # In dry-run we didn't actually create symlinks; just count candidates
-        result.processed = sum(1 for r in store.select_by_state(["merged"])
-                               if r.source in ("openclaw", "claude-code"))
-        return result
-
-    # Build uuid-prefix indexes of what rename_sessions.py produced
-    oc_index = _collect_named_openclaw()
-    cc_index = _collect_named_claude_code()
-
-    # Update records
-    eligible = ["merged"] if not force else ["merged", "named"]
-    records = store.select_by_state(eligible, limit=limit, source=source)
+def _reconcile_target(store: SessionStore, src_kind: str, target: str,
+                      index: dict[tuple[str, str], str],
+                      result: StageResult) -> None:
+    """Update store records for one agent/project based on on-disk symlinks.
+    Called after rename_sessions.py finishes a target; also usable standalone
+    for a pure reconcile-from-filesystem run (no subprocess)."""
+    eligible = ["merged", "ingested", "orphan_snapshot", "named"]
+    records = store.select_by_state(eligible, source=src_kind)
     for rec in records:
-        if source_id is not None and rec.source_id != source_id:
+        target_field = rec.agent if src_kind == "openclaw" else rec.project
+        if target_field != target:
             continue
-
         uuid8 = rec.source_id[:8]
-        symlink = None
-        if rec.source == "openclaw" and rec.agent:
-            symlink = oc_index.get((rec.agent, uuid8))
-        elif rec.source == "claude-code" and rec.project:
-            symlink = cc_index.get((rec.project, uuid8))
-
+        symlink = index.get((target, uuid8))
         if symlink:
             rec.paths["symlink_name"] = symlink
-            # Extract slug + category from the filename:
-            # <YYYY-MM-DD>_<category>_<slug>__<uuid8>.<ext>
             m = re.match(
                 r"(?P<date>\d{4}-\d{2}-\d{2})_(?P<cat>[^_]+)_(?P<slug>.+)__[0-9a-f]{8}\.",
                 Path(symlink).name,
@@ -149,14 +114,98 @@ def run(store: SessionStore, cfg: dict, *,
             if m:
                 rec.classification.setdefault("category", m.group("cat"))
                 rec.classification.setdefault("topic_slug", m.group("slug"))
-            rec.transition("named", stage="name", notes=os.path.basename(symlink))
+            if rec.state != "named":
+                rec.transition("named", stage="name", notes=os.path.basename(symlink))
             store.upsert(rec)
             result.processed += 1
-        else:
-            # Session was skipped by rename_sessions (too short, no title, etc.)
-            # Still transition so downstream stages can see it; leave no symlink.
+        elif rec.state != "named":
             rec.transition("named", stage="name", notes="skipped-by-rename")
             store.upsert(rec)
             result.skipped += 1
 
+
+def _enumerate_targets(store: SessionStore, src_kind: str,
+                       eligible_states: list[str]) -> list[str]:
+    """Unique agents (for openclaw) or projects (for claude-code) from store."""
+    out: set[str] = set()
+    for rec in store.select_by_state(eligible_states, source=src_kind):
+        tgt = rec.agent if src_kind == "openclaw" else rec.project
+        if tgt:
+            out.add(tgt)
+    return sorted(out)
+
+
+def run(store: SessionStore, cfg: dict, *,
+        limit: int | None = None,
+        dry_run: bool = False,
+        force: bool = False,
+        source: str | None = None,
+        source_id: str | None = None,
+        reconcile_only: bool = False,
+        **_: object) -> StageResult:
+    """Per-target invocation + checkpoint. A failure or timeout in one target
+    only loses that target's progress; already-completed targets stay `named`.
+
+    Additional flag `reconcile_only`: skip subprocess invocation entirely and
+    just scan on-disk symlinks to catch up the store (useful after an
+    interrupted external run).
+    """
+    result = StageResult(stage="name")
+    host = cfg["llm"]["host"]
+    model = cfg["llm"]["model_chat"]
+    eligible = ["merged", "orphan_snapshot"] if not force \
+        else ["merged", "orphan_snapshot", "named"]
+
+    for src_kind, rs_source in (("openclaw", "openclaw-jsonl"),
+                                ("claude-code", "claude-code")):
+        if source is not None and source != src_kind:
+            continue
+
+        targets = _enumerate_targets(store, src_kind, eligible)
+        if not targets:
+            continue
+
+        for target in targets:
+            if dry_run:
+                print(f"[name] would invoke rename for {src_kind}/{target}")
+                continue
+
+            if not reconcile_only:
+                rc, _out, err = _invoke_rename(
+                    rs_source, target, llm=True,
+                    host=host, model=model, dry_run=False,
+                )
+                if rc != 0 and "No source dirs" not in err and \
+                        "not found under" not in err:
+                    print(f"[name] {src_kind}/{target} rc={rc}: {err[-300:]}")
+                    result.errors += 1
+                    # Still try to reconcile partial progress before moving on
+            # Reconcile this target right away so progress survives interruption
+            if src_kind == "openclaw":
+                idx = _collect_named_openclaw()
+            else:
+                idx = _collect_named_claude_code()
+            before = result.processed + result.skipped
+            _reconcile_target(store, src_kind, target, idx, result)
+            delta = result.processed + result.skipped - before
+            print(f"[name] {src_kind}/{target}: +{delta} records reconciled")
+
+            if limit is not None and result.processed >= limit:
+                return result
+
     return result
+
+
+# Legacy single-uuid fast path kept for --source-id use (only reconciles one rec)
+def _legacy_single(store: SessionStore, cfg: dict, source: str, source_id: str,
+                   result: StageResult) -> None:
+    if source == "openclaw":
+        idx = _collect_named_openclaw()
+    else:
+        idx = _collect_named_claude_code()
+    rec = store.get(source, source_id)
+    if rec is None:
+        return
+    tgt = rec.agent if source == "openclaw" else rec.project
+    if tgt:
+        _reconcile_target(store, source, tgt, idx, result)

@@ -83,14 +83,16 @@ def run(store: SessionStore, cfg: dict, *,
         **_: object) -> StageResult:
     result = StageResult(stage="merge")
 
-    eligible_states = ["ingested"] if not force else ["ingested", "merged"]
+    eligible_states = ["ingested", "orphan_snapshot"] if not force \
+        else ["ingested", "orphan_snapshot", "merged"]
     records = store.select_by_state(eligible_states, limit=limit, source=source)
 
     for rec in records:
         if source_id is not None and rec.source_id != source_id:
             continue
 
-        raw = rec.paths.get("raw_jsonl")
+        # Orphans use snapshot_jsonl; live records use raw_jsonl.
+        raw = rec.paths.get("raw_jsonl") or rec.paths.get("snapshot_jsonl")
         if not raw:
             result.skipped += 1
             continue

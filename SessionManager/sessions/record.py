@@ -16,6 +16,7 @@ from typing import Any
 STATES = (
     "new",
     "ingested",
+    "orphan_snapshot",   # v2 merge: reset/deleted JSONL whose live sibling is gone
     "merged",
     "named",
     "analyzed",

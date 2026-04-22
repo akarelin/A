@@ -23,8 +23,12 @@ sources:
     kind: jsonl
     root: ~/.openclaw/agents
     patterns: ["*/sessions/*.jsonl"]
-    exclude_patterns: ["*.jsonl.reset.*", "*.jsonl.deleted.*"]  # merge stage handles
+    exclude_patterns: ["*.jsonl.reset.*", "*.jsonl.deleted.*"]  # live-pass excludes these
     agent_from_path: "agents/{agent}/sessions/"
+    # v2 merge: ingest orphan reset/deleted snapshots too (separate pass)
+    orphan_snapshots:
+      enabled: true
+      state: orphan_snapshot
 
   - name: langfuse
     kind: api
@@ -45,6 +49,7 @@ thresholds:
   prune_age_days: 30
   archive_age_days: 180
   review_window_days: 7          # prune candidates wait this long before moving
+  orphan_prune_age_days: 90      # reset/deleted snapshots prune faster than live
 
 subagent_merge:
   strategy: session_group        # group_only | fold_into_parent | ignore

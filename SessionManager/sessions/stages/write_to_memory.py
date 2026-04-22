@@ -129,7 +129,8 @@ def run(store: SessionStore, cfg: dict, *,
         **_: object) -> StageResult:
     result = StageResult(stage="write_to_memory")
 
-    eligible = ["analyzed"] if not force else ["analyzed", "memorized"]
+    eligible = ["analyzed", "orphan_snapshot"] if not force \
+        else ["analyzed", "orphan_snapshot", "memorized"]
     records = store.select_by_state(eligible, limit=limit, source=source)
 
     for rec in records:

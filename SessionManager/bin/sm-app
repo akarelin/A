@@ -1,2 +1,10 @@
 #!/bin/bash
-exec /home/alex/SessionManager/.venv/bin/python3 /home/alex/SessionManager/scripts/sm-app.py "$@"
+for b in \
+  /Users/alex/RAN/AI/SessionManager/bin/_bootstrap.sh \
+  /Users/alex/A/SessionManager/bin/_bootstrap.sh \
+  /home/alex/SessionManager/bin/_bootstrap.sh \
+  /home/alex/A/SessionManager/bin/_bootstrap.sh; do
+  if [ -r "$b" ]; then source "$b"; break; fi
+done
+if [ -z "${SM_PY:-}" ]; then echo "SessionManager bootstrap not found" >&2; exit 1; fi
+exec "$SM_PY" "$SM_REPO/scripts/sm-app.py" "$@"

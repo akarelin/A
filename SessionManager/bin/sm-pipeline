@@ -1,13 +1,17 @@
 #!/bin/bash
 # SessionSkills orchestrator entry point.
-# Uses the macOS venv at /Users/alex/RAN/AI/SessionManager/.venv for now
-# (followup: build A/SessionManager its own .venv).
 set -e
-VENV_PY="/Users/alex/RAN/AI/SessionManager/.venv/bin/python3"
-REPO="/Users/alex/A/SessionManager"
-if [[ ! -x "$VENV_PY" ]]; then
-    echo "venv python not found at $VENV_PY" >&2
-    exit 1
-fi
-cd "$REPO"
-exec "$VENV_PY" -m sessions.orchestrator "$@"
+for b in \
+  /Users/alex/RAN/AI/SessionManager/bin/_bootstrap.sh \
+  /Users/alex/A/SessionManager/bin/_bootstrap.sh \
+  /home/alex/SessionManager/bin/_bootstrap.sh \
+  /home/alex/A/SessionManager/bin/_bootstrap.sh; do
+  if [ -r "$b" ]; then source "$b"; break; fi
+done
+if [ -z "${SM_PY:-}" ]; then echo "SessionManager bootstrap not found" >&2; exit 1; fi
+# sessions/ package always lives in A/SessionManager
+for repo in /Users/alex/A/SessionManager /home/alex/A/SessionManager; do
+  if [ -d "$repo/sessions" ]; then SS_REPO="$repo"; break; fi
+done
+cd "$SS_REPO"
+exec "$SM_PY" -m sessions.orchestrator "$@"

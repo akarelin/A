@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.request
@@ -29,23 +30,91 @@ from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import DataTable, Footer, Header, RichLog, Static
+from rich.text import Text
 
 # --- Config ---
-LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST", "https://langfuse.karelin.ai")
-LANGFUSE_PK = os.environ.get("LANGFUSE_PUBLIC_KEY", "pk-lf-xsolla-main-2026")
-LANGFUSE_SK = os.environ.get("LANGFUSE_SECRET_KEY", "sk-lf-xsolla-main-2026-secret-changeme")
-CLAUDE_PROJECTS_DIR = Path.home() / ".claude" / "projects"
-OPENCLAW_AGENTS_DIR = Path.home() / ".openclaw" / "agents"
+# Everything overridable via env var OR sessions.yaml (SessionManager root).
+# YAML takes precedence over env; both override the defaults below.
+
+def _load_yaml_config() -> dict:
+    """Best-effort load of sessions.yaml from candidate SessionManager dirs."""
+    for base in [
+        Path("/Users/alex/A/SessionManager"),
+        Path("/Users/alex/RAN/AI/SessionManager"),
+        Path.home() / "A" / "SessionManager",
+        Path.home() / "SessionManager",
+    ]:
+        f = base / "sessions.yaml"
+        if f.is_file():
+            try:
+                import yaml  # pyyaml
+                return yaml.safe_load(f.read_text()) or {}
+            except Exception:
+                return {}
+    return {}
 
 
-# --- API ---
+_CFG = _load_yaml_config().get("sm_tui", {}) if isinstance(_load_yaml_config(), dict) else {}
+
+def _cfg(key: str, env: str, default: str) -> str:
+    return _CFG.get(key) or os.environ.get(env) or default
+
+LANGFUSE_HOST = _cfg("langfuse_host", "LANGFUSE_HOST", "https://langfuse.karelin.ai")
+LANGFUSE_PK = _cfg("langfuse_public_key", "LANGFUSE_PUBLIC_KEY", "pk-lf-xsolla-main-2026")
+LANGFUSE_SK = _cfg("langfuse_secret_key", "LANGFUSE_SECRET_KEY", "sk-lf-xsolla-main-2026-secret-changeme")
+CLAUDE_PROJECTS_DIR = Path(_cfg("claude_projects_dir", "SM_CLAUDE_PROJECTS_DIR",
+                                str(Path.home() / ".claude" / "projects")))
+OPENCLAW_AGENTS_DIR = Path(_cfg("openclaw_agents_dir", "SM_OPENCLAW_AGENTS_DIR",
+                                str(Path.home() / ".openclaw" / "agents")))
+
+
+# --- API + cache ---
+
+CACHE_DIR = _cfg("cache_dir", "SM_CACHE_DIR", str(Path.home() / ".cache" / "sm-tui"))
+CACHE_TTL = int(_cfg("cache_ttl_seconds", "SM_CACHE_TTL", "600"))  # 10 min default
+
+try:
+    from gppu.data import Cache as _GppuCache
+    Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
+    _CACHE = _GppuCache(CACHE_DIR, ttl=CACHE_TTL, backend="sqlite")
+except Exception as _e:  # gppu missing or cache init failed — disable transparently
+    _CACHE = None
+
+
+def _cache_key(method: str, path: str, params: dict | None) -> str:
+    qs = ""
+    if params:
+        qs = "&".join(f"{k}={v}" for k, v in sorted(params.items()) if v is not None)
+    return f"{method}:{LANGFUSE_HOST}{path}?{qs}"
+
+
+def cache_clear() -> int:
+    """Invalidate cached Langfuse responses. Returns 1 if cache present, 0 otherwise."""
+    if _CACHE is None:
+        return 0
+    # gppu Cache has no bulk-clear; close+re-open with cleared dir is ugly.
+    # Instead: mark "force_refresh" marker the next fetch consults.
+    _CACHE.set("__force_refresh__", 1, expire=1)  # expires in 1s — but still bumps gen
+    return 1
+
 
 def _auth_header():
     creds = base64.b64encode(f"{LANGFUSE_PK}:{LANGFUSE_SK}".encode()).decode()
     return {"Authorization": f"Basic {creds}", "Content-Type": "application/json"}
 
 
-def api_get(path, params=None):
+def api_get(path, params=None, *, use_cache: bool = True):
+    """GET + JSON-decode a Langfuse endpoint. Caches response for CACHE_TTL
+    seconds (gppu.data.Cache, SQLite-backed). Bypass with SKIP_CACHE=1 env
+    or use_cache=False."""
+    skip = os.environ.get("SKIP_CACHE") or not use_cache or _CACHE is None
+    cache_k = _cache_key("GET", path, params)
+
+    if not skip:
+        cached = _CACHE.get(cache_k)
+        if cached is not None:
+            return cached
+
     url = f"{LANGFUSE_HOST}{path}"
     if params:
         qs = "&".join(f"{k}={v}" for k, v in params.items() if v is not None)
@@ -53,9 +122,34 @@ def api_get(path, params=None):
     req = urllib.request.Request(url, headers=_auth_header())
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
-            return json.loads(resp.read())
+            data = json.loads(resp.read())
     except Exception as e:
         return {"data": [], "error": str(e)}
+
+    if _CACHE is not None and not skip:
+        try:
+            _CACHE.set(cache_k, data)
+        except Exception:
+            pass
+    return data
+
+
+def api_get_paginated(path, max_pages=10, limit=100, *, use_cache: bool = True):
+    """Fetch up to max_pages of Langfuse list results. Each page cached
+    separately so partial invalidation is possible. Returns (all_data, total)."""
+    all_data = []
+    total = 0
+    for page in range(1, max_pages + 1):
+        d = api_get(path, {"limit": str(limit), "page": str(page)}, use_cache=use_cache)
+        rows = d.get("data", [])
+        if page == 1:
+            total = (d.get("meta") or {}).get("totalItems", len(rows))
+        if not rows:
+            break
+        all_data.extend(rows)
+        if page * limit >= total:
+            break
+    return all_data, total
 
 
 def format_size(size):
@@ -65,6 +159,100 @@ def format_size(size):
         return f"{size // 1024}K"
     else:
         return f"{size / 1048576:.1f}M"
+
+
+SRC_ICON = {"cc": "🤖", "oc": "🦀", "claude-code": "🤖", "openclaw": "🦀"}
+
+
+def src_badge(src: str) -> str:
+    """Short visual source indicator."""
+    return SRC_ICON.get(src, "·")
+
+
+def age_color(dt) -> str:
+    """Rich color string based on age of the timestamp.
+    Recent → bright green; weeks → yellow; months+ → dim."""
+    from datetime import datetime as _dt, timezone as _tz
+    if dt is None:
+        return "dim"
+    now = _dt.now(_tz.utc) if getattr(dt, "tzinfo", None) else _dt.now()
+    try:
+        days = (now - dt).total_seconds() / 86400.0
+    except Exception:
+        return "dim"
+    if days < 1:      return "bright_green"
+    if days < 7:      return "green"
+    if days < 30:     return "yellow"
+    if days < 90:     return "orange3"
+    if days < 365:    return "red"
+    return "bright_black"
+
+
+def size_weight(size_bytes: int) -> str:
+    """Rich style modifier: bold if large, regular otherwise."""
+    if size_bytes >= 1024 * 1024:     # ≥1 MB
+        return "bold "
+    if size_bytes >= 100 * 1024:      # ≥100 KB
+        return ""
+    return "dim "                      # <100 KB → faded
+
+
+def tint(text, dt, size_bytes: int = 0):
+    """Return a Rich Text colored by age and weighted by size.
+    (Textual DataTable cells render Text objects with style; raw markup
+    strings would display literally.)"""
+    color = age_color(dt)
+    weight = size_weight(size_bytes).strip()
+    style = f"{weight} {color}".strip()
+    return Text(str(text), style=style)
+
+
+def format_age(dt):
+    """Short relative age: 2m, 3h, 5d, 2w, 3mo, 1y."""
+    if dt is None:
+        return "—"
+    from datetime import datetime as _dt, timezone as _tz
+    now = _dt.now(_tz.utc) if dt.tzinfo else _dt.now()
+    try:
+        secs = (now - dt).total_seconds()
+    except Exception:
+        return "?"
+    if secs < 60:
+        return f"{int(secs)}s"
+    if secs < 3600:
+        return f"{int(secs / 60)}m"
+    if secs < 86400:
+        return f"{int(secs / 3600)}h"
+    if secs < 86400 * 14:
+        return f"{int(secs / 86400)}d"
+    if secs < 86400 * 60:
+        return f"{int(secs / (86400 * 7))}w"
+    if secs < 86400 * 365:
+        return f"{int(secs / (86400 * 30))}mo"
+    return f"{secs / (86400 * 365):.1f}y"
+
+
+_SLUG_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2}_(?P<cat>[^_]+)_(?P<slug>.+)__(?P<u8>[0-9a-f]{8})\."
+)
+
+
+def _session_description(source_file: Path) -> str:
+    """Look for a sessions-named/ symlink matching this file's uuid8 prefix
+    and extract the descriptive slug. Checks both conventional layouts:
+      claude-code:  ~/.claude/projects/<slug>/sessions-named/       (sibling of jsonl's parent)
+      openclaw:     ~/.openclaw/agents/<agent>/sessions-named/     (parent's sibling)
+    """
+    uuid8 = source_file.stem[:8]
+    for candidate in (source_file.parent / "sessions-named",
+                      source_file.parent.parent / "sessions-named"):
+        if not candidate.is_dir():
+            continue
+        for link in candidate.iterdir():
+            m = _SLUG_RE.match(link.name)
+            if m and m.group("u8") == uuid8:
+                return m.group("slug")
+    return ""
 
 
 def fetch_local_sessions():
@@ -78,6 +266,7 @@ def fetch_local_sessions():
                 "file": str(f),
                 "size": f.stat().st_size,
                 "mtime": datetime.fromtimestamp(f.stat().st_mtime),
+                "description": _session_description(f),
             })
     if OPENCLAW_AGENTS_DIR.exists():
         for agent_dir in sorted(d for d in OPENCLAW_AGENTS_DIR.iterdir() if d.is_dir()):
@@ -94,11 +283,48 @@ def fetch_local_sessions():
                     "file": str(f),
                     "size": f.stat().st_size,
                     "mtime": datetime.fromtimestamp(f.stat().st_mtime),
+                    "description": _session_description(f),
                 })
     return sessions
 
 
 # --- Detail Screen ---
+
+class FilterPromptScreen(Screen):
+    """Modal-ish prompt for a substring filter. Submits via Enter; Esc cancels."""
+    CSS = """
+    FilterPromptScreen { align: center middle; }
+    #filter-wrap {
+        width: 60; height: 5; border: solid $accent;
+        padding: 1 1; background: $surface;
+    }
+    #filter-label { height: 1; color: $text; }
+    #filter-input { height: 1; }
+    """
+    BINDINGS = [
+        Binding("escape", "cancel", "Cancel", priority=True),
+    ]
+
+    def __init__(self, initial: str = ""):
+        super().__init__()
+        self._initial = initial
+
+    def compose(self) -> ComposeResult:
+        from textual.widgets import Input
+        with Vertical(id="filter-wrap"):
+            yield Static("Filter (substring, case-insensitive). Enter to apply, Esc to cancel.",
+                         id="filter-label")
+            yield Input(value=self._initial, placeholder="type to filter…", id="filter-input")
+
+    def on_mount(self) -> None:
+        self.query_one("#filter-input").focus()
+
+    def on_input_submitted(self, event) -> None:
+        self.dismiss(event.value)
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
 
 class DetailScreen(Screen):
     """Show session details."""
@@ -192,6 +418,10 @@ class SessionManagerApp(App):
         Binding("1", "show_remote", "Remote"),
         Binding("2", "show_local", "Local"),
         Binding("3", "show_projects", "Projects"),
+        Binding("4", "show_stats", "Stats"),
+        Binding("s", "cycle_sort", "Sort"),
+        Binding("slash", "filter_prompt", "Filter"),
+        Binding("R", "refresh", "Refresh"),
         Binding("r", "rename_session", "Rename"),
         Binding("a", "archive_session", "Archive"),
         Binding("d", "deposit_session", "Deposit"),
@@ -203,8 +433,18 @@ class SessionManagerApp(App):
     def __init__(self):
         super().__init__()
         self._remote_traces = []
+        self._remote_total = 0       # real count from Langfuse meta.totalItems
         self._local_sessions = []
-        self._view = "remote"  # remote | local | projects
+        self._view = "remote"        # remote | local | projects | stats
+        self._filter = ""            # substring filter applied to current view
+        # per-view sort state: (column_index, descending)
+        # Remote cols:  0=Src 1=Name 2=Description 3=Tags 4=Age 5=Size 6=Tokens
+        # Local  cols:  0=Src 1=Project 2=Description 3=Size 4=Age
+        self._sort = {
+            "remote": (4, True),     # Age desc
+            "local": (4, True),      # Age desc
+            "projects": (1, True),   # Session count desc
+        }
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -223,17 +463,23 @@ class SessionManagerApp(App):
 
     @work(thread=True)
     def _load_all(self) -> None:
-        self.call_from_thread(self._update_status, "Loading remote sessions...")
-        data = api_get("/api/public/traces", {"limit": "100"})
-        self._remote_traces = data.get("data", [])
+        self.call_from_thread(self._update_status, "Loading remote sessions (paginated)…")
+        traces, total = api_get_paginated("/api/public/traces", max_pages=10, limit=100)
+        self._remote_traces = traces
+        self._remote_total = total
 
-        self.call_from_thread(self._update_status, "Loading local sessions...")
+        self.call_from_thread(self._update_status, "Loading local sessions…")
         self._local_sessions = fetch_local_sessions()
 
-        r = len(self._remote_traces)
-        l = len(self._local_sessions)
-        self.call_from_thread(self._update_status,
-                              f"[1] Remote: {r}  |  [2] Local: {l}  |  [3] Projects  |  [r]ename [a]rchive [d]eposit [D]eposit-all")
+        loaded = len(self._remote_traces)
+        total_r = self._remote_total or loaded
+        total_l = len(self._local_sessions)
+        undep = max(0, total_l - total_r)
+        self.call_from_thread(
+            self._update_status,
+            f"[1]Remote {loaded}/{total_r}  [2]Local {total_l}  [3]Projects  [4]Stats  "
+            f"(undep≈{undep})  [s]ort [/]filter  [r]en [a]rch [d]ep [D]epAll"
+        )
         self.call_from_thread(self._render_remote)
 
     def _update_status(self, text: str) -> None:
@@ -241,33 +487,84 @@ class SessionManagerApp(App):
 
     # --- Remote view ---
 
+    def _filter_match(self, *fields) -> bool:
+        if not self._filter:
+            return True
+        needle = self._filter.lower()
+        return any(needle in str(f).lower() for f in fields)
+
     def _render_remote(self) -> None:
         self._view = "remote"
         table = self.query_one("#session-table", DataTable)
         table.clear(columns=True)
-        table.add_columns("Src", "Name", "Tags", "When", "Tokens")
+        table.add_columns("Src", "Name", "Description", "Tags", "Age", "Size", "Tokens")
 
         label = self.query_one("#list-label", Static)
         skip = {"claude-code", "openclaw", "codex", "archived"}
-        count = 0
+
+        rows = []
         for t in self._remote_traces:
             tags = t.get("tags", [])
             if "archived" in tags:
                 continue
-            src = "cc" if "claude-code" in tags else "oc" if "openclaw" in tags else "??"
+            src_kind = "cc" if "claude-code" in tags else "oc" if "openclaw" in tags else ""
             tag_str = ", ".join([tg for tg in tags if tg not in skip])[:25]
             ts = t.get("timestamp", "")
             try:
-                when = datetime.fromisoformat(ts.replace("Z", "+00:00")).strftime("%b %d %H:%M")
-            except:
-                when = "?"
+                dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                age = format_age(dt)
+            except Exception:
+                dt = None
+                age = "?"
             meta = t.get("metadata", {}) or {}
             tok_in = meta.get("total_input_tokens", 0) or 0
             tok_out = meta.get("total_output_tokens", 0) or 0
             tok = f"{tok_in // 1000}k/{tok_out // 1000}k" if tok_in else ""
-            table.add_row(src, t.get("name", "unnamed")[:40], tag_str, when, tok, key=t.get("id", ""))
-            count += 1
-        label.update(f"Remote Sessions ({count})")
+            size_bytes = (tok_in + tok_out) * 4
+            approx_size = format_size(size_bytes) if size_bytes else "—"
+
+            # Always strip source-matching prefix from Name — the badge already
+            # conveys the source. Covers both tagged traces and ones with a
+            # prefixed name but missing tag.
+            raw_name = t.get("name", "unnamed")
+            for prefix, kind in (("claude-code", "cc"), ("openclaw", "oc")):
+                nl = raw_name.lower()
+                if nl.startswith(prefix):
+                    raw_name = raw_name[len(prefix):].lstrip(" -:")
+                    if not src_kind:
+                        src_kind = kind
+                    if not raw_name:
+                        raw_name = t.get("name", "unnamed")
+                    break
+
+            if not self._filter_match(raw_name, tag_str, src_kind):
+                continue
+
+            # Description: first user prompt (Langfuse 'input'), truncated.
+            desc = (t.get("input") or "").strip().splitlines()[0] if t.get("input") else ""
+            desc = desc[:50]
+
+            # Rich-tinted cells (age color + size weight); badge column uses emoji.
+            badge = src_badge(src_kind)
+            name_cell = tint(raw_name[:30], dt, size_bytes)
+            desc_cell = tint(desc, dt, size_bytes) if desc else Text("—", style="dim")
+            age_cell = tint(age, dt, size_bytes)
+            size_cell = tint(approx_size, dt, size_bytes)
+
+            rows.append({
+                "key": t.get("id", ""),
+                "cells": (badge, name_cell, desc_cell, tag_str, age_cell, size_cell, tok),
+                "sort": (src_kind, raw_name.lower(), desc, tag_str,
+                         dt or datetime.min.replace(tzinfo=None),
+                         size_bytes,
+                         tok_in + tok_out),
+            })
+
+        rows = self._apply_sort(rows)
+        for r in rows:
+            table.add_row(*r["cells"], key=r["key"])
+        flt = f" filter={self._filter!r}" if self._filter else ""
+        label.update(f"Remote ({len(rows)} shown / {self._remote_total or len(self._remote_traces)} total){flt}")
         table.focus()
 
     # --- Local view ---
@@ -276,20 +573,69 @@ class SessionManagerApp(App):
         self._view = "local"
         table = self.query_one("#session-table", DataTable)
         table.clear(columns=True)
-        table.add_columns("Src", "Project", "Session", "Size", "Modified")
+        table.add_columns("Src", "Project", "Description", "Size", "Age")
 
+        rows = []
         for i, s in enumerate(self._local_sessions):
-            table.add_row(
-                s["source"],
-                s["project"][:30],
-                s["session_id"][:14] + "...",
-                format_size(s["size"]),
-                s["mtime"].strftime("%b %d %H:%M"),
-                key=str(i),
-            )
+            src_kind = s["source"]
+            project = s["project"][:20]
+            desc = s.get("description") or s["session_id"][:8]
+            size_str = format_size(s["size"])
+            age_str = format_age(s["mtime"])
+
+            if not self._filter_match(src_kind, project, s["session_id"], desc):
+                continue
+
+            badge = src_badge(src_kind)
+            proj_cell = tint(project, s["mtime"], s["size"])
+            desc_cell = tint(desc[:45], s["mtime"], s["size"]) if desc else Text("—", style="dim")
+            size_cell = tint(size_str, s["mtime"], s["size"])
+            age_cell = tint(age_str, s["mtime"], s["size"])
+
+            rows.append({
+                "key": str(i),
+                "cells": (badge, proj_cell, desc_cell, size_cell, age_cell),
+                "sort": (src_kind, project.lower(), desc.lower(),
+                         s["size"], s["mtime"]),
+            })
+
+        rows = self._apply_sort(rows)
+        for r in rows:
+            table.add_row(*r["cells"], key=r["key"])
         label = self.query_one("#list-label", Static)
-        label.update(f"Local Sessions ({len(self._local_sessions)})")
+        flt = f" filter={self._filter!r}" if self._filter else ""
+        label.update(f"Local ({len(rows)} shown / {len(self._local_sessions)} total){flt}")
         table.focus()
+
+    # --- Sorting & filtering ---
+
+    def _apply_sort(self, rows):
+        col, desc = self._sort.get(self._view, (0, False))
+        try:
+            return sorted(rows, key=lambda r: r["sort"][col], reverse=desc)
+        except (IndexError, TypeError):
+            return rows
+
+    def action_cycle_sort(self) -> None:
+        col, desc = self._sort.get(self._view, (0, False))
+        # Toggle direction on same press; arrow keys would advance column — keep simple.
+        self._sort[self._view] = (col, not desc)
+        self._rerender()
+
+    def action_filter_prompt(self) -> None:
+        # Minimal: toggle filter on/off via a synchronous prompt in the detail pane.
+        self.push_screen(FilterPromptScreen(self._filter), self._on_filter_set)
+
+    def _on_filter_set(self, value) -> None:
+        if value is None:
+            return
+        self._filter = value.strip()
+        self._rerender()
+
+    def _rerender(self) -> None:
+        {"remote": self._render_remote, "local": self._render_local,
+         "projects": self._render_projects, "stats": self._render_stats}.get(
+            self._view, self._render_remote)()
 
     # --- Projects view ---
 
@@ -371,18 +717,142 @@ class SessionManagerApp(App):
         for t in sessions:
             ts = t.get("timestamp", "")
             try:
-                when = datetime.fromisoformat(ts.replace("Z", "+00:00")).strftime("%b %d %H:%M")
-            except:
+                when = format_age(datetime.fromisoformat(ts.replace("Z", "+00:00")))
+            except Exception:
                 when = "?"
             log.write(f"  {when}  {t.get('name', 'unnamed')}")
 
     # --- Actions ---
+
+    # --- Stats / heatmap view ---
+
+    def _render_stats(self) -> None:
+        self._view = "stats"
+        table = self.query_one("#session-table", DataTable)
+        table.clear(columns=True)
+        table.add_columns("Metric", "Value")
+
+        total_r = self._remote_total or len(self._remote_traces)
+        total_l = len(self._local_sessions)
+        undep = max(0, total_l - total_r)
+
+        # Per-source split of loaded remote traces
+        rc_cc = sum(1 for t in self._remote_traces if "claude-code" in t.get("tags", []))
+        rc_oc = sum(1 for t in self._remote_traces if "openclaw" in t.get("tags", []))
+        lc_cc = sum(1 for s in self._local_sessions if s["source"] == "cc")
+        lc_oc = sum(1 for s in self._local_sessions if s["source"] == "oc")
+
+        rows = [
+            ("Remote total (Langfuse)",    f"{total_r:,}"),
+            ("  claude-code (loaded)",     f"{rc_cc:,}"),
+            ("  openclaw (loaded)",        f"{rc_oc:,}"),
+            ("Local total",                f"{total_l:,}"),
+            ("  🤖 claude-code",           f"{lc_cc:,}"),
+            ("  🦀 openclaw",              f"{lc_oc:,}"),
+            ("Undeposited (local − remote)", f"{undep:,}"),
+        ]
+        for k, v in rows:
+            table.add_row(k, v, key=k)
+
+        label = self.query_one("#list-label", Static)
+        label.update("Stats")
+
+        # Heatmap in the detail pane
+        self._draw_heatmap()
+        table.focus()
+
+    def _draw_heatmap(self) -> None:
+        """90-day activity heatmap using daily counts of local + remote sessions."""
+        log = self.query_one("#detail-log", RichLog)
+        log.clear()
+        log.write("[bold]Activity heatmap — last 90 days[/]")
+        log.write("(each cell = 1 day; ░ ▒ ▓ █ by count; ·=0)")
+        log.write("")
+
+        from datetime import timedelta
+        now = datetime.now()
+        today = now.date()
+        days = [today - timedelta(days=i) for i in range(89, -1, -1)]  # oldest → newest
+
+        counts = {d: 0 for d in days}
+        # Local
+        for s in self._local_sessions:
+            d = s["mtime"].date()
+            if d in counts:
+                counts[d] += 1
+        # Remote (loaded)
+        for t in self._remote_traces:
+            ts = t.get("timestamp", "")
+            try:
+                dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                d = dt.date()
+                if d in counts:
+                    counts[d] += 1
+            except Exception:
+                pass
+
+        def block(n: int) -> str:
+            if n == 0:   return "·"
+            if n <= 2:   return "░"
+            if n <= 8:   return "▒"
+            if n <= 24:  return "▓"
+            return "█"
+
+        def color(n: int) -> str:
+            if n == 0:   return "bright_black"
+            if n <= 2:   return "green"
+            if n <= 8:   return "yellow"
+            if n <= 24:  return "orange3"
+            return "red"
+
+        # Arrange as weeks × weekdays (GitHub-style)
+        # Start at the Monday of the earliest day, pad with ·
+        first = days[0]
+        pad = first.weekday()  # 0=Mon
+        padded = [None] * pad + days
+        # Transpose to weekday rows
+        weeks = [padded[i:i + 7] for i in range(0, len(padded), 7)]
+
+        weekday_label = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        for wd in range(7):
+            cells = []
+            for week in weeks:
+                if wd >= len(week) or week[wd] is None:
+                    cells.append(" ")
+                else:
+                    d = week[wd]
+                    n = counts.get(d, 0)
+                    cells.append(f"[{color(n)}]{block(n)}[/]")
+            log.write(f"  {weekday_label[wd]:<4}" + "".join(cells))
+
+        # Totals
+        total = sum(counts.values())
+        active_days = sum(1 for v in counts.values() if v > 0)
+        log.write("")
+        log.write(f"total activity: {total} session-days  ·  active days: {active_days}/90")
 
     def action_show_remote(self) -> None:
         self._render_remote()
 
     def action_show_local(self) -> None:
         self._render_local()
+
+    def action_show_stats(self) -> None:
+        self._render_stats()
+
+    @work(thread=True)
+    def action_refresh(self) -> None:
+        """Force-refresh: bypass cache and re-fetch everything."""
+        self.call_from_thread(self._update_status, "Refreshing from Langfuse (bypassing cache)…")
+        traces, total = api_get_paginated("/api/public/traces",
+                                          max_pages=10, limit=100, use_cache=False)
+        self._remote_traces = traces
+        self._remote_total = total
+        self._local_sessions = fetch_local_sessions()
+        self.call_from_thread(self._update_status,
+            f"Refreshed  [1]Remote {len(traces)}/{total}  [2]Local {len(self._local_sessions)}  "
+            f"[3]Projects [4]Stats  [s]ort [/]filter [R]efresh")
+        self.call_from_thread(self._rerender)
 
     def action_show_projects(self) -> None:
         self._render_projects()

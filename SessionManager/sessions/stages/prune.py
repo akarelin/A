@@ -40,7 +40,8 @@ def _age_days(started_at: str | None) -> float | None:
     return (datetime.now(timezone.utc) - dt).total_seconds() / 86400.0
 
 
-def _should_prune(rec: SessionRecord, prune_age_days: int) -> str | None:
+def _should_prune(rec: SessionRecord, prune_age_days: int,
+                  orphan_age_days: int = 90) -> str | None:
     """Return a human-readable reason if the record should be pruned, else None."""
     cls = rec.classification or {}
     if cls.get("duplicate_of"):
@@ -50,6 +51,9 @@ def _should_prune(rec: SessionRecord, prune_age_days: int) -> str | None:
     age = _age_days(rec.started_at)
     if age is None:
         return None
+    # Orphan snapshots are tombstones — prune faster than live sessions.
+    if rec.state == "orphan_snapshot" and age > orphan_age_days:
+        return f"orphan-stale(kind={cls.get('orphan_kind', '?')},age={age:.0f}d)"
     imp = cls.get("importance")
     if isinstance(imp, (int, float)) and imp <= 1 and age > prune_age_days:
         return f"low-importance(imp={imp},age={age:.0f}d)"
@@ -76,10 +80,12 @@ def run(store: SessionStore, cfg: dict, *,
     result = StageResult(stage="prune")
 
     prune_age = int(cfg.get("thresholds", {}).get("prune_age_days", 30))
+    orphan_age = int(cfg.get("thresholds", {}).get("orphan_prune_age_days", 90))
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
 
-    eligible = ["classified", "clustered", "memorized", "analyzed", "named", "merged"] if not force \
-        else ["classified", "pruned"]
+    eligible = ["classified", "clustered", "memorized", "analyzed", "named",
+                "merged", "orphan_snapshot"] if not force \
+        else ["classified", "orphan_snapshot", "pruned"]
     records = store.select_by_state(eligible, limit=limit, source=source)
 
     # Group by trash dir so we write one manifest per batch
@@ -87,7 +93,7 @@ def run(store: SessionStore, cfg: dict, *,
     for rec in records:
         if source_id is not None and rec.source_id != source_id:
             continue
-        reason = _should_prune(rec, prune_age)
+        reason = _should_prune(rec, prune_age, orphan_age)
         if not reason:
             continue
         tr = _trash_root(rec)
@@ -113,7 +119,8 @@ def run(store: SessionStore, cfg: dict, *,
             "items": [],
         }
         for rec, reason in batch:
-            raw = rec.paths.get("raw_jsonl")
+            # Orphans live at paths.snapshot_jsonl; live records at paths.raw_jsonl.
+            raw = rec.paths.get("raw_jsonl") or rec.paths.get("snapshot_jsonl")
             if not raw or not Path(raw).exists():
                 result.skipped += 1
                 continue

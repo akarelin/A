@@ -101,7 +101,8 @@ def run(store: SessionStore, cfg: dict, *,
     host = cfg["llm"]["host"]
     model = cfg["llm"]["model_chat"]
 
-    eligible = ["named"] if not force else ["named", "analyzed"]
+    eligible = ["named", "orphan_snapshot"] if not force \
+        else ["named", "orphan_snapshot", "analyzed"]
     records = store.select_by_state(eligible, limit=limit, source=source)
     if not records:
         return result

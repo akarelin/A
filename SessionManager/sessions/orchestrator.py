@@ -138,6 +138,13 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("doctor", help="Health check: config, store, ollama")
     sub.add_parser("stats", help="Record counts by state")
 
+    mp = sub.add_parser("migrate-skills",
+                        help="Migrate ~/_/{internals}/Skills → SD.agents/skills/ (safe, manifest-backed)")
+    mp.add_argument("--apply", action="store_true",
+                    help="actually move files (default: dry-run)")
+    mp.add_argument("--rewrite-refs", action="store_true",
+                    help="also rewrite openclaw.json + .lobster hardcoded paths (needs --apply)")
+
     rp = sub.add_parser("run", help="Run one or more stages")
     rp.add_argument("stages", nargs="+", help="stage name(s) or pipeline name from config")
     rp.add_argument("--dry-run", action="store_true")
@@ -147,6 +154,8 @@ def main(argv: list[str] | None = None) -> int:
     rp.add_argument("--source-id", default=None, help="restrict to one source_id")
     rp.add_argument("--backfill", action="store_true",
                     help="ingest: include all historical (incl. Langfuse pull)")
+    rp.add_argument("--reconcile-only", action="store_true",
+                    help="name: skip subprocess, just scan symlinks and update store")
 
     ap.add_argument("--config", default=None, help="path to sessionskills.yaml")
     args = ap.parse_args(argv)
@@ -157,6 +166,9 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_doctor(cfg)
     if args.cmd == "stats":
         return cmd_stats(cfg)
+    if args.cmd == "migrate-skills":
+        from .migrate_skills import cmd_migrate_skills
+        return cmd_migrate_skills(apply=args.apply, rewrite=args.rewrite_refs)
     if args.cmd == "run":
         return cmd_run(
             cfg,
@@ -167,6 +179,7 @@ def main(argv: list[str] | None = None) -> int:
             source=args.source,
             source_id=args.source_id,
             backfill=args.backfill,
+            reconcile_only=args.reconcile_only,
         )
     return 0
 

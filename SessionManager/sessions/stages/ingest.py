@@ -21,6 +21,7 @@ from __future__ import annotations
 import fnmatch
 import json
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
@@ -241,6 +242,99 @@ EXTRACTORS = {
 }
 
 
+# ─────────────────────────────────────────────────────────── orphan snapshots ──
+
+# Matches: <uuid>.jsonl.reset.<iso>  or  <uuid>.jsonl.deleted.<iso>
+ORPHAN_SUFFIX_RE = re.compile(
+    r"^(?P<base>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    r"(?:-topic-\d+)?)"
+    r"\.jsonl\.(?P<kind>reset|deleted)\."
+    r"(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}(?:\.\d+)?Z?)"
+    r"(?:\.md)?$",
+    re.IGNORECASE,
+)
+
+
+def _iter_orphan_files(root: Path):
+    """Walk ~/.openclaw/agents/<agent>/sessions/ for *.jsonl.reset.* / *.deleted.*"""
+    if not root.exists():
+        return
+    for agent_dir in root.iterdir():
+        if not agent_dir.is_dir():
+            continue
+        sessions_dir = agent_dir / "sessions"
+        if not sessions_dir.is_dir():
+            continue
+        for f in sessions_dir.iterdir():
+            if not f.is_file():
+                continue
+            m = ORPHAN_SUFFIX_RE.match(f.name)
+            if m:
+                yield f, m.group("base"), m.group("kind"), m.group("ts"), agent_dir.name
+
+
+def _extract_orphan(path: Path, base_uuid: str, kind: str, ts: str,
+                   agent: str) -> SessionRecord:
+    """Parse a .reset.*/.deleted.* snapshot as a regular OpenClaw JSONL
+    but tag it as an orphan_snapshot record with its own source_id."""
+    head, tail = _parse_jsonl_head_tail(path)
+
+    # Canonical orphan source_id: base-orphan-<kind>-<ts>
+    # Stays stable so re-ingestion is idempotent.
+    source_id = f"{base_uuid}-orphan-{kind}-{ts}"
+
+    cwd = None
+    model = None
+    provider = None
+    started_at = None
+    ended_at = None
+    user_turns = 0
+    message_count = 0
+
+    for entry in head:
+        t = entry.get("type")
+        if t == "session":
+            started_at = _parse_ts(entry.get("timestamp"))
+            cwd = cwd or entry.get("cwd")
+        elif t == "model_change":
+            provider = provider or entry.get("provider")
+            model = model or entry.get("modelId")
+        elif t == "message":
+            message_count += 1
+            msg = entry.get("message") or {}
+            if msg.get("role") == "user":
+                user_turns += 1
+
+    for entry in tail:
+        ts_v = entry.get("timestamp")
+        if ts_v:
+            ended_at = _parse_ts(ts_v)
+            break
+
+    rec = SessionRecord(
+        source="openclaw",
+        source_id=source_id,
+        agent=agent,
+        project=None,
+        cwd=cwd,
+        started_at=started_at,
+        ended_at=ended_at,
+        model=model,
+        provider=provider,
+        turn_count=user_turns,
+        message_count=message_count,
+        # All orphans for the same base_uuid share a session_group so merge
+        # stage can navigate reset chains.
+        session_group=f"openclaw:orphan-chain:{base_uuid}",
+        paths={"snapshot_jsonl": str(path)},
+        state="orphan_snapshot",
+    )
+    rec.classification["orphan_kind"] = kind
+    rec.classification["base_uuid"] = base_uuid
+    rec.classification["orphan_ts"] = ts
+    return rec
+
+
 # ──────────────────────────────────────────────────────────────────── main ──
 
 def run(store: SessionStore, cfg: dict, *,
@@ -325,5 +419,54 @@ def run(store: SessionStore, cfg: dict, *,
 
         if limit is not None and result.processed >= limit:
             break
+
+    # v2 merge: orphan .reset.*/.deleted.* snapshots (OpenClaw only for now).
+    # Runs once after normal jsonl ingest. Gated by sources[name='openclaw']
+    # orphan_snapshots.enabled (defaults to true if the key block is present).
+    if source is None or source == "openclaw":
+        for src in cfg.get("sources", []):
+            if src.get("name") != "openclaw":
+                continue
+            cfg_orphan = src.get("orphan_snapshots") or {}
+            if cfg_orphan.get("enabled") is False:
+                continue
+            root = Path(cfgmod.expand(src["root"]))
+            if not root.exists():
+                continue
+            for path, base, kind, ts, agent in _iter_orphan_files(root):
+                if limit is not None and result.processed >= limit:
+                    break
+                if source_id is not None and base != source_id and \
+                        f"{base}-orphan-{kind}-{ts}" != source_id:
+                    continue
+                try:
+                    h = compute_content_hash(str(path))
+                except OSError:
+                    result.errors += 1
+                    continue
+                ssid = f"{base}-orphan-{kind}-{ts}"
+                existing = store.get("openclaw", ssid)
+                if existing and existing.content_hash == h and not force:
+                    result.skipped += 1
+                    continue
+                if dry_run:
+                    print(f"[ingest:orphan] would ingest: openclaw:{ssid} ({path.name})")
+                    result.processed += 1
+                    continue
+                try:
+                    rec = _extract_orphan(path, base, kind, ts, agent)
+                    rec.content_hash = h
+                    if existing:
+                        rec.id = existing.id
+                        rec.first_seen = existing.first_seen
+                        rec.paths = {**existing.paths, **rec.paths}
+                        rec.classification = {**existing.classification, **rec.classification}
+                    rec.transition("orphan_snapshot", stage="ingest",
+                                   notes=f"{kind} snapshot of {base[:8]}")
+                    store.upsert(rec)
+                    result.processed += 1
+                except Exception as e:
+                    print(f"[ingest:orphan] error on {path}: {e}")
+                    result.errors += 1
 
     return result

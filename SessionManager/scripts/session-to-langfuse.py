@@ -293,6 +293,15 @@ def _make_trace_id(session_id: str) -> str:
     return hashlib.sha256(session_id.encode()).hexdigest()[:32]
 
 
+def _make_obs_id(session_id: str, kind: str, index: int = 0) -> str:
+    """Deterministic observation ID. Keeps deposits idempotent: re-depositing
+    the same JSONL upserts the same observation rows instead of appending
+    duplicates."""
+    import hashlib
+    key = f"{session_id}:{kind}:{index}"
+    return hashlib.sha256(key.encode()).hexdigest()[:32]
+
+
 def find_otel_trace(session_id: str) -> str | None:
     """Find an existing OTEL trace by sessionId. Returns trace ID or None.
 
@@ -417,8 +426,8 @@ def ship_to_langfuse(session: dict):
         "body": trace_body,
     })
 
-    # Root span covering the whole session
-    span_id = str(uuid.uuid4())
+    # Root span covering the whole session (deterministic ID = idempotent)
+    span_id = _make_obs_id(session["session_id"], "span", 0)
     batch.append({
         "id": str(uuid.uuid4()),
         "type": "span-create",
@@ -468,7 +477,7 @@ def ship_to_langfuse(session: dict):
             "type": "generation-create",
             "timestamp": gen_ts,
             "body": {
-                "id": str(uuid.uuid4()),
+                "id": _make_obs_id(session["session_id"], "gen", i),
                 "traceId": trace_id,
                 "parentObservationId": span_id,
                 "name": f"turn-{i + 1}",
