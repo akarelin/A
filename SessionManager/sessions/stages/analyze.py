@@ -22,8 +22,10 @@ from ..orchestrator import StageResult
 from ..store import SessionStore
 
 
-BATCH_EXTRACT = "/Users/alex/RAN/AI/chmo/skills/session-intel/scripts/batch-extract.py"
-LLM_ANALYZE = "/Users/alex/RAN/AI/chmo/skills/session-intel/scripts/llm-analyze.py"
+from .. import skill_paths
+
+BATCH_EXTRACT = str(skill_paths.script("session-intel", "scripts", "batch-extract.py"))
+LLM_ANALYZE = str(skill_paths.script("session-intel", "scripts", "llm-analyze.py"))
 
 # Where session-intel's output lands (matches existing layout)
 ANALYZED_BASE = Path("/Users/alex/_/{internals}/session-intel/analyzed")

@@ -20,7 +20,10 @@ from ..orchestrator import StageResult
 from ..store import SessionStore
 
 
-CLASSIFY = "/Users/alex/_/{internals}/Skills/work-atoms/classify.py"
+from .. import skill_paths
+
+CLASSIFY = str(skill_paths.script("work-atoms", "classify.py"))
+# Classification output stays in the vault (~/_/{internals}/classification/)
 STATE_FILE = Path("/Users/alex/_/{internals}/classification/state.json")
 
 

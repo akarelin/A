@@ -1,40 +1,50 @@
 #!/usr/bin/env python3
 """
-Claude Code SessionEnd hook → Langfuse
-Parses a Claude Code JSONL session file and ships it to Langfuse as a trace
-with individual generations for each assistant turn.
+Claude Code / OpenClaw SessionEnd hook → Langfuse
 
-Receives JSON on stdin from the SessionEnd hook event.
+Parses a Claude Code or OpenClaw (chmo) JSONL session file and ships it to
+Langfuse as a trace with individual generations for each assistant turn.
+
+Two modes:
+  1. Hook mode (default): reads JSON from stdin (SessionEnd hook event)
+  2. Backfill mode: --backfill [--since YYYY-MM-DD] [--project NAME] [file.jsonl]
+
+When an OTEL trace already exists in Langfuse for the session, the script
+upserts (enriches) it with metadata instead of creating a duplicate.
 """
 
+import argparse
 import json
 import os
 import sys
-import glob
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Langfuse config
+# Langfuse config — override via env for different workspaces
 LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST", "https://langfuse.karelin.ai")
 LANGFUSE_PUBLIC_KEY = os.environ.get("LANGFUSE_PUBLIC_KEY", "pk-lf-xsolla-main-2026")
 LANGFUSE_SECRET_KEY = os.environ.get("LANGFUSE_SECRET_KEY", "sk-lf-xsolla-main-2026-secret-changeme")
 
-# Claude Code session storage
+# Session file locations
 CLAUDE_PROJECTS_DIR = Path.home() / ".claude" / "projects"
+OPENCLAW_AGENTS_DIR = Path.home() / ".openclaw" / "agents"
 
 # Log file for debugging
 LOG_FILE = Path.home() / ".claude" / "hooks" / "langfuse-hook.log"
 
 
 def log(msg):
-    with open(LOG_FILE, "a") as f:
-        f.write(f"[{datetime.now().isoformat()}] {msg}\n")
+    try:
+        LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(LOG_FILE, "a") as f:
+            f.write(f"[{datetime.now().isoformat()}] {msg}\n")
+    except OSError:
+        pass
 
 
 def find_session_file(session_id: str) -> Path | None:
     """Find the JSONL file for a given session ID across all project dirs."""
     for jsonl_file in CLAUDE_PROJECTS_DIR.rglob("*.jsonl"):
-        # Check if filename matches session ID
         if jsonl_file.stem == session_id:
             return jsonl_file
     # Also check by reading first few lines for sessionId field
@@ -52,7 +62,7 @@ def find_session_file(session_id: str) -> Path | None:
 
 
 def parse_session(jsonl_path: Path) -> dict:
-    """Parse a Claude Code JSONL session into structured data."""
+    """Parse a Claude Code or OpenClaw JSONL session into structured data."""
     messages = []
     session_id = None
     session_cwd = None
@@ -63,6 +73,10 @@ def parse_session(jsonl_path: Path) -> dict:
     total_input_tokens = 0
     total_output_tokens = 0
     generations = []
+    # chmo-specific metadata
+    provider = None
+    thinking_level = None
+    session_version = None
 
     with open(jsonl_path) as f:
         for line in f:
@@ -77,12 +91,43 @@ def parse_session(jsonl_path: Path) -> dict:
             entry_type = entry.get("type")
             timestamp = entry.get("timestamp")
 
+            # Normalise chmo format: type:"session" carries id/cwd,
+            # type:"message" wraps role inside message.role
+            if entry_type == "session":
+                if not session_id and entry.get("id"):
+                    session_id = entry["id"]
+                if not session_cwd and entry.get("cwd"):
+                    session_cwd = entry["cwd"]
+                if entry.get("version"):
+                    session_version = entry["version"]
+
+            # chmo model_change and thinking_level_change entries
+            if entry_type == "model_change":
+                if entry.get("provider"):
+                    provider = entry["provider"]
+                if entry.get("modelId"):
+                    model = entry["modelId"]
+            if entry_type == "thinking_level_change":
+                if entry.get("thinkingLevel"):
+                    thinking_level = entry["thinkingLevel"]
+
             if not session_id and entry.get("sessionId"):
                 session_id = entry["sessionId"]
             if not session_cwd and entry.get("cwd"):
                 session_cwd = entry["cwd"]
             if not git_branch and entry.get("gitBranch"):
                 git_branch = entry["gitBranch"]
+
+            # Normalise chmo "message" entries into cc-style types
+            if entry_type == "message":
+                msg = entry.get("message", {})
+                role = msg.get("role", "")
+                if role == "user":
+                    entry_type = "user"
+                elif role == "assistant":
+                    entry_type = "assistant"
+                elif role in ("tool", "tool_result"):
+                    entry_type = "tool_result"
 
             if timestamp:
                 ts = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
@@ -96,7 +141,6 @@ def parse_session(jsonl_path: Path) -> dict:
                 msg = entry.get("message", {})
                 content = msg.get("content", "")
                 if isinstance(content, list):
-                    # Extract text from content blocks
                     content = "\n".join(
                         block.get("text", str(block))
                         for block in content
@@ -112,8 +156,14 @@ def parse_session(jsonl_path: Path) -> dict:
             elif entry_type == "assistant":
                 msg = entry.get("message", {})
                 msg_model = msg.get("model", model)
+                # Skip delivery-mirror entries (chmo channel echoes)
+                if msg_model and "mirror" in str(msg_model):
+                    continue
                 if msg_model:
                     model = msg_model
+                # Capture provider from chmo assistant messages
+                if msg.get("provider"):
+                    provider = msg["provider"]
 
                 # Extract text content (skip thinking blocks)
                 content_blocks = msg.get("content", [])
@@ -123,20 +173,20 @@ def parse_session(jsonl_path: Path) -> dict:
                     if isinstance(block, dict):
                         if block.get("type") == "text":
                             text_parts.append(block.get("text", ""))
-                        elif block.get("type") == "tool_use":
+                        elif block.get("type") in ("tool_use", "toolCall"):
                             tool_uses.append({
-                                "name": block.get("name", "unknown"),
-                                "input": block.get("input", {}),
+                                "name": block.get("name", block.get("toolName", "unknown")),
+                                "input": block.get("input", block.get("args", {})),
                             })
 
                 content = "\n".join(text_parts)
 
-                # Token usage
+                # Token usage — handle both cc and chmo field names
                 usage = msg.get("usage", {})
-                input_tokens = usage.get("input_tokens", 0)
-                output_tokens = usage.get("output_tokens", 0)
-                cache_read = usage.get("cache_read_input_tokens", 0)
-                cache_create = usage.get("cache_creation_input_tokens", 0)
+                input_tokens = usage.get("input_tokens", 0) or usage.get("input", 0)
+                output_tokens = usage.get("output_tokens", 0) or usage.get("output", 0)
+                cache_read = usage.get("cache_read_input_tokens", 0) or usage.get("cacheRead", 0)
+                cache_create = usage.get("cache_creation_input_tokens", 0) or usage.get("cacheWrite", 0)
                 total_input_tokens += input_tokens + cache_read + cache_create
                 total_output_tokens += output_tokens
 
@@ -149,6 +199,7 @@ def parse_session(jsonl_path: Path) -> dict:
 
                 gen = {
                     "model": msg_model,
+                    "provider": msg.get("provider") or provider,
                     "input": last_user_msg,
                     "output": content,
                     "tool_uses": tool_uses,
@@ -159,6 +210,8 @@ def parse_session(jsonl_path: Path) -> dict:
                         "cache_read_input_tokens": cache_read,
                         "cache_creation_input_tokens": cache_create,
                     },
+                    "cost": msg.get("usage", {}).get("cost"),
+                    "stop_reason": msg.get("stopReason"),
                     "request_id": entry.get("requestId"),
                 }
                 generations.append(gen)
@@ -185,17 +238,33 @@ def parse_session(jsonl_path: Path) -> dict:
                     "timestamp": timestamp,
                 })
 
-    # Derive project name from cwd or directory
-    project_name = None
-    if session_cwd:
+    # Detect source: chmo (openclaw) vs claude-code
+    is_chmo = "openclaw" in str(jsonl_path)
+
+    # Extract agent name from chmo path: .../agents/<name>/sessions/...
+    agent_name = None
+    if is_chmo:
+        parts = jsonl_path.parts
+        if "agents" in parts:
+            agent_idx = parts.index("agents")
+            if agent_idx + 1 < len(parts):
+                agent_name = parts[agent_idx + 1]
+
+    # Derive project name from agent name, cwd, or directory slug
+    project_name = agent_name  # chmo: agent name is the project
+    if not project_name and session_cwd:
         project_name = Path(session_cwd).name
     if not project_name:
-        # Use the project directory slug
         project_name = jsonl_path.parent.name.replace("-Users-alex-", "").replace("-", "/")
 
     return {
         "session_id": session_id or jsonl_path.stem,
+        "source": "chmo" if is_chmo else "claude-code",
         "project": project_name,
+        "agent": agent_name,
+        "provider": provider,
+        "thinking_level": thinking_level,
+        "session_version": session_version,
         "cwd": session_cwd,
         "model": model,
         "git_branch": git_branch,
@@ -209,100 +278,299 @@ def parse_session(jsonl_path: Path) -> dict:
     }
 
 
-def ship_to_langfuse(session: dict):
-    """Ship parsed session to Langfuse using SDK v4 (OpenTelemetry-based)."""
-    from langfuse import Langfuse, propagate_attributes
+# -- Langfuse helpers -------------------------------------------------------
 
-    langfuse = Langfuse(
-        public_key=LANGFUSE_PUBLIC_KEY,
-        secret_key=LANGFUSE_SECRET_KEY,
-        host=LANGFUSE_HOST,
-    )
+def _langfuse_headers():
+    """Build auth headers for Langfuse REST API."""
+    import base64
+    creds = base64.b64encode(f"{LANGFUSE_PUBLIC_KEY}:{LANGFUSE_SECRET_KEY}".encode()).decode()
+    return {"Authorization": f"Basic {creds}", "Content-Type": "application/json"}
 
-    # Generate a deterministic trace ID from the session ID
-    trace_id = Langfuse.create_trace_id(seed=session["session_id"])
 
+def _make_trace_id(session_id: str) -> str:
+    """Deterministic trace ID from session ID."""
+    import hashlib
+    return hashlib.sha256(session_id.encode()).hexdigest()[:32]
+
+
+def find_otel_trace(session_id: str) -> str | None:
+    """Find an existing OTEL trace by sessionId. Returns trace ID or None.
+
+    OTEL traces are identified by having no "source" key in their metadata
+    (the hook-created traces always set metadata.source).
+    """
+    import urllib.request
+
+    url = f"{LANGFUSE_HOST}/api/public/traces?sessionId={session_id}&limit=5"
+    req = urllib.request.Request(url, headers=_langfuse_headers(), method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+    except Exception as e:
+        log(f"find_otel_trace: error querying Langfuse: {e}")
+        return None
+
+    for trace in data.get("data", []):
+        metadata = trace.get("metadata") or {}
+        # OTEL traces have empty metadata or no "source" key
+        if not metadata.get("source"):
+            return trace["id"]
+    return None
+
+
+def _build_trace_body(session: dict, trace_id: str) -> dict:
+    """Build the trace body dict used in both upsert and full-create paths."""
+    source = session.get("source", "claude-code")
     project = session["project"] or "unknown"
-    tags = ["claude-code", project]
+
+    tags = [source, project]
+    if session.get("agent"):
+        tags.append(f"agent:{session['agent']}")
     if session.get("git_branch"):
         tags.append(f"branch:{session['git_branch']}")
 
-    # Create a root span as the trace, with session/user propagation
-    with propagate_attributes(
-        user_id="alex",
-        session_id=session["session_id"],
-        tags=tags,
-        trace_name=f"claude-code: {project}",
-        metadata={
-            "source": "claude-code",
+    start_ts = session["start_time"].isoformat() if session["start_time"] else None
+
+    return {
+        "id": trace_id,
+        "name": f"{source}: {project}",
+        "timestamp": start_ts,
+        "userId": "alex",
+        "sessionId": session["session_id"],
+        "tags": tags,
+        "input": session["messages"][0]["content"][:3000] if session["messages"] else None,
+        "output": session["messages"][-1]["content"][:3000] if session["messages"] else None,
+        "metadata": {
+            "source": source,
             "project": project,
+            "agent": session.get("agent"),
+            "provider": session.get("provider"),
+            "thinking_level": session.get("thinking_level"),
+            "session_version": session.get("session_version"),
             "cwd": session["cwd"],
             "model": session["model"],
             "git_branch": session["git_branch"],
             "file": session["file"],
+            "total_generations": len(session["generations"]),
+            "total_messages": len(session["messages"]),
+            "total_input_tokens": session["total_input_tokens"],
+            "total_output_tokens": session["total_output_tokens"],
         },
-    ):
-        with langfuse.start_as_current_observation(
-            name=f"claude-code: {project}",
-            as_type="span",
-            input=session["messages"][0]["content"][:3000] if session["messages"] else None,
-            output=session["messages"][-1]["content"][:3000] if session["messages"] else None,
-            metadata={
+    }
+
+
+def _send_batch(batch: list):
+    """Send a batch of events to the Langfuse ingestion API."""
+    import urllib.request
+
+    body = json.dumps({"batch": batch}).encode()
+    req = urllib.request.Request(
+        f"{LANGFUSE_HOST}/api/public/ingestion",
+        data=body, headers=_langfuse_headers(), method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        resp.read()
+
+
+def ship_to_langfuse(session: dict):
+    """Ship parsed session to Langfuse, upserting an existing OTEL trace if found.
+
+    Path 1 (OTEL trace found): send a single trace-create upsert with metadata.
+            Skip span/generation creation — OTEL already has those with accurate timing.
+            Use datetime.now() as event timestamp so the upsert wins ClickHouse merge ordering.
+
+    Path 2 (no OTEL trace): create full trace + span + generations (backfill / chmo / OTEL failure).
+    """
+    import uuid
+
+    source = session.get("source", "claude-code")
+
+    # Try to find an existing OTEL trace for this session
+    otel_trace_id = find_otel_trace(session["session_id"])
+
+    if otel_trace_id:
+        # -- Path 1: upsert the existing OTEL trace with metadata --
+        trace_body = _build_trace_body(session, otel_trace_id)
+        batch = [{
+            "id": str(uuid.uuid4()),
+            "type": "trace-create",
+            "timestamp": datetime.now(timezone.utc).isoformat(),  # CURRENT time for upsert ordering
+            "body": trace_body,
+        }]
+        _send_batch(batch)
+        log(f"Upserted OTEL trace {otel_trace_id} for session {session['session_id']}")
+        return
+
+    # -- Path 2: no OTEL trace — full creation --
+    trace_id = _make_trace_id(session["session_id"])
+    start_ts = session["start_time"].isoformat() if session["start_time"] else None
+    end_ts = session["end_time"].isoformat() if session["end_time"] else None
+
+    batch = []
+
+    # Trace event
+    trace_body = _build_trace_body(session, trace_id)
+    batch.append({
+        "id": str(uuid.uuid4()),
+        "type": "trace-create",
+        "timestamp": start_ts,
+        "body": trace_body,
+    })
+
+    # Root span covering the whole session
+    span_id = str(uuid.uuid4())
+    batch.append({
+        "id": str(uuid.uuid4()),
+        "type": "span-create",
+        "timestamp": start_ts,
+        "body": {
+            "id": span_id,
+            "traceId": trace_id,
+            "name": f"{source}: {session['project'] or 'unknown'}",
+            "startTime": start_ts,
+            "endTime": end_ts,
+            "input": session["messages"][0]["content"][:3000] if session["messages"] else None,
+            "output": session["messages"][-1]["content"][:3000] if session["messages"] else None,
+            "metadata": {
                 "total_generations": len(session["generations"]),
                 "total_messages": len(session["messages"]),
                 "total_input_tokens": session["total_input_tokens"],
                 "total_output_tokens": session["total_output_tokens"],
             },
-        ) as root_span:
-            # Create generations for each assistant turn
-            for i, gen in enumerate(session["generations"]):
-                output = gen["output"]
-                if gen["tool_uses"]:
-                    tool_summary = "\n".join(
-                        f"[tool: {t['name']}]" for t in gen["tool_uses"]
-                    )
-                    if output:
-                        output = f"{output}\n\n{tool_summary}"
-                    else:
-                        output = tool_summary
+        },
+    })
 
-                usage_details = {}
-                if gen["usage"]:
-                    input_tokens = gen["usage"].get("input_tokens", 0)
-                    output_tokens = gen["usage"].get("output_tokens", 0)
-                    cache_read = gen["usage"].get("cache_read_input_tokens", 0)
-                    cache_create = gen["usage"].get("cache_creation_input_tokens", 0)
+    # Generation events for each assistant turn
+    for i, gen in enumerate(session["generations"]):
+        output = gen["output"]
+        if gen["tool_uses"]:
+            tool_summary = "\n".join(
+                f"[tool: {t['name']}]" for t in gen["tool_uses"]
+            )
+            output = f"{output}\n\n{tool_summary}" if output else tool_summary
 
-                    usage_details = {
-                        "input": input_tokens,
-                        "output": output_tokens,
-                    }
-                    if cache_read:
-                        usage_details["cache_read_input_tokens"] = cache_read
-                    if cache_create:
-                        usage_details["cache_creation_input_tokens"] = cache_create
+        usage = {}
+        if gen["usage"]:
+            input_tokens = gen["usage"].get("input_tokens", 0)
+            output_tokens = gen["usage"].get("output_tokens", 0)
+            cache_read = gen["usage"].get("cache_read_input_tokens", 0)
+            cache_create = gen["usage"].get("cache_creation_input_tokens", 0)
+            usage = {"input": input_tokens, "output": output_tokens}
+            if cache_read:
+                usage["cache_read_input_tokens"] = cache_read
+            if cache_create:
+                usage["cache_creation_input_tokens"] = cache_create
 
-                gen_obs = langfuse.start_observation(
-                    name=f"turn-{i + 1}",
-                    as_type="generation",
-                    model=gen["model"],
-                    input=gen["input"][:2000] if gen["input"] else None,
-                    output=output[:5000] if output else None,
-                    usage_details=usage_details if usage_details else None,
-                    metadata={
-                        "request_id": gen["request_id"],
-                        "tool_calls": [t["name"] for t in gen["tool_uses"]] if gen["tool_uses"] else None,
-                    },
-                )
-                gen_obs.end()
+        gen_ts = gen.get("timestamp") or start_ts
 
-    langfuse.flush()
+        batch.append({
+            "id": str(uuid.uuid4()),
+            "type": "generation-create",
+            "timestamp": gen_ts,
+            "body": {
+                "id": str(uuid.uuid4()),
+                "traceId": trace_id,
+                "parentObservationId": span_id,
+                "name": f"turn-{i + 1}",
+                "startTime": gen_ts,
+                "endTime": gen_ts,
+                "model": gen["model"],
+                "input": gen["input"][:2000] if gen["input"] else None,
+                "output": output[:5000] if output else None,
+                "usage": usage if usage else None,
+                "metadata": {
+                    "source": source,
+                    "provider": gen.get("provider"),
+                    "stop_reason": gen.get("stop_reason"),
+                    "cost": gen.get("cost"),
+                    "request_id": gen["request_id"],
+                    "tool_calls": [t["name"] for t in gen["tool_uses"]] if gen["tool_uses"] else None,
+                },
+            },
+        })
+
+    _send_batch(batch)
     log(f"Shipped session {session['session_id']} to Langfuse ({len(session['generations'])} generations)")
 
 
-def main():
+# -- Backfill ----------------------------------------------------------------
+
+def collect_jsonl_files(project_filter: str | None = None) -> list[Path]:
+    """Collect all JSONL session files from Claude Code and OpenClaw directories."""
+    files = []
+
+    # Claude Code sessions
+    if CLAUDE_PROJECTS_DIR.exists():
+        for f in CLAUDE_PROJECTS_DIR.rglob("*.jsonl"):
+            if project_filter and project_filter.lower() not in str(f).lower():
+                continue
+            files.append(f)
+
+    # OpenClaw sessions
+    if OPENCLAW_AGENTS_DIR.exists():
+        for f in OPENCLAW_AGENTS_DIR.rglob("*.jsonl"):
+            if project_filter and project_filter.lower() not in str(f).lower():
+                continue
+            files.append(f)
+
+    return sorted(files, key=lambda p: p.stat().st_mtime)
+
+
+def backfill(args):
+    """Backfill mode: process JSONL files and ship to Langfuse."""
+    deposited = 0
+    skipped = 0
+    failed = 0
+
+    since_dt = None
+    if args.since:
+        since_dt = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+
+    # Determine files to process
+    if args.file:
+        p = Path(args.file)
+        if not p.exists():
+            print(f"File not found: {p}", file=sys.stderr)
+            sys.exit(1)
+        files = [p]
+    else:
+        files = collect_jsonl_files(project_filter=args.project)
+
+    print(f"Found {len(files)} JSONL files to process")
+
+    for jsonl_path in files:
+        try:
+            session = parse_session(jsonl_path)
+
+            # Filter by --since using parsed session start_time
+            if since_dt and session["start_time"]:
+                if session["start_time"] < since_dt:
+                    continue
+            # If start_time is None and --since is set, skip (can't determine age)
+            if since_dt and not session["start_time"]:
+                continue
+
+            if not session["generations"]:
+                skipped += 1
+                continue
+
+            ship_to_langfuse(session)
+            deposited += 1
+            print(f"  deposited: {session['source']}: {session['project']} ({len(session['generations'])} gens) — {jsonl_path.name}")
+
+        except Exception as e:
+            failed += 1
+            print(f"  FAILED: {jsonl_path.name} — {e}", file=sys.stderr)
+            log(f"Backfill error for {jsonl_path}: {e}")
+
+    print(f"\nSummary: {deposited} deposited, {skipped} skipped (no generations), {failed} failed")
+
+
+# -- Hook mode (stdin) -------------------------------------------------------
+
+def hook_mode():
+    """Default mode: read SessionEnd hook event from stdin."""
     try:
-        # Read hook input from stdin
         stdin_data = sys.stdin.read()
         log(f"Hook fired. stdin: {stdin_data[:500]}")
 
@@ -337,7 +605,7 @@ def main():
         session = parse_session(jsonl_path)
 
         if not session["generations"]:
-            log(f"No generations found in session. Skipping.")
+            log("No generations found in session. Skipping.")
             return
 
         ship_to_langfuse(session)
@@ -347,6 +615,43 @@ def main():
         log(f"ERROR: {e}")
         import traceback
         log(traceback.format_exc())
+
+
+# -- CLI entrypoint ----------------------------------------------------------
+
+def main():
+    # Quick check: if no args at all, run in hook mode (backwards compatible)
+    if len(sys.argv) == 1:
+        hook_mode()
+        return
+
+    parser = argparse.ArgumentParser(
+        description="Ship Claude Code / OpenClaw sessions to Langfuse",
+    )
+    parser.add_argument(
+        "--backfill", action="store_true",
+        help="Backfill mode: scan session directories and deposit to Langfuse",
+    )
+    parser.add_argument(
+        "--since", type=str, default=None,
+        help="Only process sessions starting on or after this date (YYYY-MM-DD)",
+    )
+    parser.add_argument(
+        "--project", type=str, default=None,
+        help="Filter files by project name substring",
+    )
+    parser.add_argument(
+        "file", nargs="?", default=None,
+        help="Specific JSONL file to deposit (backfill mode only)",
+    )
+
+    args = parser.parse_args()
+
+    if args.backfill or args.file:
+        backfill(args)
+    else:
+        # Unknown args but not backfill — fall back to hook mode
+        hook_mode()
 
 
 if __name__ == "__main__":

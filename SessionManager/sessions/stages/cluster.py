@@ -19,8 +19,10 @@ from ..orchestrator import StageResult
 from ..store import SessionStore
 
 
-EXTRACT_THEMES = "/Users/alex/_/{internals}/Skills/theme-tracker/extract_themes.py"
-THEMES_JSON = Path("/Users/alex/_/{internals}/Skills/theme-tracker/themes.json")
+from .. import skill_paths
+
+EXTRACT_THEMES = str(skill_paths.script("theme-tracker", "extract_themes.py"))
+THEMES_JSON = skill_paths.script("theme-tracker", "themes.json")
 
 
 def _run_extract(force: bool, dry_run: bool) -> int:

@@ -76,6 +76,18 @@ def cmd_doctor(cfg: dict) -> int:
             print(f"  fallback:   {type(fb).__name__}")
         else:
             print(f"  fallback:   NONE — name/classify will use heuristic; analyze will skip")
+
+    # Symlink health — ~/.claude/{projects,plans} live behind symlinks into
+    # Synology-synced SD/. Dangling targets cause silent write failures.
+    print("\nsymlinks:")
+    for link in (Path.home() / ".claude" / "projects",
+                 Path.home() / ".claude" / "plans"):
+        if not link.is_symlink():
+            print(f"  {link}: NOT A SYMLINK")
+            continue
+        tgt = Path(os.readlink(link))
+        status = "OK" if tgt.is_dir() else "MISSING (run scripts/ensure-claude-symlinks.sh)"
+        print(f"  {link} -> {tgt}  {status}")
     return 0
 
 
