@@ -48,6 +48,13 @@
       "headers": {
         "Authorization": "Bearer ${MCP_KARELIN_TOKEN}"
       }
+    },
+    "Hindsight": {
+      "type": "http",
+      "url": "https://your-mcp-host/hindsight",
+      "headers": {
+        "Authorization": "Bearer ${MCP_KARELIN_TOKEN}"
+      }
     }
   }
 }
