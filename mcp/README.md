@@ -79,9 +79,34 @@ Consequence: there is no `user=<someone-else>` override. A user cannot read anot
 | `/ticktick` | privileged | TickTick projects, tasks, and time-tracking. Tasks: `tt_lists`, `tt_tasks`, `tt_create`, `tt_update`, `tt_complete`, `tt_abandon`. Focus sessions (Pomodoro + Timing) via `/open/v1/focus`: `tt_focus_list`, `tt_focus_get`, `tt_focus_delete`. Accepts natural-language dates (`today`, `tomorrow`, `yesterday`, `N days ago`, `this week`, `in N days`, `next monday`, ISO 8601). |
 | `/qmd` | privileged | Wraps a local `qmd` CLI (hybrid BM25 + vector index): `qmd_search`, `qmd_vsearch`, `qmd_get`, `qmd_status`. |
 | `/hindsight` | privileged | Wraps the local Hindsight HTTP API ([vectorize-io/hindsight](https://github.com/vectorize-io/hindsight)) for persistent agent memory: `hindsight_health`, `hindsight_bank_list`, `hindsight_bank_stats`, `hindsight_bank_profile`, `hindsight_retain`, `hindsight_sync_retain`, `hindsight_recall`, `hindsight_reflect`, `hindsight_memory_list`, `hindsight_directive_list`, `hindsight_mental_model_list`. Per-bank isolation via the `bank_id` argument (default from `HINDSIGHT_DEFAULT_BANK`). |
-| `/mcp`, `/` | privileged | Aggregate endpoint exposing every tool from every module above. |
+| `/mcp-proxy/<slug>` | privileged | Generic OAuth-MCP wrapper — forwards `tools/call` to an upstream MCP server, handling Bearer auth and refresh-on-401 transparently. One slug per upstream, configured via `MCP_PROXIES_JSON`. Currently: `neuronet` → Xsolla Neuronet (`neuronet_chat`, `neuronet_submit`, `neuronet_get_result`, `neuronet_health`). |
+| `/mcp`, `/` | privileged | Aggregate endpoint exposing every tool from every module above **and** every proxy upstream. One MCP-client connection sees all dispatchable tools. |
 
 Each endpoint also responds to `GET` with a JSON manifest (transport, protocol version, tool name list) for clients that want to introspect before authenticating.
+
+## Proxy framework — wrapping external OAuth-protected MCP servers
+
+`tools_mcp_proxy.py` implements a generic adapter that exposes a remote OAuth-protected MCP server as a local tool group, transparently handling Bearer auth and token refresh against an Azure Key Vault-backed token store. Each upstream is one entry in the `MCP_PROXIES_JSON` env var:
+
+```json
+[
+  {"slug": "neuronet", "secret_prefix": "mcp-neuronet"},
+  {"slug": "example",  "secret_prefix": "mcp-example", "tool_prefix": "example"}
+]
+```
+
+Optional fields per entry: `upstream_url` (override vault), `scope` (override vault), `tool_prefix` (auto-prefix tool names that don't already share a prefix, to avoid collisions in the `/mcp` aggregator).
+
+For each entry the gateway:
+
+1. Reads `<secret_prefix>-{access-token,refresh-token,client-id,token-endpoint,upstream-url,scope}` from Azure Key Vault at startup.
+2. Discovers the upstream's tool list via `initialize` + `tools/list`. Caches the result.
+3. Exposes every tool under `/mcp-proxy/<slug>` **and** merges it into `/mcp` so a single MCP-client connection sees everything.
+4. On `tools/call`, forwards to the upstream with the cached Bearer. On HTTP 401, runs the OAuth `refresh_token` grant, rewrites both `access-token` and `refresh-token` back to the vault (some upstreams rotate the refresh token on use), and retries once.
+
+Both JSON and SSE (`event: message\ndata: {...}\n\n`) upstream response formats are handled — the gateway sends `Accept: application/json, text/event-stream` and parses whichever the server returns. Protocol version is `2025-06-18` for upstream calls.
+
+**Adding a new proxy:** mint initial tokens via `~/RAN/AI/mcp/proxies/bootstrap.py <slug> --upstream <url> --secret-prefix mcp-<slug>` (writes 5–6 vault secrets), then add the slug to `MCP_PROXIES_JSON` in `~/RAN/AI/ai-docker-compose.yml` and redeploy. Full recipe in `~/RAN/AI/mcp/proxies/README.md`.
 
 ## Environment variables
 
@@ -92,6 +117,8 @@ Each endpoint also responds to `GET` with a JSON manifest (transport, protocol v
 | `AZURE_KEYVAULT_NAME` | Name of the Azure Key Vault the container reads all secrets from. The container's identity must have `get` (and `list`/`set` for `/keys` write tools) on the vault. |
 | `MCP_TOOL_TEXT_LIMIT` | Max characters per tool response before truncation. Default `12000`. |
 | `MCP_DEFAULT_USER` | Legacy default for the (now-ignored) `user` parameter on M365 tools. |
+| `MCP_PROXIES_JSON` | JSON list of `/mcp-proxy/<slug>` upstreams to wire up at startup. Each entry needs `slug` + `secret_prefix`; optional `upstream_url`, `scope`, `tool_prefix`. See the proxy-framework section above. |
+| `MCP_PROXY_UPSTREAM_TIMEOUT` / `MCP_PROXY_DISCOVERY_TIMEOUT` | Timeouts (seconds) for proxy `tools/call` forwarding and startup `tools/list` discovery. Defaults `120` / `30`. |
 | `OBSIDIAN_HOSTS` | Comma-separated host list for the Obsidian Local REST API. Tried in order. |
 | `OBSIDIAN_PORT` | Port for the Obsidian REST API. Default `27123`. |
 | `OBSIDIAN_SCHEME` | `http` or `https`. Default `http`. (Self-signed certs are accepted.) |
