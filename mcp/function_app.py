@@ -33,6 +33,7 @@ import graph_client
 import tools as m365_tools
 import tools_admin as admin_tools
 import tools_keys as keys_tools
+import tools_mcp_proxy as mcp_proxy
 import tools_obsidian as obsidian_tools
 import tools_neo4j as neo4j_tools
 import tools_ticktick as ticktick_tools
@@ -612,6 +613,34 @@ _PRIV = "MCP.Privileged"
            auth_level=func.AuthLevel.ANONYMOUS)
 def mcp(req: func.HttpRequest) -> func.HttpResponse:
     return _mcp_response(req, _ALL_TOOLS, _dispatch_all, "Karelin", require_role=_PRIV)
+
+
+@app.route(route="mcp-proxy/{slug}", methods=["GET", "POST", "DELETE", "OPTIONS"],
+           auth_level=func.AuthLevel.ANONYMOUS)
+def mcp_proxy_route(req: func.HttpRequest) -> func.HttpResponse:
+    """Generic OAuth-MCP wrapper.
+
+    Each slug is a remote MCP server we proxy. Tools + auth/refresh are
+    handled in tools_mcp_proxy. Configuration is read from the
+    MCP_PROXIES_JSON env var at process start.
+    """
+    slug = (req.route_params.get("slug") or "").strip("/")
+    proxy = mcp_proxy.get_proxy(slug)
+    if not proxy:
+        available = ", ".join(mcp_proxy.list_proxies()) or "(none configured)"
+        return func.HttpResponse(
+            json.dumps({"error": f"unknown mcp-proxy slug: {slug}",
+                        "available": available}),
+            status_code=404, mimetype="application/json", headers=CORS_HEADERS,
+        )
+    server_name = f"Karelin/{slug}"
+    return _mcp_response(
+        req,
+        proxy.tools,
+        lambda name, args: proxy.dispatch_tool(name, args),
+        server_name,
+        require_role=_PRIV,
+    )
 
 
 @app.route(route="{*catchall}", methods=["GET", "POST", "DELETE", "OPTIONS"],

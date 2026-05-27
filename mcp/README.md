@@ -17,7 +17,8 @@ Azure Functions container (this repo)
         │   /oauth/callback, /token                  ← OAuth shim (anonymous)
         ├── /m365, /m365-admin                       ← open tier (allowlist)
         ├── /keys, /obsidian, /neo4j, /ticktick,
-        │   /qmd, /hindsight, /mcp, /                ← privileged tier (allowlist + role)
+        │   /qmd, /hindsight, /mcp-proxy/<slug>,
+        │   /mcp, /                                  ← privileged tier (allowlist + role)
         └── /docs, /icons/*                          ← anonymous
 ```
 
@@ -51,7 +52,7 @@ Two tiers, both enforced in the same auth path:
 | Tier | Endpoints | Requirement |
 |---|---|---|
 | Open | `/m365`, `/m365-admin` | `oid` in the allowlist. Per-user permission boundaries are enforced downstream by Microsoft Graph. |
-| Privileged | `/keys`, `/obsidian`, `/neo4j`, `/ticktick`, `/qmd`, `/hindsight`, `/mcp`, `/` (alias) | Allowlist plus the `<ROLE_NAME>` app role in the JWT `roles` claim. Assign per-user in Entra. |
+| Privileged | `/keys`, `/obsidian`, `/neo4j`, `/ticktick`, `/qmd`, `/hindsight`, `/mcp-proxy/<slug>`, `/mcp`, `/` (alias) | Allowlist plus the `<ROLE_NAME>` app role in the JWT `roles` claim. Assign per-user in Entra. |
 
 The role is assigned in Entra against the application's service principal; users must sign in again for a newly-assigned role to appear in their token.
 
