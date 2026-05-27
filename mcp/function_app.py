@@ -596,6 +596,26 @@ for _mod, _fn in [
         _ALL_DISPATCHERS[_t["name"]] = _fn
         _ALL_TOOLS.append(_t)
 
+# Also merge proxied upstreams into the unified /mcp list so a single MCP
+# client connection sees every tool the gateway can dispatch. Tool-name
+# collisions become a gateway-level concern — the proxy's `tool_prefix`
+# config is the escape hatch.
+for _slug, _proxy in mcp_proxy.load_proxies().items():
+    for _t in _proxy.tools:
+        if _t["name"] in _ALL_DISPATCHERS:
+            logging.error(
+                "mcp-proxy[%s]: tool %r collides with existing dispatcher; "
+                "set tool_prefix in MCP_PROXIES_JSON to disambiguate. Skipping.",
+                _slug, _t["name"],
+            )
+            continue
+        # Bind the proxy reference into the closure so each lambda points at
+        # the correct upstream.
+        _ALL_DISPATCHERS[_t["name"]] = (
+            lambda name, args, _p=_proxy: _p.dispatch_tool(name, args)
+        )
+        _ALL_TOOLS.append(_t)
+
 
 def _dispatch_all(name, args):
     fn = _ALL_DISPATCHERS.get(name)
