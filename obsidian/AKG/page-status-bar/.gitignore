@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+*.log
+# build artifact — esbuild output; deployed by deploy.mjs to .obsidian/plugins/
+main.js
+*.zip
