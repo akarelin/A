@@ -1,0 +1,10 @@
+{
+    "id": "auto-move-recordings",
+    "name": "Auto Move Recordings",
+    "version": "1.2.0",
+    "minAppVersion": "0.15.0",
+    "description": "Automatically moves voice recordings from vault root to a specified folder",
+    "author": "Alex Karelin",
+    "authorUrl": "https://github.com/akarelin",
+    "isDesktopOnly": true
+}

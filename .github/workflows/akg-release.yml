@@ -1,0 +1,187 @@
+name: AKG Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "Plugin to release (folder name under obsidian/AKG/)"
+        required: true
+        type: choice
+        options:
+          - page-status-bar
+      bump:
+        description: "Version bump"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - none
+          - patch
+          - minor
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Resolve plugin + version
+        id: meta
+        env:
+          PLUGIN: ${{ github.event.inputs.plugin }}
+          BUMP: ${{ github.event.inputs.bump }}
+        run: |
+          set -euo pipefail
+          DIR="obsidian/AKG/${PLUGIN}"
+          if [ ! -d "$DIR" ]; then
+            echo "::error::Plugin folder '$DIR' not found."
+            exit 1
+          fi
+          if [ ! -f "$DIR/manifest.json" ]; then
+            echo "::error::Missing manifest.json in '$DIR'."
+            exit 1
+          fi
+
+          CUR=$(jq -r .version "$DIR/manifest.json")
+          MAJOR=$(echo "$CUR" | cut -d. -f1)
+          MINOR=$(echo "$CUR" | cut -d. -f2)
+          PATCH=$(echo "$CUR" | cut -d. -f3)
+
+          case "$BUMP" in
+            none)  NEW="$CUR" ;;
+            patch) NEW="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+            minor) NEW="${MAJOR}.$((MINOR + 1)).0" ;;
+            *)     echo "::error::Unknown bump: $BUMP"; exit 1 ;;
+          esac
+
+          TAG="akg/${PLUGIN}/v${NEW}"
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+          echo "plugin=$PLUGIN" >> "$GITHUB_OUTPUT"
+          echo "old_version=$CUR" >> "$GITHUB_OUTPUT"
+          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag '$TAG' already exists. Bump the version or delete the tag."
+            exit 1
+          fi
+
+      - name: Bump manifest + package.json (skipped when bump=none)
+        if: ${{ github.event.inputs.bump != 'none' }}
+        env:
+          DIR: ${{ steps.meta.outputs.dir }}
+          NEW: ${{ steps.meta.outputs.new_version }}
+        run: |
+          set -euo pipefail
+          jq --arg v "$NEW" '.version = $v' "$DIR/manifest.json" \
+            > "$DIR/manifest.json.tmp" && mv "$DIR/manifest.json.tmp" "$DIR/manifest.json"
+          if [ -f "$DIR/package.json" ]; then
+            jq --arg v "$NEW" '.version = $v' "$DIR/package.json" \
+              > "$DIR/package.json.tmp" && mv "$DIR/package.json.tmp" "$DIR/package.json"
+          fi
+
+      - name: Commit version bump (skipped when bump=none)
+        if: ${{ github.event.inputs.bump != 'none' }}
+        env:
+          DIR: ${{ steps.meta.outputs.dir }}
+          PLUGIN: ${{ steps.meta.outputs.plugin }}
+          NEW: ${{ steps.meta.outputs.new_version }}
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$DIR/manifest.json" "$DIR/package.json" 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(${PLUGIN}): release v${NEW}"
+            git push origin HEAD
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install + build
+        working-directory: ${{ steps.meta.outputs.dir }}
+        env:
+          # deploy.mjs skips silently when VAULT is unset; CI doesn't need to deploy.
+          VAULT: ""
+        run: |
+          npm install --legacy-peer-deps
+          npm run build:only
+
+      - name: Zip artifacts
+        id: zip
+        working-directory: ${{ steps.meta.outputs.dir }}
+        env:
+          PLUGIN: ${{ steps.meta.outputs.plugin }}
+          NEW: ${{ steps.meta.outputs.new_version }}
+        run: |
+          set -euo pipefail
+          for f in main.js manifest.json styles.css; do
+            if [ ! -f "$f" ]; then
+              echo "::error::Missing artifact: $f"
+              exit 1
+            fi
+          done
+          ARCHIVE="${PLUGIN}-v${NEW}.zip"
+          # Plain zip — flat layout, no enclosing dir, matches what BRAT expects.
+          zip -j "$ARCHIVE" main.js manifest.json styles.css
+          sha256sum "$ARCHIVE" main.js manifest.json styles.css > "${PLUGIN}-v${NEW}.sha256"
+          echo "archive=$ARCHIVE" >> "$GITHUB_OUTPUT"
+          echo "checksums=${PLUGIN}-v${NEW}.sha256" >> "$GITHUB_OUTPUT"
+          ls -lh "$ARCHIVE" "${PLUGIN}-v${NEW}.sha256"
+
+      - name: Create tag + GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIR: ${{ steps.meta.outputs.dir }}
+          PLUGIN: ${{ steps.meta.outputs.plugin }}
+          NEW: ${{ steps.meta.outputs.new_version }}
+          OLD: ${{ steps.meta.outputs.old_version }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          ARCHIVE: ${{ steps.zip.outputs.archive }}
+          CHECKSUMS: ${{ steps.zip.outputs.checksums }}
+          BUMP: ${{ github.event.inputs.bump }}
+        run: |
+          set -euo pipefail
+          COMMIT=$(git rev-parse HEAD)
+          SHORT=$(git rev-parse --short HEAD)
+
+          git tag -a "$TAG" "$COMMIT" -m "${PLUGIN} v${NEW}"
+          git push origin "$TAG"
+
+          gh release create "$TAG" \
+            --target "$COMMIT" \
+            --title "${PLUGIN} v${NEW}" \
+            --notes "**Plugin:** \`${PLUGIN}\`
+          **Version:** ${OLD} -> ${NEW} (bump: \`${BUMP}\`)
+          **Commit:** ${SHORT}
+          **Released by:** @${{ github.actor }}
+
+          ### Install (manual)
+          Download \`main.js\`, \`manifest.json\`, and \`styles.css\` and drop them in \`.obsidian/plugins/${PLUGIN}/\`.
+
+          ### Install (BRAT)
+          Add this repository to BRAT and select tag \`${TAG}\`.
+
+          ### Checksums (SHA-256)
+          \`\`\`
+          $(cat "${DIR}/${CHECKSUMS}")
+          \`\`\`" \
+            "${DIR}/${ARCHIVE}" \
+            "${DIR}/main.js" \
+            "${DIR}/manifest.json" \
+            "${DIR}/styles.css" \
+            "${DIR}/${CHECKSUMS}"
+
+          echo "::notice::Released ${TAG}"

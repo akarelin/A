@@ -1,0 +1,9 @@
+{
+  "id": "claude-agent-launcher",
+  "name": "Claude Agent Launcher",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Right-click files/folders to run Claude Code agents",
+  "author": "Alex",
+  "isDesktopOnly": true
+}

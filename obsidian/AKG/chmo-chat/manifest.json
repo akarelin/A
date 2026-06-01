@@ -1,0 +1,9 @@
+{
+	"id": "chmo-chat",
+	"name": "Chmo Chat",
+	"version": "0.3.0",
+	"minAppVersion": "1.0.0",
+	"description": "Chat with your OpenClaw (Chmo) AI assistant directly from Obsidian.",
+	"author": "Alex Karelin",
+	"isDesktopOnly": true
+}
