@@ -1,6 +1,6 @@
 {
   "name": "page-status-bar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Obsidian plugin: metadata status bar above body content for any typed page.",
   "private": true,
   "scripts": {

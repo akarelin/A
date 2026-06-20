@@ -1,7 +1,7 @@
 {
   "id": "page-status-bar",
   "name": "Page Status Bar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.4.0",
   "description": "Render a top-of-page metadata bar for notes whose `type:` resolves to a known class, including subclass chains from `subClassOf:`. Supersedes the dataviewjs _views/any stub.",
   "author": "Alex Karelin",
