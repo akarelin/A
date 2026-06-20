@@ -1,12 +1,11 @@
-import { App, MarkdownRenderer, Component, TFile, getAllTags } from "obsidian";
+import { App, MarkdownRenderer, Component, TFile } from "obsidian";
 import { PageStatusBarSettings, RenderContext, TypeExtension } from "./types";
 import {
-  basenameOf,
   cap,
-  asArray,
   resolveLink,
   fmtScalar,
 } from "./util";
+import { typeRefs } from "./type-index";
 
 // Frontmatter keys that the status bar should NEVER show in Properties.
 // These are structural Metadata Menu / class fields, not page data.
@@ -16,20 +15,6 @@ const SKIP_PROPS_CC = [
   "version", "icon", "statusbar", "statusBar",
 ];
 const SKIP_PROPS = new Set(SKIP_PROPS_CC.map((s) => s.toLowerCase()));
-
-const NAV_FIELDS: ReadonlyArray<readonly [string, string]> = [
-  ["parentProject", "Up"],
-  ["up", "Up"],
-  ["broader", "Broader"],
-  ["subClassOf", "Parent"],
-  ["extends", "Extends"],
-  ["inScheme", "In scheme"],
-  ["prev", "Prev"],
-  ["next", "Next"],
-  ["sameAs", "Same as"],
-  ["replacedBy", "Replaced by"],
-];
-const NAV_KEYS = new Set(NAV_FIELDS.map(([k]) => k.toLowerCase()));
 
 const CHILD_FIELDS: ReadonlyArray<readonly [string, string]> = [
   ["parentProject", "Sub-projects"],
@@ -42,31 +27,6 @@ const CHILD_FIELDS: ReadonlyArray<readonly [string, string]> = [
   ["sameAs", "Aliases"],
 ];
 
-// Wrap a TFile-or-missing-name as a markdown link / bold-missing label.
-function linkMarkup(
-  app: App,
-  source: TFile,
-  ref: unknown,
-): string {
-  const r = resolveLink(app, source, ref);
-  if (r === null) return "";
-  if (r instanceof TFile) {
-    const path = r.path.replace(/\.md$/i, "");
-    return `[[${path}|${r.basename}]]`;
-  }
-  return `**${r.missingName}** *(missing)*`;
-}
-
-function fileByBasename(app: App, name: string): TFile | null {
-  // metadataCache.getFirstLinkpathDest is best — try it first.
-  const f = app.metadataCache.getFirstLinkpathDest(name, "");
-  if (f) return f;
-  // Fallback: iterate vault for an exact basename match.
-  const files = app.vault.getMarkdownFiles();
-  for (const file of files) if (file.basename === name) return file;
-  return null;
-}
-
 function getFrontmatter(app: App, file: TFile): Record<string, unknown> {
   const cache = app.metadataCache.getFileCache(file);
   return (cache?.frontmatter as Record<string, unknown> | undefined) ?? {};
@@ -75,7 +35,6 @@ function getFrontmatter(app: App, file: TFile): Record<string, unknown> {
 interface RendererOptions {
   showHeader: boolean;
   showProperties: boolean;
-  showNavigation: boolean;
   showChildren: boolean;
   showFiles: boolean;
   showUsedBy: boolean;
@@ -85,7 +44,6 @@ function optsFromSettings(s: PageStatusBarSettings): RendererOptions {
   return {
     showHeader: s.sections.header,
     showProperties: s.sections.properties,
-    showNavigation: s.sections.navigation,
     showChildren: s.sections.children,
     showFiles: s.sections.files,
     showUsedBy: s.sections.usedBy,
@@ -110,111 +68,78 @@ export async function renderStatusBar(
   const opts = optsFromSettings(settings);
   const sourcePath = file.path;
 
-  const t = (fm["type"] ?? fm["Type"]) as string | undefined;
-  const isClassDef = !!(fm["subClassOf"] || fm["extends"]);
-  const isInstance = !!t && !isClassDef;
+  const currentKnownType = ctx.typeIndex.knownTypeForFile(file);
+  const typeFiles = ctx.typeIndex.resolveTypesForFrontmatter(file, fm);
+  if (currentKnownType && !typeFiles.includes(currentKnownType.file)) {
+    typeFiles.unshift(currentKnownType.file);
+  }
+  const lineage = ctx.typeIndex.classLineage(typeFiles);
+  const isClassDef =
+    Object.prototype.hasOwnProperty.call(fm, "subClassOf") ||
+    Object.prototype.hasOwnProperty.call(fm, "extends");
 
-  // 1. Type chip
-  if (opts.showHeader && t) {
+  // 1. Type chain
+  if (opts.showHeader && lineage.length) {
     const chip = container.createDiv({ cls: "psb-section psb-type-chip" });
     chip.createSpan({ cls: "psb-label", text: "Type: " });
-    const cls = fileByBasename(app, t);
-    if (cls) {
-      await renderInline(
-        app,
-        chip,
-        `[[${cls.path.replace(/\.md$/i, "")}|${cls.basename}]]`,
-        sourcePath,
-        component,
-      );
-    } else {
-      chip.createEl("code", { text: t });
-    }
+    await renderInline(
+      app,
+      chip,
+      lineage
+        .map((level) => level.map((cls) => linkForFile(cls)).join(", "))
+        .join(" -> "),
+      sourcePath,
+      component,
+    );
   }
 
-  // 2. Properties
+  // 2. Metadata fields
   if (opts.showProperties) {
     const ordered: Array<[string, string]> = [];
 
-    if (isInstance && t) {
-      const cls = fileByBasename(app, t);
-      const clsFm = cls ? getFrontmatter(app, cls) : null;
-      const fieldsOrder = clsFm?.["fieldsOrder"];
-      if (Array.isArray(fieldsOrder)) {
-        for (const f of fieldsOrder) ordered.push([String(f), cap(String(f))]);
+    if (!isClassDef) {
+      const classes = typeFiles;
+      for (const cls of classes) {
+        const clsFm = getFrontmatter(app, cls);
+        const fieldsOrder = clsFm?.["fieldsOrder"];
+        if (Array.isArray(fieldsOrder)) {
+          for (const f of fieldsOrder) ordered.push([String(f), cap(String(f))]);
+        }
       }
     }
 
-    // Append remaining present, non-skip, non-nav keys.
+    // Append remaining present, non-technical keys.
     const seen = new Set(ordered.map(([k]) => k.toLowerCase()));
     for (const key of Object.keys(fm)) {
       const lk = key.toLowerCase();
       if (seen.has(lk)) continue;
-      if (NAV_KEYS.has(lk)) continue;
       ordered.push([key, cap(key)]);
       seen.add(lk);
     }
 
-    const lines: string[] = [];
+    const fields: Array<[string, string]> = [];
     for (const [key, label] of ordered) {
       if (SKIP_PROPS.has(key.toLowerCase())) continue;
       const v = fm[key];
-      const s = fmtScalar(v);
+      const s = fmtFieldValue(app, file, key, v, ctx);
       if (!s) continue;
-      lines.push(`- **${label}:** ${s}`);
+      fields.push([label, s]);
     }
 
-    if (lines.length) {
+    if (fields.length) {
       const sec = container.createDiv({ cls: "psb-section psb-properties" });
-      sec.createEl("h4", { text: "Properties" });
-      const body = sec.createDiv({ cls: "psb-section-body" });
-      await renderMd(app, body, lines.join("\n"), sourcePath, component);
+      sec.createEl("h4", { text: "Metadata" });
+      const grid = sec.createDiv({ cls: "psb-field-grid" });
+      for (const [label, md] of fields) {
+        const item = grid.createDiv({ cls: "psb-field" });
+        item.createDiv({ cls: "psb-field-label", text: label });
+        const value = item.createDiv({ cls: "psb-field-value" });
+        await renderInline(app, value, md, sourcePath, component);
+      }
     }
   }
 
-  // 3. Navigation (compact, ≤4 lines)
-  if (opts.showNavigation) {
-    const renderField = (field: string): string => {
-      const v = fm[field];
-      if (v == null || v === "") return "";
-      return asArray(v)
-        .map((x) => linkMarkup(app, file, x))
-        .filter(Boolean)
-        .join(", ");
-    };
-    const rowFrom = (parts: Array<[string, string]>): string | null => {
-      const filled = parts.filter(([, val]) => val);
-      if (!filled.length) return null;
-      return filled.map(([label, val]) => `**${label}:** ${val}`).join(" · ");
-    };
-
-    const upRow = rowFrom([
-      ["Up", renderField("parentProject")],
-      ["Up", renderField("up")],
-      ["Parent", renderField("subClassOf")],
-      ["Extends", renderField("extends")],
-      ["Broader", renderField("broader")],
-      ["In scheme", renderField("inScheme")],
-    ]);
-    const pnRow = rowFrom([
-      ["Prev", renderField("prev")],
-      ["Next", renderField("next")],
-    ]);
-    const saRow = rowFrom([["Same as", renderField("sameAs")]]);
-    const rbRow = rowFrom([["Replaced by", renderField("replacedBy")]]);
-
-    const navLines = [upRow, pnRow, saRow, rbRow].filter(
-      (x): x is string => !!x,
-    );
-    if (navLines.length) {
-      const sec = container.createDiv({ cls: "psb-section psb-navigation" });
-      sec.createEl("h4", { text: "Navigation" });
-      const body = sec.createDiv({ cls: "psb-section-body" });
-      await renderMd(app, body, navLines.join("  \n"), sourcePath, component);
-    }
-  }
-
-  // 4. Children — pages whose link fields point here, grouped by field.
+  // 3. Children — pages whose link fields point here, grouped by field.
   // Skip entirely until the link index has built; an empty grouped index here
   // would otherwise look like "no children" instead of "indexing".
   if (opts.showChildren && ctx.linkIndex.isReady()) {
@@ -307,9 +232,10 @@ export async function renderStatusBar(
   }
 
   // 7. Type extensions
-  if (t) {
+  const extensionTypes = new Set(typeRefs(fm));
+  if (extensionTypes.size) {
     for (const ext of extensions) {
-      if (ext.type !== t) continue;
+      if (!extensionTypes.has(ext.type)) continue;
       const enabled = ctx.settings.enabledExtensions[ext.type] !== false;
       if (!enabled) continue;
       const extEl = container.createDiv({
@@ -326,14 +252,50 @@ export async function renderStatusBar(
 
 // ---------------- helpers (DOM / lookups) ----------------
 
-async function renderMd(
+function linkForFile(file: TFile): string {
+  return `[[${file.path.replace(/\.md$/i, "")}|${file.basename}]]`;
+}
+
+function fmtFieldValue(
   app: App,
-  el: HTMLElement,
-  md: string,
-  sourcePath: string,
-  component: Component,
-): Promise<void> {
-  await MarkdownRenderer.render(app, md, el, sourcePath, component);
+  source: TFile,
+  key: string,
+  value: unknown,
+  ctx: RenderContext,
+): string {
+  if (value == null || value === "") return "";
+
+  if (key.toLowerCase() === "type") {
+    return ctx.typeIndex
+      .resolveTypesForFrontmatter(source, { type: value })
+      .map((file) => linkForFile(file))
+      .join(", ");
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => fmtFieldValue(app, source, key, item, ctx))
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  if (typeof value === "object" && value !== null) {
+    const resolved = resolveLink(app, source, value);
+    if (resolved instanceof TFile) return linkForFile(resolved);
+    const r = value as { path?: string; link?: string };
+    if (r.path || r.link) return fmtScalar(value);
+    if (value instanceof Date) return value.toISOString().slice(0, 10);
+    return String(value);
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+    const resolved = resolveLink(app, source, trimmed);
+    if (resolved instanceof TFile) return linkForFile(resolved);
+  }
+
+  return fmtScalar(value);
 }
 
 /** Render markdown inline — strips the wrapping <p> if any. */
@@ -431,5 +393,4 @@ function collectIncoming(
   return out;
 }
 
-// (export for use by main if needed)
-export { fileByBasename, getFrontmatter };
+export { getFrontmatter };

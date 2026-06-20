@@ -1,5 +1,6 @@
 import type { App, TFile } from "obsidian";
 import type { LinkIndex } from "./link-index";
+import type { TypeIndex } from "./type-index";
 
 export interface PageStatusBarSettings {
   renderMode: "post-processor" | "view-extension" | "both";
@@ -46,6 +47,7 @@ export interface RenderContext {
   frontmatter: Record<string, unknown>;
   settings: PageStatusBarSettings;
   linkIndex: LinkIndex;
+  typeIndex: TypeIndex;
 }
 
 export interface TypeExtension {

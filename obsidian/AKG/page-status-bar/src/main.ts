@@ -22,6 +22,7 @@ import {
 } from "./editor-view";
 import { debounce } from "./util";
 import { LinkIndex } from "./link-index";
+import { TypeIndex } from "./type-index";
 
 const LEGACY_STUB_RE =
   /```dataviewjs[\s\S]*?\bdv\.view\(\s*["']\{internals\}\/Classes\/_views\/any["']/;
@@ -30,6 +31,7 @@ export default class PageStatusBarPlugin extends Plugin {
   settings: PageStatusBarSettings = DEFAULT_SETTINGS;
   extensions: TypeExtension[] = [];
   linkIndex!: LinkIndex;
+  typeIndex!: TypeIndex;
 
   // Per-file legacy-stub presence cache. Cleared on metadata change.
   private legacyStubCache = new Map<string, boolean>();
@@ -38,6 +40,8 @@ export default class PageStatusBarPlugin extends Plugin {
     await this.loadSettings();
     this.extensions.push(...projectExtensions);
     this.linkIndex = new LinkIndex(this.app);
+    this.typeIndex = new TypeIndex(this.app);
+    this.typeIndex.rebuild();
 
     this.addSettingTab(new PageStatusBarSettingTab(this.app, this));
 
@@ -46,6 +50,7 @@ export default class PageStatusBarPlugin extends Plugin {
       getSettings: () => this.settings,
       getExtensions: () => this.extensions,
       getLinkIndex: () => this.linkIndex,
+      getTypeIndex: () => this.typeIndex,
     });
 
     // Reading view path (markdown post-processor)
@@ -62,7 +67,10 @@ export default class PageStatusBarPlugin extends Plugin {
     this.registerEvent(
       this.app.metadataCache.on("changed", (file) => {
         this.legacyStubCache.delete(file.path);
-        if (file instanceof TFile) this.linkIndex.updateFile(file);
+        if (file instanceof TFile) {
+          this.linkIndex.updateFile(file);
+          this.typeIndex.updateFile(file);
+        }
         refresh();
       }),
     );
@@ -70,13 +78,17 @@ export default class PageStatusBarPlugin extends Plugin {
       this.app.metadataCache.on("resolved", () => {
         // First resolved event = vault scan complete. Build index lazily.
         this.linkIndex.scheduleInitialBuild();
+        this.typeIndex.rebuild();
         refresh();
       }),
     );
     this.registerEvent(
       this.app.vault.on("rename", (af, oldPath) => {
         this.legacyStubCache.clear();
-        if (af instanceof TFile) this.linkIndex.handleRename(af, oldPath);
+        if (af instanceof TFile) {
+          this.linkIndex.handleRename(af, oldPath);
+          this.typeIndex.handleRename(af, oldPath);
+        }
         refresh();
       }),
     );
@@ -84,17 +96,22 @@ export default class PageStatusBarPlugin extends Plugin {
       this.app.vault.on("delete", (af) => {
         this.legacyStubCache.clear();
         this.linkIndex.removeSource(af.path);
+        this.typeIndex.removeFile(af.path);
         refresh();
       }),
     );
 
     // When the index flips ready, re-render so deferred sections fill in.
     this.linkIndex.onChange(() => refresh());
+    this.typeIndex.onChange(() => refresh());
 
     // If the cache is already resolved at plugin-load time (common for hot
     // reloads), schedule the build now so we don't wait for the next event.
     this.app.workspace.onLayoutReady(() =>
-      this.linkIndex.scheduleInitialBuild(),
+      {
+        this.linkIndex.scheduleInitialBuild();
+        this.typeIndex.rebuild();
+      },
     );
 
     // Layout-ready commands
@@ -180,7 +197,7 @@ export default class PageStatusBarPlugin extends Plugin {
         | Record<string, unknown>
         | undefined) ?? {};
 
-    if (!shouldRenderFor(file, fm, this.settings)) return;
+    if (!shouldRenderFor(file, fm, this.settings, this.typeIndex)) return;
 
     if (this.settings.deferToLegacyStub && (await this.fileHasLegacyStub(file))) {
       return;
@@ -203,6 +220,7 @@ export default class PageStatusBarPlugin extends Plugin {
       frontmatter: fm,
       settings: this.settings,
       linkIndex: this.linkIndex,
+      typeIndex: this.typeIndex,
     };
 
     // Insert above the current section in the parent. If no parent yet, prepend.

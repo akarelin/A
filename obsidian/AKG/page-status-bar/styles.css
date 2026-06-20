@@ -48,6 +48,7 @@
   display: flex;
   align-items: baseline;
   gap: 0.4em;
+  flex-wrap: wrap;
 }
 .psb-type-chip .psb-label {
   color: var(--text-muted);
@@ -55,6 +56,33 @@
   font-size: 0.85em;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.psb-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13em, 1fr));
+  gap: 0.35em 0.8em;
+}
+
+.psb-field {
+  min-width: 0;
+}
+
+.psb-field-label {
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+
+.psb-field-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.psb-field-value p {
+  margin: 0;
 }
 
 .psb-table {

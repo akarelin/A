@@ -5,6 +5,7 @@ import { App, Component, MarkdownView, TFile } from "obsidian";
 import { renderStatusBar } from "./render";
 import type { RenderContext, TypeExtension, PageStatusBarSettings } from "./types";
 import type { LinkIndex } from "./link-index";
+import type { TypeIndex } from "./type-index";
 import { shouldRenderFor } from "./trigger";
 
 /**
@@ -15,6 +16,7 @@ export interface EditorViewContext {
   getSettings: () => PageStatusBarSettings;
   getExtensions: () => TypeExtension[];
   getLinkIndex: () => LinkIndex;
+  getTypeIndex: () => TypeIndex;
 }
 
 let bridge: EditorViewContext | null = null;
@@ -60,7 +62,7 @@ class StatusBarWidget extends WidgetType {
     const root = createDiv({ cls: "psb-editor-host" });
     if (!bridge) return root;
 
-    const { app, getSettings, getExtensions, getLinkIndex } = bridge;
+    const { app, getSettings, getExtensions, getLinkIndex, getTypeIndex } = bridge;
     const af = app.vault.getAbstractFileByPath(this.filePath);
     if (!(af instanceof TFile)) return root;
 
@@ -70,7 +72,7 @@ class StatusBarWidget extends WidgetType {
         | Record<string, unknown>
         | undefined) ?? {};
 
-    if (!shouldRenderFor(af, fm, settings)) return root;
+    if (!shouldRenderFor(af, fm, settings, getTypeIndex())) return root;
 
     const component = new Component();
     component.load();
@@ -82,6 +84,7 @@ class StatusBarWidget extends WidgetType {
       frontmatter: fm,
       settings,
       linkIndex: getLinkIndex(),
+      typeIndex: getTypeIndex(),
     };
     void renderStatusBar(root, ctx, component, getExtensions());
     return root;
@@ -125,7 +128,9 @@ function buildDecoSet(view: EditorView, version: number): DecorationSet {
     (bridge.app.metadataCache.getFileCache(file)?.frontmatter as
       | Record<string, unknown>
       | undefined) ?? {};
-  if (!shouldRenderFor(file, fm, bridge.getSettings())) return Decoration.none;
+  if (!shouldRenderFor(file, fm, bridge.getSettings(), bridge.getTypeIndex())) {
+    return Decoration.none;
+  }
   const widget = Decoration.widget({
     widget: new StatusBarWidget(file.path, version),
     block: true,

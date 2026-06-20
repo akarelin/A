@@ -33,9 +33,9 @@ export class PageStatusBarSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Render only on pages with a type:")
+      .setName("Render only on pages with a known type:")
       .setDesc(
-        "When on, only pages whose frontmatter has a `type:` field get the status bar. When off, every page does (subject to folder filters).",
+        "When on, only pages whose frontmatter `type:` resolves to a class/type page get the metadata bar. `subClassOf:` is used for the displayed type chain.",
       )
       .addToggle((t) =>
         t.setValue(s.triggerOnAnyType).onChange(async (v) => {
@@ -116,9 +116,8 @@ export class PageStatusBarSettingTab extends PluginSettingTab {
       );
     };
 
-    sectionToggle("header", "Type chip");
-    sectionToggle("properties", "Properties");
-    sectionToggle("navigation", "Navigation");
+    sectionToggle("header", "Type chain");
+    sectionToggle("properties", "Metadata fields");
     sectionToggle("children", "Children");
     sectionToggle("files", "Files");
     sectionToggle("usedBy", "Used by");

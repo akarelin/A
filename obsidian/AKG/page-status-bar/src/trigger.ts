@@ -1,5 +1,6 @@
 import { TFile } from "obsidian";
 import type { PageStatusBarSettings } from "./types";
+import type { TypeIndex } from "./type-index";
 
 /**
  * Decide whether the plugin should render a status bar for this file.
@@ -7,7 +8,7 @@ import type { PageStatusBarSettings } from "./types";
  *
  * Rules:
  *   - Always skip when frontmatter `statusBar: false`.
- *   - With `triggerOnAnyType`: render iff `type:` is set.
+ *   - With `triggerOnAnyType`: render iff `type:` resolves to a known type.
  *   - Else: render unconditionally (subject to folder filters).
  *   - Honour include/exclude folder lists. Include wins over exclude when both
  *     set; if include is empty the file is included by default.
@@ -16,6 +17,7 @@ export function shouldRenderFor(
   file: TFile,
   fm: Record<string, unknown>,
   settings: PageStatusBarSettings,
+  typeIndex: TypeIndex,
 ): boolean {
   const optOut = fm["statusBar"] ?? fm["statusbar"];
   if (optOut === false) return false;
@@ -32,8 +34,9 @@ export function shouldRenderFor(
   }
 
   if (settings.triggerOnAnyType) {
-    const t = fm["type"] ?? fm["Type"];
-    if (t == null || t === "") return false;
+    if (!typeIndex.knownTypeForFile(file) && !typeIndex.hasKnownType(file, fm)) {
+      return false;
+    }
   }
 
   return true;
