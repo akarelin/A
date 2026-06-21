@@ -1,6 +1,6 @@
 import { TFile } from "obsidian";
 import type { PageStatusBarSettings } from "./types";
-import type { TypeIndex } from "./type-index";
+import { isClassDefinition, typeRefs, type TypeIndex } from "./type-index";
 
 /**
  * Decide whether the plugin should render a status bar for this file.
@@ -34,7 +34,7 @@ export function shouldRenderFor(
   }
 
   if (settings.triggerOnAnyType) {
-    if (!typeIndex.knownTypeForFile(file) && !typeIndex.hasKnownType(file, fm)) {
+    if (!isClassDefinition(fm) && typeRefs(fm).length === 0) {
       return false;
     }
   }

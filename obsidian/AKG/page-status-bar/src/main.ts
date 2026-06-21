@@ -20,7 +20,6 @@ import {
   setEditorViewBridge,
   refreshAllEditorViews,
 } from "./editor-view";
-import { debounce } from "./util";
 import { LinkIndex } from "./link-index";
 import { TypeIndex } from "./type-index";
 
@@ -41,7 +40,6 @@ export default class PageStatusBarPlugin extends Plugin {
     this.extensions.push(...projectExtensions);
     this.linkIndex = new LinkIndex(this.app);
     this.typeIndex = new TypeIndex(this.app);
-    this.typeIndex.rebuild();
 
     this.addSettingTab(new PageStatusBarSettingTab(this.app, this));
 
@@ -61,58 +59,6 @@ export default class PageStatusBarPlugin extends Plugin {
 
     // Edit-mode path (CM6)
     this.registerEditorExtension(statusBarViewExtension);
-
-    // Reactive updates
-    const refresh = debounce(() => this.refreshAll(), 250);
-    this.registerEvent(
-      this.app.metadataCache.on("changed", (file) => {
-        this.legacyStubCache.delete(file.path);
-        if (file instanceof TFile) {
-          this.linkIndex.updateFile(file);
-          this.typeIndex.updateFile(file);
-        }
-        refresh();
-      }),
-    );
-    this.registerEvent(
-      this.app.metadataCache.on("resolved", () => {
-        // First resolved event = vault scan complete. Build index lazily.
-        this.linkIndex.scheduleInitialBuild();
-        this.typeIndex.rebuild();
-        refresh();
-      }),
-    );
-    this.registerEvent(
-      this.app.vault.on("rename", (af, oldPath) => {
-        this.legacyStubCache.clear();
-        if (af instanceof TFile) {
-          this.linkIndex.handleRename(af, oldPath);
-          this.typeIndex.handleRename(af, oldPath);
-        }
-        refresh();
-      }),
-    );
-    this.registerEvent(
-      this.app.vault.on("delete", (af) => {
-        this.legacyStubCache.clear();
-        this.linkIndex.removeSource(af.path);
-        this.typeIndex.removeFile(af.path);
-        refresh();
-      }),
-    );
-
-    // When the index flips ready, re-render so deferred sections fill in.
-    this.linkIndex.onChange(() => refresh());
-    this.typeIndex.onChange(() => refresh());
-
-    // If the cache is already resolved at plugin-load time (common for hot
-    // reloads), schedule the build now so we don't wait for the next event.
-    this.app.workspace.onLayoutReady(() =>
-      {
-        this.linkIndex.scheduleInitialBuild();
-        this.typeIndex.rebuild();
-      },
-    );
 
     // Layout-ready commands
     this.addCommand({
@@ -159,7 +105,6 @@ export default class PageStatusBarPlugin extends Plugin {
         v.previewMode?.rerender?.(true);
       }
     });
-    // Re-render editor widgets.
     refreshAllEditorViews(this.app);
   }
 
@@ -169,9 +114,7 @@ export default class PageStatusBarPlugin extends Plugin {
     if (v.getMode() === "preview") {
       v.previewMode?.rerender?.(true);
     } else {
-      // @ts-expect-error: cm runtime-only
-      const cm = v.editor?.cm;
-      if (cm) cm.dispatch({});
+      refreshAllEditorViews(this.app);
     }
   }
 
@@ -181,13 +124,7 @@ export default class PageStatusBarPlugin extends Plugin {
   ): Promise<void> {
     const sourcePath = ctx.sourcePath;
     if (!sourcePath) return;
-
-    // Only inject ONCE per rendered page — the post-processor fires for every
-    // section. We use ctx.getSectionInfo + the section start offset to detect
-    // "is this the first/top section?". The cheap check: only inject when
-    // we're processing a section that contains offset 0.
-    const info = ctx.getSectionInfo(el);
-    if (info && info.lineStart > 0) return;
+    if (el.closest(".psb-root")) return;
 
     const file = this.app.vault.getAbstractFileByPath(sourcePath);
     if (!(file instanceof TFile)) return;
@@ -204,9 +141,10 @@ export default class PageStatusBarPlugin extends Plugin {
     }
 
     // Avoid double-injecting if a previous post-process pass already rendered.
+    const previewRoot = el.closest(".markdown-preview-section") as HTMLElement | null;
+    const parent = previewRoot ?? el.parentElement;
     if (el.querySelector(":scope > .psb-root")) return;
     if (el.previousElementSibling?.classList?.contains("psb-root")) return;
-    const parent = el.parentElement;
     if (parent?.querySelector(":scope > .psb-root")) return;
 
     const host = createDiv({ cls: "psb-root psb-reading" });
@@ -223,8 +161,10 @@ export default class PageStatusBarPlugin extends Plugin {
       typeIndex: this.typeIndex,
     };
 
-    // Insert above the current section in the parent. If no parent yet, prepend.
-    if (parent) {
+    // Insert once at the top of the rendered preview when available.
+    if (previewRoot) {
+      previewRoot.insertBefore(host, previewRoot.firstChild);
+    } else if (parent) {
       parent.insertBefore(host, el);
     } else {
       el.insertBefore(host, el.firstChild);
