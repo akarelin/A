@@ -67,6 +67,7 @@ class StatusBarWidget extends WidgetType {
     if (!(af instanceof TFile)) return root;
 
     const settings = getSettings();
+    if (settings.renderMode === "post-processor") return root;
     const fm =
       (app.metadataCache.getFileCache(af)?.frontmatter as
         | Record<string, unknown>
@@ -108,6 +109,7 @@ class StatusBarWidget extends WidgetType {
 // a ViewPlugin act purely as an observer that dispatches setStatusBarDeco
 // effects to keep the field in sync with the bound file / frontmatter.
 const setStatusBarDeco = StateEffect.define<DecorationSet>();
+const refreshStatusBarDeco = StateEffect.define<null>();
 
 const statusBarField = StateField.define<DecorationSet>({
   create: () => Decoration.none,
@@ -122,6 +124,9 @@ const statusBarField = StateField.define<DecorationSet>({
 
 function buildDecoSet(view: EditorView, version: number): DecorationSet {
   if (!bridge) return Decoration.none;
+  if (bridge.getSettings().renderMode === "post-processor") {
+    return Decoration.none;
+  }
   const file = fileForView(bridge.app, view);
   if (!file) return Decoration.none;
   const fm =
@@ -148,7 +153,10 @@ const statusBarObserver = ViewPlugin.fromClass(
     }
 
     update(u: ViewUpdate): void {
-      if (u.docChanged || u.viewportChanged || u.geometryChanged) {
+      const refreshRequested = u.transactions.some((tr) =>
+        tr.effects.some((effect) => effect.is(refreshStatusBarDeco)),
+      );
+      if (u.docChanged || refreshRequested) {
         this.sync(u.view);
       }
     }
@@ -173,7 +181,7 @@ export function refreshAllEditorViews(app: App): void {
     if (view instanceof MarkdownView) {
       // @ts-expect-error: cm is runtime-only
       const cm: EditorView | undefined = view.editor?.cm;
-      if (cm) cm.dispatch({});
+      if (cm) cm.dispatch({ effects: refreshStatusBarDeco.of(null) });
     }
   });
 }

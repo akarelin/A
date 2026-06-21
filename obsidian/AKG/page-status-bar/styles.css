@@ -85,6 +85,25 @@
   margin: 0;
 }
 
+.psb-nav-lines {
+  display: grid;
+  gap: 0.18em;
+}
+
+.psb-nav-line {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.psb-nav-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.psb-nav-separator {
+  color: var(--text-faint);
+}
+
 .psb-table {
   width: 100%;
   border-collapse: collapse;

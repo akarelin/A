@@ -21,8 +21,8 @@ export interface PageStatusBarSettings {
 }
 
 export const DEFAULT_SETTINGS: PageStatusBarSettings = {
-  renderMode: "both",
-  triggerOnAnyType: true,
+  renderMode: "post-processor",
+  triggerOnAnyType: false,
   includeFolders: [],
   excludeFolders: [],
   hideNativeProperties: true,

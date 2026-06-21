@@ -1,6 +1,7 @@
-import { App, MarkdownRenderer, Component, TFile } from "obsidian";
+import { App, Component, TFile } from "obsidian";
 import { PageStatusBarSettings, RenderContext, TypeExtension } from "./types";
 import {
+  basenameOf,
   cap,
   resolveLink,
   fmtScalar,
@@ -15,6 +16,20 @@ const SKIP_PROPS_CC = [
   "version", "icon", "statusbar", "statusBar",
 ];
 const SKIP_PROPS = new Set(SKIP_PROPS_CC.map((s) => s.toLowerCase()));
+
+const NAV_FIELDS: ReadonlyArray<readonly [string, string]> = [
+  ["parentProject", "Up"],
+  ["up", "Up"],
+  ["broader", "Broader"],
+  ["subClassOf", "Parent"],
+  ["extends", "Extends"],
+  ["inScheme", "In scheme"],
+  ["prev", "Prev"],
+  ["next", "Next"],
+  ["sameAs", "Same as"],
+  ["replacedBy", "Replaced by"],
+];
+const NAV_KEYS = new Set(NAV_FIELDS.map(([k]) => k.toLowerCase()));
 
 const CHILD_FIELDS: ReadonlyArray<readonly [string, string]> = [
   ["parentProject", "Sub-projects"],
@@ -35,6 +50,7 @@ function getFrontmatter(app: App, file: TFile): Record<string, unknown> {
 interface RendererOptions {
   showHeader: boolean;
   showProperties: boolean;
+  showNavigation: boolean;
   showChildren: boolean;
   showFiles: boolean;
   showUsedBy: boolean;
@@ -44,6 +60,7 @@ function optsFromSettings(s: PageStatusBarSettings): RendererOptions {
   return {
     showHeader: s.sections.header,
     showProperties: s.sections.properties,
+    showNavigation: s.sections.navigation,
     showChildren: s.sections.children,
     showFiles: s.sections.files,
     showUsedBy: s.sections.usedBy,
@@ -79,15 +96,18 @@ export async function renderStatusBar(
     Object.prototype.hasOwnProperty.call(fm, "extends");
 
   // 1. Type chain
-  if (opts.showHeader && lineage.length) {
+  const rawTypes = typeRefs(fm);
+  if (opts.showHeader && (lineage.length || rawTypes.length)) {
     const chip = container.createDiv({ cls: "psb-section psb-type-chip" });
     chip.createSpan({ cls: "psb-label", text: "Type: " });
     await renderInline(
       app,
       chip,
-      lineage
-        .map((level) => level.map((cls) => linkForFile(cls)).join(", "))
-        .join(" -> "),
+      lineage.length
+        ? lineage
+            .map((level) => level.map((cls) => linkForFile(cls)).join(", "))
+            .join(" -> ")
+        : rawTypes.map((ref) => linkForTypeRef(app, file, ref)).join(", "),
       sourcePath,
       component,
     );
@@ -113,6 +133,7 @@ export async function renderStatusBar(
     for (const key of Object.keys(fm)) {
       const lk = key.toLowerCase();
       if (seen.has(lk)) continue;
+      if (opts.showNavigation && NAV_KEYS.has(lk)) continue;
       ordered.push([key, cap(key)]);
       seen.add(lk);
     }
@@ -135,6 +156,25 @@ export async function renderStatusBar(
         item.createDiv({ cls: "psb-field-label", text: label });
         const value = item.createDiv({ cls: "psb-field-value" });
         await renderInline(app, value, md, sourcePath, component);
+      }
+    }
+  }
+
+  // 3. Navigation
+  if (opts.showNavigation) {
+    const rows = navigationRows(app, file, fm, ctx);
+    if (rows.length) {
+      const sec = container.createDiv({ cls: "psb-section psb-navigation" });
+      sec.createEl("h4", { text: "Navigation" });
+      const body = sec.createDiv({ cls: "psb-nav-lines" });
+      for (const row of rows) {
+        const line = body.createDiv({ cls: "psb-nav-line" });
+        for (let i = 0; i < row.length; i++) {
+          if (i > 0) line.createSpan({ cls: "psb-nav-separator", text: " · " });
+          line.createSpan({ cls: "psb-nav-label", text: `${row[i].label}: ` });
+          const value = line.createSpan({ cls: "psb-nav-value" });
+          await renderInline(app, value, row[i].value, sourcePath, component);
+        }
       }
     }
   }
@@ -256,6 +296,64 @@ function linkForFile(file: TFile): string {
   return `[[${file.path.replace(/\.md$/i, "")}|${file.basename}]]`;
 }
 
+function linkForTypeRef(app: App, source: TFile, ref: unknown): string {
+  const resolved = resolveLink(app, source, ref);
+  if (resolved instanceof TFile) return linkForFile(resolved);
+  if (typeof ref === "string") return ref;
+  return fmtScalar(ref);
+}
+
+interface NavCell {
+  label: string;
+  value: string;
+}
+
+function navigationRows(
+  app: App,
+  source: TFile,
+  fm: Record<string, unknown>,
+  ctx: RenderContext,
+): NavCell[][] {
+  const renderField = (field: string): string => {
+    const value = frontmatterValue(fm, field);
+    if (value == null || value === "") return "";
+    const list = Array.isArray(value) ? value : [value];
+    return list
+      .map((item) => fmtFieldValue(app, source, field, item, ctx))
+      .filter(Boolean)
+      .join(", ");
+  };
+
+  const rowFrom = (parts: NavCell[]): NavCell[] =>
+    parts.filter((part) => part.value);
+
+  return [
+    rowFrom([
+      { label: "Up", value: renderField("parentProject") },
+      { label: "Up", value: renderField("up") },
+      { label: "Parent", value: renderField("subClassOf") },
+      { label: "Extends", value: renderField("extends") },
+      { label: "Broader", value: renderField("broader") },
+      { label: "In scheme", value: renderField("inScheme") },
+    ]),
+    rowFrom([
+      { label: "Prev", value: renderField("prev") },
+      { label: "Next", value: renderField("next") },
+    ]),
+    rowFrom([{ label: "Same as", value: renderField("sameAs") }]),
+    rowFrom([{ label: "Replaced by", value: renderField("replacedBy") }]),
+  ].filter((row) => row.length);
+}
+
+function frontmatterValue(
+  fm: Record<string, unknown>,
+  key: string,
+): unknown {
+  if (Object.prototype.hasOwnProperty.call(fm, key)) return fm[key];
+  const found = Object.keys(fm).find((k) => k.toLowerCase() === key.toLowerCase());
+  return found ? fm[found] : undefined;
+}
+
 function fmtFieldValue(
   app: App,
   source: TFile,
@@ -266,10 +364,11 @@ function fmtFieldValue(
   if (value == null || value === "") return "";
 
   if (key.toLowerCase() === "type") {
-    return ctx.typeIndex
+    const resolved = ctx.typeIndex
       .resolveTypesForFrontmatter(source, { type: value })
       .map((file) => linkForFile(file))
       .join(", ");
+    return resolved || linkForTypeRef(app, source, value);
   }
 
   if (Array.isArray(value)) {
@@ -298,7 +397,7 @@ function fmtFieldValue(
   return fmtScalar(value);
 }
 
-/** Render markdown inline — strips the wrapping <p> if any. */
+/** Render simple inline text and wikilinks without invoking nested markdown rendering. */
 async function renderInline(
   app: App,
   el: HTMLElement,
@@ -306,13 +405,34 @@ async function renderInline(
   sourcePath: string,
   component: Component,
 ): Promise<void> {
-  const tmp = createDiv();
-  await MarkdownRenderer.render(app, md, tmp, sourcePath, component);
-  const p = tmp.querySelector("p");
-  if (p) {
-    while (p.firstChild) el.appendChild(p.firstChild);
-  } else {
-    while (tmp.firstChild) el.appendChild(tmp.firstChild);
+  void app;
+  void sourcePath;
+  void component;
+
+  const re = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+  let last = 0;
+  for (const match of md.matchAll(re)) {
+    const index = match.index ?? 0;
+    if (index > last) {
+      el.appendText(md.slice(last, index));
+    }
+    const target = match[1].trim();
+    const label = (match[2] ?? basenameOf(target)).trim();
+    const link = el.createEl("a", {
+      cls: "internal-link",
+      text: label,
+      attr: {
+        "data-href": target,
+        href: target,
+        target: "_blank",
+        rel: "noopener nofollow",
+      },
+    });
+    link.setAttr("aria-label", target);
+    last = index + match[0].length;
+  }
+  if (last < md.length) {
+    el.appendText(md.slice(last));
   }
 }
 

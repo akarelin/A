@@ -12,6 +12,7 @@ export class TypeIndex {
   private pathsByKey = new Map<string, Set<string>>();
   private listeners = new Set<() => void>();
   private _ready = false;
+  private rebuildScheduled = false;
 
   constructor(private readonly app: App) {}
 
@@ -22,6 +23,31 @@ export class TypeIndex {
   onChange(fn: () => void): () => void {
     this.listeners.add(fn);
     return () => this.listeners.delete(fn);
+  }
+
+  scheduleInitialBuild(): void {
+    if (this.rebuildScheduled || this._ready) return;
+    this.scheduleRebuild();
+  }
+
+  scheduleRebuild(): void {
+    if (this.rebuildScheduled) return;
+    this.rebuildScheduled = true;
+    const run = () => {
+      try {
+        this.rebuild();
+      } finally {
+        this.rebuildScheduled = false;
+      }
+    };
+    const w = window as unknown as {
+      requestIdleCallback?: (cb: () => void) => void;
+    };
+    if (typeof w.requestIdleCallback === "function") {
+      w.requestIdleCallback(run);
+    } else {
+      run();
+    }
   }
 
   rebuild(): void {
@@ -198,7 +224,7 @@ export function typeRefs(fm: Record<string, unknown>): string[] {
   return out;
 }
 
-function isClassDefinition(fm: Record<string, unknown>): boolean {
+export function isClassDefinition(fm: Record<string, unknown>): boolean {
   const t = fm["type"] ?? fm["Type"];
   if (typeRefs({ type: t }).includes("Class")) return true;
   if (Array.isArray(fm["fieldsOrder"])) return true;

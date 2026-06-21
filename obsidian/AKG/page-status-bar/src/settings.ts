@@ -118,6 +118,7 @@ export class PageStatusBarSettingTab extends PluginSettingTab {
 
     sectionToggle("header", "Type chain");
     sectionToggle("properties", "Metadata fields");
+    sectionToggle("navigation", "Navigation");
     sectionToggle("children", "Children");
     sectionToggle("files", "Files");
     sectionToggle("usedBy", "Used by");
