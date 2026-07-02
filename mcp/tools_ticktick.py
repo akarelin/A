@@ -207,7 +207,7 @@ _WR = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": True}
 _DEL = {"readOnlyHint": False, "destructiveHint": True, "openWorldHint": True}
 
 _READ_TOOLS = {"tt_lists", "tt_tasks", "tt_focus_list", "tt_focus_get"}
-_DESTRUCTIVE_TOOLS = {"tt_focus_delete"}
+_DESTRUCTIVE_TOOLS = {"tt_update", "tt_abandon", "tt_focus_delete"}
 for _t in TOOLS:
     if _t["name"] in _DESTRUCTIVE_TOOLS:
         _t["annotations"] = _DEL

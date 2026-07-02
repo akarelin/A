@@ -168,15 +168,15 @@ TOOLS = [
 # ── Annotations ─────────────────────────────────────────────────────
 
 _RO  = {"readOnlyHint": True,  "destructiveHint": False, "openWorldHint": False}
-_WR  = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": True}
-_DEL = {"readOnlyHint": False, "destructiveHint": True,  "openWorldHint": True}
+_WR  = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": False}
+_DEL = {"readOnlyHint": False, "destructiveHint": True,  "openWorldHint": False}
 
 _READ_TOOLS = {
     "note_list", "note_read", "note_search", "note_search_dql",
     "note_tags", "note_active", "note_commands", "note_status",
     "note_daily",
 }
-_DESTRUCTIVE_TOOLS = {"note_delete"}
+_DESTRUCTIVE_TOOLS = {"note_write", "note_patch", "note_delete", "note_command"}
 
 for _t in TOOLS:
     if _t["name"] in _READ_TOOLS:

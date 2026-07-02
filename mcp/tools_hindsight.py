@@ -137,8 +137,8 @@ TOOLS = [
      "inputSchema": {"type": "object", "properties": _BANK_PROP}},
 ]
 
-_RO = {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True}
-_RW = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": True}
+_RO = {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": False}
+_RW = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": False}
 
 _WRITE = {"hindsight_retain", "hindsight_sync_retain"}
 for _t in TOOLS:

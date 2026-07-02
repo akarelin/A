@@ -252,7 +252,7 @@ _READ_TOOLS = {
     "presence_get",
     "search",
 }
-_DESTRUCTIVE_TOOLS = {"cal_delete"}
+_DESTRUCTIVE_TOOLS = {"mail_send", "mail_reply", "cal_delete", "chat_send", "channel_send"}
 
 for _t in TOOLS:
     if _t["name"] in _READ_TOOLS:

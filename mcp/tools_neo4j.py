@@ -42,10 +42,12 @@ TOOLS = [
 ]
 
 _RO = {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": False}
-_RW = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": False}
+_STATE = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": False}
+_WRITE = {"readOnlyHint": False, "destructiveHint": True, "openWorldHint": False}
 for t in TOOLS:
     t["annotations"] = _RO
-TOOLS[3]["annotations"] = _RW
+TOOLS[1]["annotations"] = _STATE
+TOOLS[3]["annotations"] = _WRITE
 
 # ── Server discovery and selection ──
 
@@ -111,11 +113,12 @@ def _get_driver():
 # ── Query tools ──
 
 def _read_cypher(args):
+    from neo4j import READ_ACCESS
     query = args["query"]
     params = args.get("params", {})
     driver = _get_driver()
     try:
-        with driver.session(database="neo4j") as session:
+        with driver.session(database="neo4j", default_access_mode=READ_ACCESS) as session:
             result = session.run(query, params)
             records = [dict(r) for r in result]
             return {"records": records, "count": len(records)}
