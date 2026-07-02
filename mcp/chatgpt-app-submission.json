@@ -1,0 +1,1196 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "Karelin MCP",
+    "subtitle": "Work tools and memory",
+    "description": "Karelin MCP lets approved users work with private Microsoft 365, Azure Key Vault, Obsidian, Neo4j, TickTick, QMD search, and Hindsight memory workflows through ChatGPT. It supports searching and reading workspace data, creating drafts, calendar events, notes, tasks, and memories, and managing selected private records through authenticated MCP tools.",
+    "category": "PRODUCTIVITY"
+  },
+  "tools": {
+    "secret_get": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retrieves a named Azure Key Vault secret value without creating or updating secrets.",
+        "open_world_justification": "Operates only on a private Azure Key Vault and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "secret_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Lists Azure Key Vault secret names without reading or changing secret values.",
+        "open_world_justification": "Operates only on a private Azure Key Vault and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "secret_create": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Creates a new Azure Key Vault secret.",
+        "open_world_justification": "Operates only on a private Azure Key Vault and does not publish public content.",
+        "destructive_justification": "Creates a new secret and fails rather than overwriting an existing secret."
+      }
+    },
+    "secret_update": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Updates an Azure Key Vault secret value and can create one when requested.",
+        "open_world_justification": "Operates only on a private Azure Key Vault and does not publish public content.",
+        "destructive_justification": "Updates the active value of an existing secret, which overwrites what future reads return."
+      }
+    },
+    "mail_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "mail_read": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "mail_search": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "mail_send": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Sends an email through Microsoft 365.",
+        "open_world_justification": "Sends email through Microsoft 365 to selected recipients outside ChatGPT.",
+        "destructive_justification": "Delivers an email message, and this tool does not provide a recall operation."
+      }
+    },
+    "mail_draft": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Creates an email draft in Microsoft 365.",
+        "open_world_justification": "Changes data in the user's Microsoft 365 workspace outside ChatGPT.",
+        "destructive_justification": "Creates a new private workspace record without deleting or overwriting an existing record."
+      }
+    },
+    "mail_reply": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Sends a reply through Microsoft 365.",
+        "open_world_justification": "Sends email through Microsoft 365 to selected recipients outside ChatGPT.",
+        "destructive_justification": "Delivers an email reply, and this tool does not provide a recall operation."
+      }
+    },
+    "mail_folders": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "cal_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "cal_today": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "cal_search": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "cal_create": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Creates a Microsoft 365 calendar event.",
+        "open_world_justification": "Changes data in the user's Microsoft 365 workspace outside ChatGPT.",
+        "destructive_justification": "Creates a new private workspace record without deleting or overwriting an existing record."
+      }
+    },
+    "cal_delete": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Deletes a Microsoft 365 calendar event.",
+        "open_world_justification": "Changes data in the user's Microsoft 365 workspace outside ChatGPT.",
+        "destructive_justification": "Deletes the selected calendar event, and this tool does not provide a recovery operation."
+      }
+    },
+    "chat_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "chat_messages": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "chat_send": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Posts a message to a Microsoft Teams chat.",
+        "open_world_justification": "Posts a Microsoft Teams message that becomes visible to selected participants outside ChatGPT.",
+        "destructive_justification": "Posts a Teams chat message that this tool does not undo after delivery."
+      }
+    },
+    "chat_search": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "channel_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "channel_messages": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "channel_send": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Posts a message to a Microsoft Teams channel.",
+        "open_world_justification": "Posts a Microsoft Teams message that becomes visible to selected participants outside ChatGPT.",
+        "destructive_justification": "Posts a Teams channel message that this tool does not undo after delivery."
+      }
+    },
+    "files_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "files_search": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "tasks_lists": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "tasks_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "tasks_create": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Creates a Microsoft To Do task.",
+        "open_world_justification": "Changes data in the user's Microsoft 365 workspace outside ChatGPT.",
+        "destructive_justification": "Creates a new private workspace record without deleting or overwriting an existing record."
+      }
+    },
+    "tasks_complete": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Marks a Microsoft To Do task as completed.",
+        "open_world_justification": "Changes data in the user's Microsoft 365 workspace outside ChatGPT.",
+        "destructive_justification": "Changes status or presence without deleting records or overwriting content."
+      }
+    },
+    "contacts_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "contacts_search": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "notes_notebooks": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "presence_get": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "presence_set": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Sets the user's Microsoft 365 presence state.",
+        "open_world_justification": "Changes data in the user's Microsoft 365 workspace outside ChatGPT.",
+        "destructive_justification": "Changes status or presence without deleting records or overwriting content."
+      }
+    },
+    "search": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "users_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "users_get": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "users_search": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "groups_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "groups_get": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "groups_members": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "domains_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "licenses_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "user_licenses": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "devices_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "roles_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "role_members": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "org_info": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from Microsoft 365 admin directory and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Obsidian vault and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_read": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Obsidian vault and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_search": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Obsidian vault and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_search_dql": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Obsidian vault and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_tags": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Obsidian vault and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_active": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Obsidian vault and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_commands": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Obsidian vault and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_status": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Obsidian vault and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_write": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Creates or overwrites a note in the private Obsidian vault.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Can overwrite an existing note's full content in the private Obsidian vault."
+      }
+    },
+    "note_append": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Appends content to a note in the private Obsidian vault.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Appends content to a private note without deleting or replacing existing content."
+      }
+    },
+    "note_patch": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Inserts, appends, prepends, or replaces targeted note content in the private Obsidian vault.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Can replace targeted content in an existing note in the private Obsidian vault."
+      }
+    },
+    "note_delete": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Deletes a note or folder from the private Obsidian vault.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Deletes the selected note or folder from the private Obsidian vault."
+      }
+    },
+    "note_open": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Opens the selected note in the private Obsidian UI, which changes local UI state.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Only changes local UI focus and does not delete or overwrite note content."
+      }
+    },
+    "note_command": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Runs a selected Obsidian command, which can change the private vault or UI state.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Can run Obsidian commands that perform irreversible vault or UI changes."
+      }
+    },
+    "note_daily": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Obsidian vault and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "note_daily_append": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Appends content to today's daily note in the private Obsidian vault.",
+        "open_world_justification": "Operates only on a private Obsidian vault or local Obsidian UI and does not publish public content.",
+        "destructive_justification": "Appends content to a private note without deleting or replacing existing content."
+      }
+    },
+    "neo4j_list_servers": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Neo4j database and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a selected private Neo4j database and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "neo4j_use_server": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Changes the gateway's active Neo4j server selection for later queries.",
+        "open_world_justification": "Operates only on a selected private Neo4j database and does not publish public content.",
+        "destructive_justification": "Only changes the active server selection and does not alter graph data."
+      }
+    },
+    "read_neo4j_cypher": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Runs the Cypher query in a Neo4j read session and returns records without writing graph data.",
+        "open_world_justification": "Operates only on a selected private Neo4j database and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "write_neo4j_cypher": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Executes caller-provided write Cypher against the selected Neo4j database.",
+        "open_world_justification": "Operates only on a selected private Neo4j database and does not publish public content.",
+        "destructive_justification": "Runs write Cypher that can create, overwrite, or delete graph data."
+      }
+    },
+    "get_neo4j_schema": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Neo4j database and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a selected private Neo4j database and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "tt_lists": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from TickTick and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "tt_tasks": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from TickTick and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "tt_create": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Creates a TickTick task.",
+        "open_world_justification": "Changes task or focus-session state in TickTick, an external workspace service.",
+        "destructive_justification": "Creates a new private workspace record without deleting or overwriting an existing record."
+      }
+    },
+    "tt_update": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Updates fields on an existing TickTick task.",
+        "open_world_justification": "Changes task or focus-session state in TickTick, an external workspace service.",
+        "destructive_justification": "Overwrites fields on an existing TickTick task."
+      }
+    },
+    "tt_complete": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Marks an existing TickTick task as completed.",
+        "open_world_justification": "Changes task or focus-session state in TickTick, an external workspace service.",
+        "destructive_justification": "Changes status or presence without deleting records or overwriting content."
+      }
+    },
+    "tt_abandon": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Marks an existing TickTick task as abandoned.",
+        "open_world_justification": "Changes task or focus-session state in TickTick, an external workspace service.",
+        "destructive_justification": "Marks an existing TickTick task as abandoned, and this tool does not undo that state change."
+      }
+    },
+    "tt_focus_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from TickTick and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "tt_focus_get": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from TickTick and returns it without modifying that system.",
+        "open_world_justification": "Only reads from authenticated private systems and does not write to public internet state.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "tt_focus_delete": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Deletes a TickTick focus session.",
+        "open_world_justification": "Changes task or focus-session state in TickTick, an external workspace service.",
+        "destructive_justification": "Deletes the selected TickTick focus session."
+      }
+    },
+    "qmd_search": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from QMD index and returns it without modifying that system.",
+        "open_world_justification": "Searches a private QMD index and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "qmd_vsearch": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from QMD index and returns it without modifying that system.",
+        "open_world_justification": "Searches a private QMD index and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "qmd_get": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from QMD index and returns it without modifying that system.",
+        "open_world_justification": "Searches a private QMD index and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "qmd_status": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from QMD index and returns it without modifying that system.",
+        "open_world_justification": "Searches a private QMD index and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "hindsight_health": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Hindsight memory bank and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "hindsight_bank_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Hindsight memory bank and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "hindsight_bank_stats": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Hindsight memory bank and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "hindsight_bank_profile": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Hindsight memory bank and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "hindsight_retain": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Stores a memory in a private Hindsight memory bank.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Creates a new private workspace record without deleting or overwriting an existing record."
+      }
+    },
+    "hindsight_sync_retain": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Stores and indexes a memory in a private Hindsight memory bank before returning.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Creates a new private workspace record without deleting or overwriting an existing record."
+      }
+    },
+    "hindsight_recall": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Hindsight memory bank and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "hindsight_reflect": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Computes an answer from stored memories without storing a new memory.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "hindsight_memory_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Hindsight memory bank and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "hindsight_directive_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Hindsight memory bank and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    },
+    "hindsight_mental_model_list": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only retrieves or computes data from private Hindsight memory bank and returns it without modifying that system.",
+        "open_world_justification": "Operates only on a private Hindsight memory bank and does not publish public content.",
+        "destructive_justification": "Does not delete, overwrite, revoke access, or send irreversible messages."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "Find and summarize a recent email conversation.",
+      "user_prompt": "Search my email for the latest message about the rollout plan and summarize the most relevant thread.",
+      "file_attachment_urls": null,
+      "tools_triggered": "mail_search, mail_read",
+      "expected_output": "Returns the matching message details and a concise summary without changing mailbox state.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Create a calendar event from explicit scheduling details.",
+      "user_prompt": "Schedule a 30 minute planning meeting tomorrow at 10 AM with the team and make it an online meeting.",
+      "file_attachment_urls": null,
+      "tools_triggered": "cal_create",
+      "expected_output": "Creates the event and reports the subject, time, and meeting status for review.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Search a private note vault and append a short update.",
+      "user_prompt": "Find my project planning note in Obsidian and append a short status update about today's decision.",
+      "file_attachment_urls": null,
+      "tools_triggered": "note_search, note_append",
+      "expected_output": "Finds the relevant note, appends the requested update, and confirms the note path.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Select a graph database and run a read-only Cypher query.",
+      "user_prompt": "List the available Neo4j servers, select the right one, show me the schema, then run a read-only query for the top project nodes.",
+      "file_attachment_urls": null,
+      "tools_triggered": "neo4j_list_servers, neo4j_use_server, get_neo4j_schema, read_neo4j_cypher",
+      "expected_output": "Reports the selected server, schema highlights, and query records without writing graph data.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Use indexed context to create a task and retain a decision.",
+      "user_prompt": "Search the QMD index for the deployment checklist, create a TickTick task for the next action, and remember the decision in Hindsight.",
+      "file_attachment_urls": null,
+      "tools_triggered": "qmd_search, tt_create, hindsight_retain",
+      "expected_output": "Uses indexed context to create a task and stores a concise private memory of the decision.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Do not trigger for travel booking requests.",
+      "user_prompt": "Book me the cheapest flight from San Francisco to New York next Friday.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it does not book travel or purchase tickets.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not trigger for unrelated image analysis.",
+      "user_prompt": "Identify the objects in this vacation photo and make it look cinematic.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because image understanding and editing are outside its supported workflows.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not trigger for financial trading instructions.",
+      "user_prompt": "Buy 100 shares of NVDA in my brokerage account right now.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it does not connect to brokerage or trading systems.",
+      "expected_output_url": null
+    }
+  ]
+}
