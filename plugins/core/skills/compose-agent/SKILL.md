@@ -107,21 +107,18 @@ model: sonnet
 skills:
   - search
   - work-m365
-  - work-atlassian
+  - work-ticktick
 mcpServers:
-  M365:
+  Karelin:
     type: http
-    url: https://mcp.karelin.ai/m365
-  atlassian:
-    type: http
-    url: https://mcp.atlassian.com/v1/mcp
+    url: https://mcp.karelin.ai/mcp
 memory: user
 color: blue
 ---
 
 You are a daily standup agent. When invoked:
 1. Search yesterday's email and calendar (work-m365)
-2. Check Jira for recently updated tickets (work-atlassian)
+2. Check TickTick for planned/completed tasks (work-ticktick)
 3. Summarize: what was done, what's planned, any blockers
 ```
 

@@ -42,13 +42,6 @@
         "Authorization": "Bearer ${MCP_KARELIN_TOKEN}"
       }
     },
-    "QMD": {
-      "type": "http",
-      "url": "https://your-mcp-host/qmd",
-      "headers": {
-        "Authorization": "Bearer ${MCP_KARELIN_TOKEN}"
-      }
-    },
     "Hindsight": {
       "type": "http",
       "url": "https://your-mcp-host/hindsight",

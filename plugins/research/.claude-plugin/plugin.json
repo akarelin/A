@@ -1,9 +1,9 @@
 {
   "name": "research",
-  "version": "0.1.1",
-  "description": "Search and data exploration: knowledge search across providers, Neo4j graph queries, SQL database exploration.",
+  "version": "0.1.2",
+  "description": "Search and data exploration: knowledge search across providers, Neo4j graph queries.",
   "author": {
     "name": "Alex Karelin"
   },
-  "keywords": ["research", "search", "data", "neo4j", "cypher", "sql", "postgres", "obsidian", "knowledge"]
+  "keywords": ["research", "search", "data", "neo4j", "cypher", "obsidian", "knowledge"]
 }

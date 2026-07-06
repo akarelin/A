@@ -326,7 +326,8 @@ def _cal_today(a):
                      "&$select=id,subject,start,end,location,organizer", user_hint=_u(a))
 
 def _cal_search(a):
-    return graph_get(f"/me/events?$search=\"{a['query']}\"&$top={a.get('top', 10)}"
+    q = a['query'].replace("'", "''")
+    return graph_get(f"/me/events?$filter=contains(subject,'{q}')&$top={a.get('top', 10)}"
                      "&$select=id,subject,start,end,location,organizer,isOnlineMeeting", user_hint=_u(a))
 
 def _cal_create(a):
@@ -424,7 +425,7 @@ def _tasks_complete(a):
 
 def _contacts_list(a):
     return graph_get(f"/me/contacts?$top={a.get('top', 20)}"
-                     "&$select=id,displayName,emailAddresses,mobilePhone,companyName,jobTitle",
+                     "&$select=id,displayName,emailAddresses,businessPhones,homePhones,companyName,jobTitle",
                      user_hint=_u(a))
 
 def _contacts_search(a):
@@ -456,7 +457,7 @@ def _presence_set(a):
 # --  Search  --
 
 def _search(a):
-    entity_types = a["types"].split(",") if a.get("types") else ["message", "driveItem", "event"]
+    entity_types = a["types"].split(",") if a.get("types") else ["message"]
     body = {"requests": [{
         "entityTypes": entity_types,
         "query": {"queryString": a["query"]},

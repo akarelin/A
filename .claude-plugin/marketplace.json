@@ -10,10 +10,10 @@
   "plugins": [
     {
       "name": "core",
-      "description": "Core agent primitives: memory, sessions, skills, agents, and learning.",
+      "description": "Core agent primitives: memory, sessions, skills, agents, learning, and Obsidian daily notes.",
       "source": "./plugins/core",
       "category": "development",
-      "keywords": ["core", "memory", "session", "skill", "agent", "learn"],
+      "keywords": ["core", "memory", "session", "skill", "agent", "learn", "obsidian"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/core"
     },
     {
@@ -26,18 +26,26 @@
     },
     {
       "name": "organize",
-      "description": "File organizer: arxiv papers and medical scans to Obsidian.",
+      "description": "File organizer: arxiv papers, medical scans, and PDF triage to Obsidian.",
       "source": "./plugins/organize",
       "category": "productivity",
-      "keywords": ["organize", "files", "arxiv", "papers", "medical", "scan", "obsidian"],
+      "keywords": ["organize", "files", "arxiv", "papers", "medical", "scan", "pdf", "obsidian"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/organize"
     },
     {
+      "name": "develop",
+      "description": "Developer tooling: gppu framework support and git history rewriting.",
+      "source": "./plugins/develop",
+      "category": "development",
+      "keywords": ["develop", "gppu", "git", "history"],
+      "homepage": "https://github.com/akarelin/A/tree/master/plugins/develop"
+    },
+    {
       "name": "work",
-      "description": "Workplace productivity: M365, Google (Gmail + Drive), Slack (MCP), Jira/Confluence (MCP).",
+      "description": "Workplace productivity: M365 and Google (Gmail + Drive).",
       "source": "./plugins/work",
       "category": "productivity",
-      "keywords": ["work", "m365", "outlook", "email", "calendar", "teams", "slack", "jira", "atlassian", "gmail", "google", "drive"],
+      "keywords": ["work", "m365", "outlook", "email", "calendar", "teams", "gmail", "google", "drive"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/work"
     },
     {
@@ -50,10 +58,10 @@
     },
     {
       "name": "research",
-      "description": "Search and data exploration: knowledge search across providers, Neo4j graph queries, SQL database exploration.",
+      "description": "Search and data exploration: knowledge search across providers, Neo4j graph queries.",
       "source": "./plugins/research",
       "category": "development",
-      "keywords": ["research", "search", "data", "neo4j", "cypher", "sql", "postgres", "obsidian", "knowledge"],
+      "keywords": ["research", "search", "data", "neo4j", "cypher", "obsidian", "knowledge"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/research"
     }
   ]

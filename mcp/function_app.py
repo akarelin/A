@@ -7,10 +7,8 @@ Auth model:
     /oauth/callback, /token) delegate user authentication to Entra ID via the
     MCP United app registration, then issue real Entra JWTs back to the caller.
   - Allowlist enforcement: oid claim must be in `mcp-allowed-oids` (KV secret).
-  - PSK fallback (`MCP_API_KEY`) is supported via `MCP_AUTH_MODE` env:
-      psk      → PSK required (legacy, default)
-      entra    → Entra JWT required
-      both     → PSK accepted, otherwise Entra JWT
+  - PSK auth is retired. `MCP_AUTH_MODE` env supports:
+      entra    → Entra JWT required (production default)
       disabled → no auth (dev only)
 """
 
@@ -37,7 +35,7 @@ import tools_mcp_proxy as mcp_proxy
 import tools_obsidian as obsidian_tools
 import tools_neo4j as neo4j_tools
 import tools_ticktick as ticktick_tools
-import tools_qmd as qmd_tools
+# import tools_qmd as qmd_tools  # disabled — qmd is Mac-GPU-bound, no server reachable from this container
 import tools_hindsight as hindsight_tools
 
 app = func.FunctionApp()
@@ -45,7 +43,7 @@ app = func.FunctionApp()
 PROTOCOL_VERSION = "2025-03-26"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOL_TEXT_LIMIT = int(os.environ.get("MCP_TOOL_TEXT_LIMIT", "12000"))
-AUTH_MODE = os.environ.get("MCP_AUTH_MODE", "psk").lower()
+AUTH_MODE = os.environ.get("MCP_AUTH_MODE", "entra").lower()
 BASE_URL = os.environ["MCP_BASE_URL"].rstrip("/")
 
 CORS_HEADERS = {
@@ -587,7 +585,7 @@ for _mod, _fn in [
     (obsidian_tools, obsidian_tools.dispatch_tool),
     (neo4j_tools,    neo4j_tools.dispatch_tool),
     (ticktick_tools, ticktick_tools.dispatch),
-    (qmd_tools,      qmd_tools.dispatch_tool),
+    # (qmd_tools,      qmd_tools.dispatch_tool),  # disabled — see import above
     (hindsight_tools, hindsight_tools.dispatch_tool),
 ]:
     for _t in _mod.TOOLS:
@@ -716,10 +714,11 @@ def ticktick(req: func.HttpRequest) -> func.HttpResponse:
     return _mcp_response(req, ticktick_tools.TOOLS, ticktick_tools.dispatch, "TickTick", require_role=_PRIV)
 
 
-@app.route(route="qmd", methods=["GET", "POST", "DELETE", "OPTIONS"],
-           auth_level=func.AuthLevel.ANONYMOUS)
-def qmd(req: func.HttpRequest) -> func.HttpResponse:
-    return _mcp_response(req, qmd_tools.TOOLS, qmd_tools.dispatch_tool, "QMD", require_role=_PRIV)
+# @app.route(route="qmd", methods=["GET", "POST", "DELETE", "OPTIONS"],
+#            auth_level=func.AuthLevel.ANONYMOUS)
+# def qmd(req: func.HttpRequest) -> func.HttpResponse:
+#     return _mcp_response(req, qmd_tools.TOOLS, qmd_tools.dispatch_tool, "QMD", require_role=_PRIV)
+# disabled — qmd is Mac-GPU-bound (Qwen3 embedding), no server reachable from this container
 
 
 @app.route(route="hindsight", methods=["GET", "POST", "DELETE", "OPTIONS"],

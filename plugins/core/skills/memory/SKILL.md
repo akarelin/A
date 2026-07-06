@@ -13,13 +13,13 @@ allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
 
 Get, set, and save operations on persistent state. All operations happen within a scope.
 
-Secrets/credentials are **not** handled here — see the `secrets` section of the parent `core` skill, which routes to the `Karelin Keys` MCP (Azure Key Vault).
+Secrets/credentials are **not** handled here — see the `secrets` section of the parent `core` skill, which routes to the `secret_*` tools on the MCP United connector (Azure Key Vault).
 
 ## Scopes
 
 | Scope | Storage backends | Examples |
 |-------|-----------------|----------|
-| my | Obsidian vault | daily notes, personal config |
+| my | Hindsight (agent memory), Obsidian vault | recalled facts/directives, daily notes, personal config |
 | team | shared repos, shared drives | team config |
 | project | project repo, project docs | project state, project config |
 | company | company systems | company-wide config |
@@ -30,7 +30,7 @@ Scope is detected from context or elicited from the user.
 
 ### get
 Recall a fact or piece of state.
-- Facts: Obsidian vault, AGENTS.md, auto-memory
+- Facts: `hindsight_recall` / `hindsight_reflect` (ranked recall / synthesized answer), Obsidian vault (`note_search` / `note_search_dql`), AGENTS.md, auto-memory
 - Config: project files, AGENTS.md locations
 
 ### set
@@ -42,9 +42,12 @@ Persist a fact or piece of state to the correct location.
 
 Known entity → backend mappings:
 - Locations → AGENTS.md Locations section
-- Daily notes / mistakes → Obsidian vault daily notes
+- Recalled facts / mistakes / mental models → `hindsight_retain` / `hindsight_sync_retain` (per-bank via `bank_id`)
+- Daily notes → Obsidian vault daily notes (`note_daily_append`)
 - Project facts → project docs or AGENTS.md
 - Skill metadata → SKILL.md frontmatter
+
+Hindsight tools (`hindsight_bank_list`, `hindsight_directive_list`, `hindsight_mental_model_list`, `hindsight_memory_list`, `hindsight_health`) are reached via the same MCP United connector as everything else in this skill — no separate server.
 
 ### save (export/archive)
 Bundle a project folder's complete state for handover or archival:

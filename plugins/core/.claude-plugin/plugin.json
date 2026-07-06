@@ -1,9 +1,9 @@
 {
   "name": "core",
-  "version": "0.2.1",
-  "description": "Core agent primitives: memory, sessions, skills, agents, and learning.",
+  "version": "0.3.0",
+  "description": "Core agent primitives: memory, sessions, skills, agents, learning, and Obsidian daily notes.",
   "author": {
     "name": "Alex Karelin"
   },
-  "keywords": ["core", "memory", "session", "skill", "agent", "learn"]
+  "keywords": ["core", "memory", "session", "skill", "agent", "learn", "obsidian"]
 }

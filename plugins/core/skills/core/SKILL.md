@@ -23,7 +23,7 @@ Foundational tools for agent self-management. These are primitives consumed by o
 
 ## Secrets
 
-Secrets live in the `karelin` Azure Key Vault and are accessed via the `Karelin Keys` MCP server (`mcp.karelin.ai/keys`). Four tools, all routed here — not through `memory`:
+Secrets live in the `karelin` Azure Key Vault and are accessed via the `secret_*` tools on the MCP United connector (`mcp.karelin.ai/mcp`). Four tools, all routed here — not through `memory`:
 
 | MCP tool | Use when |
 |----------|----------|

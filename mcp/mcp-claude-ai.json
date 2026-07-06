@@ -24,10 +24,6 @@
       "type": "http",
       "url": "https://your-mcp-host/ticktick"
     },
-    "QMD": {
-      "type": "http",
-      "url": "https://your-mcp-host/qmd"
-    },
     "Hindsight": {
       "type": "http",
       "url": "https://your-mcp-host/hindsight"

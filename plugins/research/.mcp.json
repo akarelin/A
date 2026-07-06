@@ -1,22 +1,8 @@
 {
-  "Neo4j": {
+  "Karelin": {
     "type": "http",
-    "url": "https://mcp.karelin.ai/neo4j",
+    "url": "https://mcp.karelin.ai/mcp",
     "headers": {"Authorization": "Bearer ${MCP_KARELIN_TOKEN}"}
-  },
-  "Obsidian": {
-    "type": "http",
-    "url": "https://mcp.karelin.ai/obsidian",
-    "headers": {"Authorization": "Bearer ${MCP_KARELIN_TOKEN}"}
-  },
-  "M365": {
-    "type": "http",
-    "url": "https://mcp.karelin.ai/m365",
-    "headers": {"Authorization": "Bearer ${MCP_KARELIN_TOKEN}"}
-  },
-  "atlassian": {
-    "type": "http",
-    "url": "https://mcp.atlassian.com/v1/mcp"
   },
   "search-everything": {
     "command": "uvx",

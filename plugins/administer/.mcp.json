@@ -1,7 +1,7 @@
 {
-  "M365 Admin": {
+  "Karelin": {
     "type": "http",
-    "url": "https://mcp.karelin.ai/m365-admin",
+    "url": "https://mcp.karelin.ai/mcp",
     "headers": {"Authorization": "Bearer ${MCP_KARELIN_TOKEN}"}
   }
 }

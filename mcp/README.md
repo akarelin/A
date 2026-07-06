@@ -1,6 +1,6 @@
 # MCP Server
 
-A multi-endpoint [Model Context Protocol](https://modelcontextprotocol.io/) server packaged as an Azure Function (Python). One container exposes several tool sets — Microsoft 365 Graph (via on-behalf-of), Azure Key Vault secrets, an Obsidian vault, Neo4j, TickTick, a local `qmd` search index, and Hindsight (persistent agent memory) — behind a single Entra ID OAuth app. All endpoints speak Streamable HTTP (MCP protocol `2025-03-26`).
+A multi-endpoint [Model Context Protocol](https://modelcontextprotocol.io/) server packaged as an Azure Function (Python). One container exposes several tool sets — Microsoft 365 Graph (via on-behalf-of), Azure Key Vault secrets, an Obsidian vault, Neo4j, TickTick, and Hindsight (persistent agent memory) — behind a single Entra ID OAuth app. All endpoints speak Streamable HTTP (MCP protocol `2025-03-26`).
 
 ## Architecture
 
@@ -17,7 +17,7 @@ Azure Functions container (this repo)
         │   /oauth/callback, /token                  ← OAuth shim (anonymous)
         ├── /m365, /m365-admin                       ← open tier (allowlist)
         ├── /keys, /obsidian, /neo4j, /ticktick,
-        │   /qmd, /hindsight, /mcp-proxy/<slug>,
+        │   /hindsight, /mcp-proxy/<slug>,
         │   /mcp, /                                  ← privileged tier (allowlist + role)
         └── /docs, /icons/*                          ← anonymous
 ```
@@ -52,7 +52,7 @@ Two tiers, both enforced in the same auth path:
 | Tier | Endpoints | Requirement |
 |---|---|---|
 | Open | `/m365`, `/m365-admin` | `oid` in the allowlist. Per-user permission boundaries are enforced downstream by Microsoft Graph. |
-| Privileged | `/keys`, `/obsidian`, `/neo4j`, `/ticktick`, `/qmd`, `/hindsight`, `/mcp-proxy/<slug>`, `/mcp`, `/` (alias) | Allowlist plus the `<ROLE_NAME>` app role in the JWT `roles` claim. Assign per-user in Entra. |
+| Privileged | `/keys`, `/obsidian`, `/neo4j`, `/ticktick`, `/hindsight`, `/mcp-proxy/<slug>`, `/mcp`, `/` (alias) | Allowlist plus the `<ROLE_NAME>` app role in the JWT `roles` claim. Assign per-user in Entra. |
 
 The role is assigned in Entra against the application's service principal; users must sign in again for a newly-assigned role to appear in their token.
 
@@ -77,7 +77,6 @@ Consequence: there is no `user=<someone-else>` override. A user cannot read anot
 | `/obsidian` | privileged | Read/write to a local Obsidian vault via the [Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) plugin: list, read, write, append, patch (by heading / block-reference / frontmatter-key), delete, open, run command, simple search, Dataview DQL search, tags, active note, daily note get/append. Tries each configured host in order and caches the one that responds. |
 | `/neo4j` | privileged | Auto-discovers Neo4j servers from vault secrets of the form `neo4j-<server>-uri` / `neo4j-<server>-password`. Tools: `neo4j_list_servers`, `neo4j_use_server`, `read_neo4j_cypher`, `write_neo4j_cypher`, `get_neo4j_schema`. |
 | `/ticktick` | privileged | TickTick projects, tasks, and time-tracking. Tasks: `tt_lists`, `tt_tasks`, `tt_create`, `tt_update`, `tt_complete`, `tt_abandon`. Focus sessions (Pomodoro + Timing) via `/open/v1/focus`: `tt_focus_list`, `tt_focus_get`, `tt_focus_delete`. Accepts natural-language dates (`today`, `tomorrow`, `yesterday`, `N days ago`, `this week`, `in N days`, `next monday`, ISO 8601). |
-| `/qmd` | privileged | Wraps a local `qmd` CLI (hybrid BM25 + vector index): `qmd_search`, `qmd_vsearch`, `qmd_get`, `qmd_status`. |
 | `/hindsight` | privileged | Wraps the local Hindsight HTTP API ([vectorize-io/hindsight](https://github.com/vectorize-io/hindsight)) for persistent agent memory: `hindsight_health`, `hindsight_bank_list`, `hindsight_bank_stats`, `hindsight_bank_profile`, `hindsight_retain`, `hindsight_sync_retain`, `hindsight_recall`, `hindsight_reflect`, `hindsight_memory_list`, `hindsight_directive_list`, `hindsight_mental_model_list`. Per-bank isolation via the `bank_id` argument (default from `HINDSIGHT_DEFAULT_BANK`). |
 | `/mcp-proxy/<slug>` | privileged | Generic OAuth-MCP wrapper — forwards `tools/call` to an upstream MCP server, handling Bearer auth and refresh-on-401 transparently. One slug per upstream, configured via `MCP_PROXIES_JSON`. Currently: `neuronet` → Xsolla Neuronet (`neuronet_chat`, `neuronet_submit`, `neuronet_get_result`, `neuronet_health`). |
 | `/mcp`, `/` | privileged | Aggregate endpoint exposing every tool from every module above **and** every proxy upstream. One MCP-client connection sees all dispatchable tools. |
@@ -113,7 +112,7 @@ Both JSON and SSE (`event: message\ndata: {...}\n\n`) upstream response formats 
 | Variable | Purpose |
 |---|---|
 | `MCP_BASE_URL` | Public base URL the OAuth shim advertises in discovery documents and uses as its own redirect URI. Required. |
-| `MCP_AUTH_MODE` | `entra` (validate JWT — production), `disabled` (no auth — dev only). Defaults to `psk`, which is now a stub that rejects all requests; set explicitly. |
+| `MCP_AUTH_MODE` | `entra` (validate JWT — production, default), `disabled` (no auth — dev only). |
 | `AZURE_KEYVAULT_NAME` | Name of the Azure Key Vault the container reads all secrets from. The container's identity must have `get` (and `list`/`set` for `/keys` write tools) on the vault. |
 | `MCP_TOOL_TEXT_LIMIT` | Max characters per tool response before truncation. Default `12000`. |
 | `MCP_DEFAULT_USER` | Legacy default for the (now-ignored) `user` parameter on M365 tools. |
@@ -125,9 +124,6 @@ Both JSON and SSE (`event: message\ndata: {...}\n\n`) upstream response formats 
 | `OBSIDIAN_API_KEY` | Bearer token printed by the Obsidian Local REST API plugin. |
 | `TICKTICK_CLIENT_ID` / `TICKTICK_CLIENT_SECRET` | OAuth credentials for TickTick. |
 | `TICKTICK_ACCESS_TOKEN` / `TICKTICK_REFRESH_TOKEN` | TickTick tokens. The current build expects a pre-obtained access token. |
-| `QMD_BIN` | Path to the `qmd` binary. |
-| `QMD_XDG_CONFIG` / `QMD_XDG_CACHE` | XDG dirs passed to the `qmd` subprocess. |
-| `QMD_TIMEOUT` | Subprocess timeout in seconds. Default `30`. |
 | `HINDSIGHT_API_BASE_URL` | Base URL for the Hindsight HTTP API. Default `http://127.0.0.1:8888`. Override when the container can't reach localhost (e.g. `http://host.docker.internal:8888`, `http://alex-mac:8888`, or `https://hindsight-api.karelin.ai`). |
 | `HINDSIGHT_ORG` | Hindsight org id (path scope `/v1/{org}/...`). Default `default`. |
 | `HINDSIGHT_DEFAULT_BANK` | Bank id used when a tool call omits `bank_id`. Default `alex`. |
@@ -194,7 +190,6 @@ Or wire individual endpoints into a static config:
     "Obsidian":  {"type": "http", "url": "https://<MCP_HOST>/obsidian"},
     "Neo4j":     {"type": "http", "url": "https://<MCP_HOST>/neo4j"},
     "TickTick":  {"type": "http", "url": "https://<MCP_HOST>/ticktick"},
-    "QMD":       {"type": "http", "url": "https://<MCP_HOST>/qmd"},
     "Hindsight": {"type": "http", "url": "https://<MCP_HOST>/hindsight"}
   }
 }

@@ -208,8 +208,9 @@ def _note_search(a):
 
 def _note_search_dql(a):
     return _try_request("POST", "/search/",
-                        json_body={"query": a["query"], "format": "dataview"},
-                        extra_headers={"Accept": "application/json"})
+                        data=a["query"].encode("utf-8"),
+                        extra_headers={"Content-Type": "application/vnd.olrapi.dataview.dql+txt",
+                                       "Accept": "application/json"})
 
 def _note_tags(a):
     return _try_request("GET", "/tags/",

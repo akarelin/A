@@ -14,8 +14,8 @@ Search and data exploration across all connected sources.
 
 | Tool | Description |
 |------|-------------|
-| search | Search across providers (Obsidian, m365, Everything, Atlassian, Neo4j) |
-| data | Interactive data exploration: Neo4j (Cypher) and relational DBs (SQL) |
+| search | Search across providers (Obsidian, m365, Everything, Neo4j) |
+| data | Interactive data exploration: Neo4j (Cypher) |
 
 ## Routing
 

@@ -11,12 +11,12 @@ Interactive Neo4j graph database exploration via Neo4j MCP.
 
 ## MCP Connection
 
-Uses the Neo4j endpoint (auto-discovers servers from Key Vault):
+Uses the MCP United connector (auto-discovers Neo4j servers from Key Vault):
 ```json
 {
-  "Neo4j": {
+  "Karelin": {
     "type": "http",
-    "url": "https://mcp.karelin.ai/neo4j",
+    "url": "https://mcp.karelin.ai/mcp",
     "headers": {"Authorization": "Bearer ${MCP_KARELIN_TOKEN}"}
   }
 }
