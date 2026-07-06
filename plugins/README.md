@@ -29,7 +29,7 @@ Personal productivity plugins for Claude Code.
 | **work** | work-m365, work-slack, work-atlassian | Workplace: M365, Slack (MCP), Jira/Confluence (MCP) |
 | **organize** | organize-arxiv, organize-scan-medical | File organizer (arxiv papers, medical scans) |
 | **manage** | session, skill | Session and skill management |
-| **administer** | admin-m365, admin-gcp | Cloud admin: M365 tenant + GCP resources |
+| **administer** | admin-m365, admin-portainer | Cloud admin: M365 tenant + Portainer stack deploys |
 
 ## Plugin Details
 
@@ -61,4 +61,6 @@ Personal productivity plugins for Claude Code.
 
 ### administer
 - **admin-m365** — M365 tenant admin: Users, Groups, Teams, Licenses, Audit, Security
-- **admin-gcp** — GCP administration: Projects, Compute, IAM, Storage, Cloud Run, Secrets
+- **admin-portainer** — Portainer Docker stack deploys for the karel.in fleet
+
+(`admin-gcp` retired 2026-07-06 — GCP not in use.)

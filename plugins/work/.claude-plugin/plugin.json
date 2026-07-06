@@ -1,10 +1,10 @@
 {
   "name": "work",
   "version": "0.2.2",
-  "description": "Workplace productivity: M365 and Google (Gmail + Drive).",
+  "description": "Workplace productivity: Microsoft 365 (mail, calendar, Teams, tasks) and TickTick.",
   "author": {
     "name": "Alex Karelin"
   },
-  "keywords": ["work", "m365", "outlook", "email", "calendar", "teams", "gmail", "google", "drive"],
+  "keywords": ["work", "m365", "outlook", "email", "calendar", "teams", "ticktick"],
   "mcpServers": "./.mcp.json"
 }

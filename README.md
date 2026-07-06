@@ -63,7 +63,6 @@ Example — the `work` meta-skill routes like this:
 | Request mentions | Routes to |
 |---|---|
 | Outlook, Exchange, Teams, OneDrive | `work-m365` |
-| Gmail, Google Drive | `work-google` |
 | Slack messages, channels | `work-slack` |
 | Jira issues, Confluence pages | `work-atlassian` |
 | TickTick tasks | `work-ticktick` |
@@ -86,7 +85,6 @@ Real example:
 ```
 work/                              ← meta-skill (routes by platform)
 ├── work-m365/                     ← concrete skill (Graph API via self-hosted MCP)
-├── work-google/                   ← concrete skill (Gmail + Drive)
 ├── work-slack/                    ← concrete skill (Slack MCP)
 ├── work-atlassian/                ← concrete skill (Jira/Confluence MCP)
 └── work-ticktick/                 ← concrete skill (TickTick via self-hosted MCP)
@@ -170,19 +168,18 @@ Install via `/plugin install <name>@karelin`. Once installed, skills appear in C
 |---|---|
 | `work` | Meta-skill router across workplace platforms |
 | `work-m365` | Mail, Calendar, Teams, Files, Tasks, Contacts, OneNote, Presence (self-hosted M365 MCP) |
-| `work-google` | Gmail, Google Drive |
 | `work-slack` | Messaging, search, threads, canvases (Slack MCP) |
 | `work-atlassian` | Jira issues, epics, sprints, Confluence docs (Atlassian MCP) |
 | `work-ticktick` | TickTick task management (self-hosted TickTick MCP) |
 
 ### administer
-**v0.1.1** — Cloud and tenant administration: M365 tenant admin and GCP resource management.
+**v0.1.1** — Tenant administration: M365 tenant admin and Portainer stack deploys.
 
 | Sub-skill | Description |
 |---|---|
 | `administer` | Meta-skill router across admin domains |
 | `admin-m365` | M365 tenant admin: Users, Groups, Licenses, Devices, Roles, Domains |
-| `admin-gcp` | GCP resource management |
+| `admin-portainer` | Portainer Docker stack deploys for the karel.in fleet |
 
 ### research
 **v0.1.1** — Search and data exploration: knowledge search across providers, Neo4j graph queries, SQL database exploration.

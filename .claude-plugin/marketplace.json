@@ -42,18 +42,18 @@
     },
     {
       "name": "work",
-      "description": "Workplace productivity: M365 and Google (Gmail + Drive).",
+      "description": "Workplace productivity: Microsoft 365 (mail, calendar, Teams, tasks) and TickTick.",
       "source": "./plugins/work",
       "category": "productivity",
-      "keywords": ["work", "m365", "outlook", "email", "calendar", "teams", "gmail", "google", "drive"],
+      "keywords": ["work", "m365", "outlook", "email", "calendar", "teams", "ticktick"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/work"
     },
     {
       "name": "administer",
-      "description": "Cloud and tenant administration: M365 tenant admin and GCP resource management.",
+      "description": "Tenant administration: M365 tenant admin and Portainer stack deploys.",
       "source": "./plugins/administer",
       "category": "development",
-      "keywords": ["admin", "m365", "gcp", "google-cloud", "tenant", "users", "groups", "iam", "compute"],
+      "keywords": ["admin", "m365", "tenant", "users", "groups", "portainer"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/administer"
     },
     {
