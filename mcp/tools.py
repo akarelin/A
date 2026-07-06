@@ -425,7 +425,7 @@ def _tasks_complete(a):
 
 def _contacts_list(a):
     return graph_get(f"/me/contacts?$top={a.get('top', 20)}"
-                     "&$select=id,displayName,emailAddresses,businessPhones,homePhones,companyName,jobTitle",
+                     "&$select=id,displayName,emailAddresses,companyName,jobTitle",
                      user_hint=_u(a))
 
 def _contacts_search(a):
