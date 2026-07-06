@@ -32,7 +32,7 @@ Detect scope from context:
 
 | Provider | How |
 |----------|-----|
-| Obsidian | MCP United `note_search` / `note_search_dql` (my scope only) |
+| Obsidian | MCP United `note_search` / `note_search_jsonlogic` (my scope only) |
 | m365 | Graph API search via work-m365 script, or MCP United's `search`/`files_search` tools |
 | Everything | MCP server `mcp-everything-search` (my scope only) |
 | Neo4j | MCP United — Cypher queries on knowledge graph (my, team scopes) |

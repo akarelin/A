@@ -30,7 +30,7 @@ Scope is detected from context or elicited from the user.
 
 ### get
 Recall a fact or piece of state.
-- Facts: `hindsight_recall` / `hindsight_reflect` (ranked recall / synthesized answer), Obsidian vault (`note_search` / `note_search_dql`), AGENTS.md, auto-memory
+- Facts: `hindsight_recall` / `hindsight_reflect` (ranked recall / synthesized answer), Obsidian vault (`note_search` / `note_search_jsonlogic`), AGENTS.md, auto-memory
 - Config: project files, AGENTS.md locations
 
 ### set

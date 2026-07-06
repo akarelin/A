@@ -87,9 +87,9 @@ TOOLS = [
         "properties": {"query": _QUERY},
         "required": ["query"]
     }},
-    {"name": "note_search_dql", "description": "Search notes with Dataview DQL", "inputSchema": {
+    {"name": "note_search_jsonlogic", "description": "Search notes with a JsonLogic query evaluated against each note's metadata (frontmatter, tags, path, content, stat). See https://jsonlogic.com/operations.html; also supports glob:[pattern,value] and regexp:[pattern,value].", "inputSchema": {
         "type": "object",
-        "properties": {"query": {"type": "string", "description": "Dataview DQL query string"}},
+        "properties": {"query": {"type": "object", "description": "JsonLogic query object, e.g. {\"in\": [\"myTag\", {\"var\": \"tags\"}]}"}},
         "required": ["query"]
     }},
     {"name": "note_tags", "description": "List tags in the vault", "inputSchema": {
@@ -172,7 +172,7 @@ _WR  = {"readOnlyHint": False, "destructiveHint": False, "openWorldHint": True}
 _DEL = {"readOnlyHint": False, "destructiveHint": True,  "openWorldHint": True}
 
 _READ_TOOLS = {
-    "note_list", "note_read", "note_search", "note_search_dql",
+    "note_list", "note_read", "note_search", "note_search_jsonlogic",
     "note_tags", "note_active", "note_commands", "note_status",
     "note_daily",
 }
@@ -206,10 +206,13 @@ def _note_search(a):
     return _try_request("POST", "/search/simple/", params={"query": a["query"]},
                         extra_headers={"Accept": "application/json"})
 
-def _note_search_dql(a):
+def _note_search_jsonlogic(a):
+    # v4.1.3 of the plugin dropped Dataview DQL support (vnd.olrapi.dataview.dql+txt
+    # is rejected with 40012 "Unknown or invalid Content-Type"); JsonLogic is the
+    # only search query format /search/ still accepts. Live-confirmed 2026-07-05.
     return _try_request("POST", "/search/",
-                        data=a["query"].encode("utf-8"),
-                        extra_headers={"Content-Type": "application/vnd.olrapi.dataview.dql+txt",
+                        json_body=a["query"],
+                        extra_headers={"Content-Type": "application/vnd.olrapi.jsonlogic+json",
                                        "Accept": "application/json"})
 
 def _note_tags(a):
@@ -286,7 +289,7 @@ def _note_daily_append(a):
 
 HANDLERS = {
     "note_list": _note_list, "note_read": _note_read,
-    "note_search": _note_search, "note_search_dql": _note_search_dql,
+    "note_search": _note_search, "note_search_jsonlogic": _note_search_jsonlogic,
     "note_tags": _note_tags, "note_active": _note_active,
     "note_commands": _note_commands, "note_status": _note_status,
     "note_write": _note_write, "note_append": _note_append,
