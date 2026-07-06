@@ -25,8 +25,8 @@ Personal productivity plugins for Claude Code.
 | Plugin | Skills | Description |
 |--------|--------|-------------|
 | **core** | secrets, memory, session, skill, compose-agent, learn | Agent primitives: secrets (Key Vault), memory, sessions, skill management, agent composition |
-| **research** | search, data (data-neo4j, data-sql) | Search + data exploration: knowledge search, Neo4j, SQL |
-| **work** | work-m365, work-slack, work-atlassian | Workplace: M365, Slack (MCP), Jira/Confluence (MCP) |
+| **research** | search, data (data-neo4j) | Search + data exploration: knowledge search, Neo4j |
+| **work** | work-m365, work-ticktick | Workplace: M365, TickTick |
 | **organize** | organize-arxiv, organize-scan-medical | File organizer (arxiv papers, medical scans) |
 | **manage** | session, skill | Session and skill management |
 | **administer** | admin-m365, admin-portainer | Cloud admin: M365 tenant + Portainer stack deploys |
@@ -41,15 +41,17 @@ Personal productivity plugins for Claude Code.
 - **compose-agent** — Create managed agents from multiple agents/skills (local + cloud)
 
 ### research
-- **search** — Multi-provider search (Obsidian, m365, Everything, Atlassian, Neo4j) scoped by ownership
+- **search** — Multi-provider search (Obsidian, m365, Everything, Neo4j) scoped by ownership
 - **data** — Interactive data exploration
   - **data-neo4j** — Neo4j graph via Neo4j MCP: schema, Cypher queries, auto-discovers servers from Key Vault
-  - **data-sql** — Relational DBs via DBHub MCP: PostgreSQL, MySQL, SQLite, SQL Server
+
+(`data-sql`, and the search skill's Slack/Atlassian providers, retired 2026-07-05 — not in use.)
 
 ### work
 - **work-m365** — M365 via Graph API: Mail, Calendar, Teams, Files, Tasks, Contacts, Presence
-- **work-slack** — Slack via official MCP (mcp.slack.com, OAuth): messaging, search, channels, threads
-- **work-atlassian** — Jira + Confluence via Atlassian MCP: triage, meeting notes, status reports, spec→backlog
+- **work-ticktick** — TickTick via self-hosted MCP: tasks, projects, focus sessions
+
+(`work-slack`, `work-atlassian` retired 2026-07-05, `work-google` retired 2026-07-06 — none in use.)
 
 ### organize
 - **organize-arxiv** — arxiv PDFs: identify, fetch metadata, rename, move to library

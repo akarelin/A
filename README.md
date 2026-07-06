@@ -63,8 +63,6 @@ Example — the `work` meta-skill routes like this:
 | Request mentions | Routes to |
 |---|---|
 | Outlook, Exchange, Teams, OneDrive | `work-m365` |
-| Slack messages, channels | `work-slack` |
-| Jira issues, Confluence pages | `work-atlassian` |
 | TickTick tasks | `work-ticktick` |
 | Ambiguous "email" | Asks the user |
 
@@ -85,8 +83,6 @@ Real example:
 ```
 work/                              ← meta-skill (routes by platform)
 ├── work-m365/                     ← concrete skill (Graph API via self-hosted MCP)
-├── work-slack/                    ← concrete skill (Slack MCP)
-├── work-atlassian/                ← concrete skill (Jira/Confluence MCP)
 └── work-ticktick/                 ← concrete skill (TickTick via self-hosted MCP)
 ```
 
@@ -168,8 +164,6 @@ Install via `/plugin install <name>@karelin`. Once installed, skills appear in C
 |---|---|
 | `work` | Meta-skill router across workplace platforms |
 | `work-m365` | Mail, Calendar, Teams, Files, Tasks, Contacts, OneNote, Presence (self-hosted M365 MCP) |
-| `work-slack` | Messaging, search, threads, canvases (Slack MCP) |
-| `work-atlassian` | Jira issues, epics, sprints, Confluence docs (Atlassian MCP) |
 | `work-ticktick` | TickTick task management (self-hosted TickTick MCP) |
 
 ### administer
