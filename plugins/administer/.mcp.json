@@ -1,7 +1,1 @@
-{
-  "Karelin": {
-    "type": "http",
-    "url": "https://mcp.karelin.ai/mcp",
-    "headers": {"Authorization": "Bearer ${MCP_KARELIN_TOKEN}"}
-  }
-}
+{}

@@ -1,7 +1,12 @@
 {
-  "Karelin": {
+  "Karelin Obsidian": {
     "type": "http",
-    "url": "https://mcp.karelin.ai/mcp",
+    "url": "https://mcp.karelin.ai/obsidian",
+    "headers": {"Authorization": "Bearer ${MCP_KARELIN_TOKEN}"}
+  },
+  "Karelin Neo4j": {
+    "type": "http",
+    "url": "https://mcp.karelin.ai/neo4j",
     "headers": {"Authorization": "Bearer ${MCP_KARELIN_TOKEN}"}
   },
   "search-everything": {
