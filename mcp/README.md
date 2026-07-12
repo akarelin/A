@@ -52,7 +52,7 @@ Two tiers, both enforced in the same auth path:
 | Tier | Endpoints | Requirement |
 |---|---|---|
 | Open | `/m365`, `/m365-admin` | `oid` in the allowlist. Per-user permission boundaries are enforced downstream by Microsoft Graph. |
-| Privileged | `/keys`, `/obsidian`, `/neo4j`, `/ticktick`, `/hindsight`, `/mcp-proxy/<slug>`, `/mcp`, `/` (alias) | Allowlist plus the `<ROLE_NAME>` app role in the JWT `roles` claim. Assign per-user in Entra. |
+| Privileged | `/keys`, `/obsidian`, `/neo4j`, `/ticktick`, `/hindsight`, `/openviking`, `/mcp-proxy/<slug>`, `/mcp`, `/` (alias) | Allowlist plus the `<ROLE_NAME>` app role in the JWT `roles` claim. Assign per-user in Entra. |
 
 The role is assigned in Entra against the application's service principal; users must sign in again for a newly-assigned role to appear in their token.
 
@@ -78,6 +78,7 @@ Consequence: there is no `user=<someone-else>` override. A user cannot read anot
 | `/neo4j` | privileged | Auto-discovers Neo4j servers from vault secrets of the form `neo4j-<server>-uri` / `neo4j-<server>-password`. Tools: `neo4j_list_servers`, `neo4j_use_server`, `read_neo4j_cypher`, `write_neo4j_cypher`, `get_neo4j_schema`. |
 | `/ticktick` | privileged | TickTick projects, tasks, and time-tracking. Tasks: `tt_lists`, `tt_tasks`, `tt_create`, `tt_update`, `tt_complete`, `tt_abandon`. Focus sessions (Pomodoro + Timing) via `/open/v1/focus`: `tt_focus_list`, `tt_focus_get`, `tt_focus_delete`. Accepts natural-language dates (`today`, `tomorrow`, `yesterday`, `N days ago`, `this week`, `in N days`, `next monday`, ISO 8601). |
 | `/hindsight` | privileged | Wraps the local Hindsight HTTP API ([vectorize-io/hindsight](https://github.com/vectorize-io/hindsight)) for persistent agent memory: `hindsight_health`, `hindsight_bank_list`, `hindsight_bank_stats`, `hindsight_bank_profile`, `hindsight_retain`, `hindsight_sync_retain`, `hindsight_recall`, `hindsight_reflect`, `hindsight_memory_list`, `hindsight_directive_list`, `hindsight_mental_model_list`. Per-bank isolation via the `bank_id` argument (default from `HINDSIGHT_DEFAULT_BANK`). |
+| `/openviking` | privileged | Primary agentic-memory access through OpenViking's native MCP endpoint. Exposes read-only `openviking_find`, `openviking_search`, `openviking_read`, `openviking_list`, `openviking_grep`, `openviking_glob`, `openviking_code_outline`, `openviking_code_search`, `openviking_code_expand`, and `openviking_health`. Tool schemas are discovered from OpenViking at startup. Mutation remains in the chat-capture integrations. |
 | `/mcp-proxy/<slug>` | privileged | Generic OAuth-MCP wrapper — forwards `tools/call` to an upstream MCP server, handling Bearer auth and refresh-on-401 transparently. One slug per upstream, configured via `MCP_PROXIES_JSON`. Currently: `neuronet` → Xsolla Neuronet (`neuronet_chat`, `neuronet_submit`, `neuronet_get_result`, `neuronet_health`). |
 | `/mcp`, `/` | privileged | Aggregate endpoint exposing every tool from every module above **and** every proxy upstream. One MCP-client connection sees all dispatchable tools. |
 
@@ -128,6 +129,8 @@ Both JSON and SSE (`event: message\ndata: {...}\n\n`) upstream response formats 
 | `HINDSIGHT_ORG` | Hindsight org id (path scope `/v1/{org}/...`). Default `default`. |
 | `HINDSIGHT_DEFAULT_BANK` | Bank id used when a tool call omits `bank_id`. Default `alex`. |
 | `HINDSIGHT_TIMEOUT` | HTTP timeout in seconds. Default `60`. |
+| `OPENVIKING_MCP_URL` | OpenViking's native streamable-HTTP MCP endpoint. Required. |
+| `OPENVIKING_USER` | OpenViking user identity sent in `X-OpenViking-User`. Required; production uses `alex`. |
 
 ## Vault secrets
 

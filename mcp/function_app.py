@@ -37,6 +37,7 @@ import tools_neo4j as neo4j_tools
 import tools_ticktick as ticktick_tools
 # import tools_qmd as qmd_tools  # disabled — qmd is Mac-GPU-bound, no server reachable from this container
 import tools_hindsight as hindsight_tools
+import tools_openviking as openviking_tools
 
 app = func.FunctionApp()
 
@@ -587,6 +588,7 @@ for _mod, _fn in [
     (ticktick_tools, ticktick_tools.dispatch),
     # (qmd_tools,      qmd_tools.dispatch_tool),  # disabled — see import above
     (hindsight_tools, hindsight_tools.dispatch_tool),
+    (openviking_tools, openviking_tools.dispatch_tool),
 ]:
     for _t in _mod.TOOLS:
         if _t["name"] in _ALL_DISPATCHERS:
@@ -725,3 +727,9 @@ def ticktick(req: func.HttpRequest) -> func.HttpResponse:
            auth_level=func.AuthLevel.ANONYMOUS)
 def hindsight(req: func.HttpRequest) -> func.HttpResponse:
     return _mcp_response(req, hindsight_tools.TOOLS, hindsight_tools.dispatch_tool, "Hindsight", require_role=_PRIV)
+
+
+@app.route(route="openviking", methods=["GET", "POST", "DELETE", "OPTIONS"],
+           auth_level=func.AuthLevel.ANONYMOUS)
+def openviking(req: func.HttpRequest) -> func.HttpResponse:
+    return _mcp_response(req, openviking_tools.TOOLS, openviking_tools.dispatch_tool, "OpenViking", require_role=_PRIV)
