@@ -33,10 +33,10 @@ import tools_admin as admin_tools
 import tools_keys as keys_tools
 import tools_mcp_proxy as mcp_proxy
 import tools_obsidian as obsidian_tools
-import tools_neo4j as neo4j_tools
+# import tools_neo4j as neo4j_tools  # disabled 2026-07-12 — neo4j removed from MCP United
 import tools_ticktick as ticktick_tools
 # import tools_qmd as qmd_tools  # disabled — qmd is Mac-GPU-bound, no server reachable from this container
-import tools_hindsight as hindsight_tools
+# import tools_hindsight as hindsight_tools  # disabled 2026-07-12 — hindsight removed from MCP United (OpenViking is the primary agentic-memory service)
 import tools_openviking as openviking_tools
 
 app = func.FunctionApp()
@@ -584,10 +584,10 @@ for _mod, _fn in [
     (m365_tools,     m365_tools.dispatch_tool),
     (admin_tools,    admin_tools.dispatch_tool),
     (obsidian_tools, obsidian_tools.dispatch_tool),
-    (neo4j_tools,    neo4j_tools.dispatch_tool),
+    # (neo4j_tools,    neo4j_tools.dispatch_tool),  # disabled 2026-07-12 — see import above
     (ticktick_tools, ticktick_tools.dispatch),
     # (qmd_tools,      qmd_tools.dispatch_tool),  # disabled — see import above
-    (hindsight_tools, hindsight_tools.dispatch_tool),
+    # (hindsight_tools, hindsight_tools.dispatch_tool),  # disabled 2026-07-12 — see import above
     (openviking_tools, openviking_tools.dispatch_tool),
 ]:
     for _t in _mod.TOOLS:
@@ -704,10 +704,11 @@ def obsidian(req: func.HttpRequest) -> func.HttpResponse:
     return _mcp_response(req, obsidian_tools.TOOLS, obsidian_tools.dispatch_tool, "Obsidian", require_role=_PRIV)
 
 
-@app.route(route="neo4j", methods=["GET", "POST", "DELETE", "OPTIONS"],
-           auth_level=func.AuthLevel.ANONYMOUS)
-def neo4j(req: func.HttpRequest) -> func.HttpResponse:
-    return _mcp_response(req, neo4j_tools.TOOLS, neo4j_tools.dispatch_tool, "Neo4j", require_role=_PRIV)
+# @app.route(route="neo4j", methods=["GET", "POST", "DELETE", "OPTIONS"],
+#            auth_level=func.AuthLevel.ANONYMOUS)
+# def neo4j(req: func.HttpRequest) -> func.HttpResponse:
+#     return _mcp_response(req, neo4j_tools.TOOLS, neo4j_tools.dispatch_tool, "Neo4j", require_role=_PRIV)
+# disabled 2026-07-12 — neo4j removed from MCP United
 
 
 @app.route(route="ticktick", methods=["GET", "POST", "DELETE", "OPTIONS"],
@@ -723,10 +724,11 @@ def ticktick(req: func.HttpRequest) -> func.HttpResponse:
 # disabled — qmd is Mac-GPU-bound (Qwen3 embedding), no server reachable from this container
 
 
-@app.route(route="hindsight", methods=["GET", "POST", "DELETE", "OPTIONS"],
-           auth_level=func.AuthLevel.ANONYMOUS)
-def hindsight(req: func.HttpRequest) -> func.HttpResponse:
-    return _mcp_response(req, hindsight_tools.TOOLS, hindsight_tools.dispatch_tool, "Hindsight", require_role=_PRIV)
+# @app.route(route="hindsight", methods=["GET", "POST", "DELETE", "OPTIONS"],
+#            auth_level=func.AuthLevel.ANONYMOUS)
+# def hindsight(req: func.HttpRequest) -> func.HttpResponse:
+#     return _mcp_response(req, hindsight_tools.TOOLS, hindsight_tools.dispatch_tool, "Hindsight", require_role=_PRIV)
+# disabled 2026-07-12 — hindsight removed from MCP United (OpenViking is the primary agentic-memory service)
 
 
 @app.route(route="openviking", methods=["GET", "POST", "DELETE", "OPTIONS"],
