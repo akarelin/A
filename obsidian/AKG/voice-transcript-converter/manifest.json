@@ -1,9 +1,0 @@
-{
-  "id": "voice-transcript-converter",
-  "name": "Voice Transcript Converter",
-  "description": "Right-click raw .txt transcripts in Communication/Meetings to convert them to structured Obsidian markdown via OpenAI API",
-  "version": "1.0.0",
-  "author": "Alex",
-  "isDesktopOnly": true,
-  "minAppVersion": "1.0.0"
-}
