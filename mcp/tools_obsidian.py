@@ -1,7 +1,8 @@
 """MCP tools for Obsidian vault access via the Local REST API plugin.
 
-Tries multiple hosts in order until one responds. Each host runs the
-Obsidian Local REST API plugin on port 27124 (HTTPS, self-signed cert).
+Talks to a single base URL (OBSIDIAN_BASE_URL). Workstation failover lives
+in nginx on seven (obsidian.karelin.ai → first available of
+alex-mac / alex-pc / alex-surface), not here.
 """
 
 import json
@@ -12,58 +13,37 @@ from urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-HOSTS = os.environ.get("OBSIDIAN_HOSTS", "").split(",") if os.environ.get("OBSIDIAN_HOSTS") else []
-PORT = int(os.environ.get("OBSIDIAN_PORT", "27123"))
-SCHEME = os.environ.get("OBSIDIAN_SCHEME", "http")
+BASE_URL = os.environ.get("OBSIDIAN_BASE_URL", "").rstrip("/")
 API_KEY = os.environ.get("OBSIDIAN_API_KEY", "")
 
-_active_host = None
 
-
-def _try_request(method, path, params=None, json_body=None, data=None,
-                 extra_headers=None, timeout=10):
-    """Try each host until one responds."""
-    global _active_host
+def _request(method, path, params=None, json_body=None, data=None,
+             extra_headers=None, timeout=10):
     headers = {"Authorization": f"Bearer {API_KEY}"}
     if extra_headers:
         headers.update(extra_headers)
 
-    # Try cached host first, then the rest
-    hosts = [_active_host] + HOSTS if _active_host else list(HOSTS)
-    seen = set()
-    ordered = []
-    for h in hosts:
-        if h and h not in seen:
-            seen.add(h)
-            ordered.append(h)
+    url = f"{BASE_URL}{path}"
+    try:
+        resp = requests.request(method, url, headers=headers, params=params,
+                                json=json_body, data=data, verify=False,
+                                timeout=timeout)
+    except requests.exceptions.ConnectionError:
+        return {"error": f"Connection refused: {BASE_URL}"}
+    except requests.exceptions.Timeout:
+        return {"error": f"Timeout: {BASE_URL}"}
+    except Exception as e:
+        return {"error": f"{BASE_URL}: {e}"}
 
-    last_err = None
-    for host in ordered:
-        url = f"{SCHEME}://{host.strip()}:{PORT}{path}"
-        try:
-            resp = requests.request(method, url, headers=headers, params=params,
-                                    json=json_body, data=data, verify=False,
-                                    timeout=timeout)
-            _active_host = host.strip()
-            if resp.status_code == 204:
-                return {"status": "ok"}
-            try:
-                return resp.json()
-            except Exception:
-                ct = resp.headers.get("Content-Type", "")
-                if "text/" in ct:
-                    return {"content": resp.text}
-                return {"status": resp.status_code, "body": resp.text[:500]}
-        except requests.exceptions.ConnectionError:
-            last_err = f"Connection refused: {host.strip()}:{PORT}"
-        except requests.exceptions.Timeout:
-            last_err = f"Timeout: {host.strip()}:{PORT}"
-        except Exception as e:
-            last_err = f"{host.strip()}: {e}"
-
-    _active_host = None
-    return {"error": f"All hosts unreachable. Last: {last_err}",
-            "hosts_tried": [h.strip() for h in ordered]}
+    if resp.status_code == 204:
+        return {"status": "ok"}
+    try:
+        return resp.json()
+    except Exception:
+        ct = resp.headers.get("Content-Type", "")
+        if "text/" in ct:
+            return {"content": resp.text}
+        return {"status": resp.status_code, "body": resp.text[:500]}
 
 
 # ── Tool Definitions ────────────────────────────────────────────────
@@ -193,51 +173,49 @@ def _note_list(a):
     path = a.get("path", "/")
     if not path.startswith("/"):
         path = "/" + path
-    return _try_request("GET", f"/vault{path}",
+    return _request("GET", f"/vault{path}",
                         extra_headers={"Accept": "application/json"})
 
 def _note_read(a):
     path = a["path"]
     if not path.startswith("/"):
         path = "/" + path
-    return _try_request("GET", f"/vault{path}")
+    return _request("GET", f"/vault{path}")
 
 def _note_search(a):
-    return _try_request("POST", "/search/simple/", params={"query": a["query"]},
+    return _request("POST", "/search/simple/", params={"query": a["query"]},
                         extra_headers={"Accept": "application/json"})
 
 def _note_search_jsonlogic(a):
     # v4.1.3 of the plugin dropped Dataview DQL support (vnd.olrapi.dataview.dql+txt
     # is rejected with 40012 "Unknown or invalid Content-Type"); JsonLogic is the
     # only search query format /search/ still accepts. Live-confirmed 2026-07-05.
-    return _try_request("POST", "/search/",
+    return _request("POST", "/search/",
                         json_body=a["query"],
                         extra_headers={"Content-Type": "application/vnd.olrapi.jsonlogic+json",
                                        "Accept": "application/json"})
 
 def _note_tags(a):
-    return _try_request("GET", "/tags/",
+    return _request("GET", "/tags/",
                         extra_headers={"Accept": "application/json"})
 
 def _note_active(a):
-    return _try_request("GET", "/active/")
+    return _request("GET", "/active/")
 
 def _note_commands(a):
-    return _try_request("GET", "/commands/",
+    return _request("GET", "/commands/",
                         extra_headers={"Accept": "application/json"})
 
 def _note_status(a):
-    result = _try_request("GET", "/")
-    if _active_host:
-        result["active_host"] = _active_host
-    result["configured_hosts"] = [h.strip() for h in HOSTS]
+    result = _request("GET", "/")
+    result["base_url"] = BASE_URL
     return result
 
 def _note_write(a):
     path = a["path"]
     if not path.startswith("/"):
         path = "/" + path
-    return _try_request("PUT", f"/vault{path}",
+    return _request("PUT", f"/vault{path}",
                         data=a["content"].encode("utf-8"),
                         extra_headers={"Content-Type": "text/markdown"})
 
@@ -245,7 +223,7 @@ def _note_append(a):
     path = a["path"]
     if not path.startswith("/"):
         path = "/" + path
-    return _try_request("POST", f"/vault{path}",
+    return _request("POST", f"/vault{path}",
                         data=a["content"].encode("utf-8"),
                         extra_headers={"Content-Type": "text/markdown"})
 
@@ -259,7 +237,7 @@ def _note_patch(a):
         "Target-Type": a["target_type"],
         "Target": a["target"],
     }
-    return _try_request("PATCH", f"/vault{path}",
+    return _request("PATCH", f"/vault{path}",
                         data=a["content"].encode("utf-8"),
                         extra_headers=hdrs)
 
@@ -267,22 +245,22 @@ def _note_delete(a):
     path = a["path"]
     if not path.startswith("/"):
         path = "/" + path
-    return _try_request("DELETE", f"/vault{path}")
+    return _request("DELETE", f"/vault{path}")
 
 def _note_open(a):
     path = a["path"]
     if not path.startswith("/"):
         path = "/" + path
-    return _try_request("POST", f"/open{path}")
+    return _request("POST", f"/open{path}")
 
 def _note_command(a):
-    return _try_request("POST", f"/commands/{a['command_id']}/")
+    return _request("POST", f"/commands/{a['command_id']}/")
 
 def _note_daily(a):
-    return _try_request("GET", "/periodic/daily/")
+    return _request("GET", "/periodic/daily/")
 
 def _note_daily_append(a):
-    return _try_request("POST", "/periodic/daily/",
+    return _request("POST", "/periodic/daily/",
                         data=a["content"].encode("utf-8"),
                         extra_headers={"Content-Type": "text/markdown"})
 

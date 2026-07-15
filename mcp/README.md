@@ -119,9 +119,7 @@ Both JSON and SSE (`event: message\ndata: {...}\n\n`) upstream response formats 
 | `MCP_DEFAULT_USER` | Legacy default for the (now-ignored) `user` parameter on M365 tools. |
 | `MCP_PROXIES_JSON` | JSON list of `/mcp-proxy/<slug>` upstreams to wire up at startup. Each entry needs `slug` + `secret_prefix`; optional `upstream_url`, `scope`, `tool_prefix`. See the proxy-framework section above. |
 | `MCP_PROXY_UPSTREAM_TIMEOUT` / `MCP_PROXY_DISCOVERY_TIMEOUT` | Timeouts (seconds) for proxy `tools/call` forwarding and startup `tools/list` discovery. Defaults `120` / `30`. |
-| `OBSIDIAN_HOSTS` | Comma-separated host list for the Obsidian Local REST API. Tried in order. |
-| `OBSIDIAN_PORT` | Port for the Obsidian REST API. Default `27123`. |
-| `OBSIDIAN_SCHEME` | `http` or `https`. Default `http`. (Self-signed certs are accepted.) |
+| `OBSIDIAN_BASE_URL` | Base URL of the Obsidian Local REST API (e.g. a reverse proxy fronting the plugin). TLS is not verified (self-signed certs accepted). |
 | `OBSIDIAN_API_KEY` | Bearer token printed by the Obsidian Local REST API plugin. |
 | `TICKTICK_CLIENT_ID` / `TICKTICK_CLIENT_SECRET` | OAuth credentials for TickTick. |
 | `TICKTICK_ACCESS_TOKEN` / `TICKTICK_REFRESH_TOKEN` | TickTick tokens. The current build expects a pre-obtained access token. |
