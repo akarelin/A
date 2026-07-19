@@ -129,6 +129,7 @@ Both JSON and SSE (`event: message\ndata: {...}\n\n`) upstream response formats 
 | `HINDSIGHT_TIMEOUT` | HTTP timeout in seconds. Default `60`. |
 | `OPENVIKING_MCP_URL` | OpenViking's native streamable-HTTP MCP endpoint. Required. |
 | `OPENVIKING_USER` | OpenViking user identity sent in `X-OpenViking-User`. Required; production uses `alex`. |
+| `OPENVIKING_API_KEY` | Bearer API key sent to the OpenViking MCP upstream (`Authorization: Bearer …`). Required since OpenViking enabled API-key identity resolution; vaulted as `openviking-api-key`. If unset/invalid, OpenViking tools are disabled but the rest of MCP United stays up (discovery failure no longer crashes the function app). |
 
 ## Vault secrets
 

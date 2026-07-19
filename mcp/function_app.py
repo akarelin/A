@@ -734,4 +734,4 @@ def ticktick(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="openviking", methods=["GET", "POST", "DELETE", "OPTIONS"],
            auth_level=func.AuthLevel.ANONYMOUS)
 def openviking(req: func.HttpRequest) -> func.HttpResponse:
-    return _mcp_response(req, openviking_tools.TOOLS, openviking_tools.dispatch_tool, "OpenViking", require_role=_PRIV)
+    return _mcp_response(req, openviking_tools.get_tools(), openviking_tools.dispatch_tool, "OpenViking", require_role=_PRIV)

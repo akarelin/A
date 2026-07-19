@@ -10,6 +10,7 @@ import requests
 
 UPSTREAM_URL = os.environ["OPENVIKING_MCP_URL"].rstrip("/")
 OPENVIKING_USER = os.environ["OPENVIKING_USER"]
+OPENVIKING_API_KEY = os.environ.get("OPENVIKING_API_KEY", "")
 PROTOCOL_VERSION = "2025-06-18"
 TOOL_PREFIX = "openviking_"
 ALLOWED_TOOLS = {
@@ -51,6 +52,8 @@ def _headers(session_id: str | None = None) -> dict[str, str]:
         "MCP-Protocol-Version": PROTOCOL_VERSION,
         "X-OpenViking-User": OPENVIKING_USER,
     }
+    if OPENVIKING_API_KEY:
+        headers["Authorization"] = f"Bearer {OPENVIKING_API_KEY}"
     if session_id:
         headers["Mcp-Session-Id"] = session_id
     return headers
@@ -96,7 +99,35 @@ def _discover_tools() -> list[dict[str, Any]]:
     return tools
 
 
-TOOLS = _discover_tools()
+# Discovery makes a network call to the OpenViking upstream. It must NEVER crash
+# module import: this module is imported at function-app startup, and an
+# unhandled exception here fails Python worker indexing and crash-loops the whole
+# container — taking down every other MCP United tool (mail, calendar, keys, …).
+# On failure we degrade gracefully: expose no OpenViking tools now, and retry
+# discovery lazily the next time TOOLS is read.
+TOOLS: list[dict[str, Any]] = []
+_discovery_ok = False
+
+
+def _try_discover() -> None:
+    global TOOLS, _discovery_ok
+    try:
+        TOOLS = _discover_tools()
+        _discovery_ok = True
+    except Exception as exc:  # noqa: BLE001 — never propagate at import time
+        TOOLS = []
+        _discovery_ok = False
+        print(f"[tools_openviking] discovery failed, OpenViking tools disabled: {exc}")
+
+
+def get_tools() -> list[dict[str, Any]]:
+    """Return discovered tools, retrying discovery once if it previously failed."""
+    if not _discovery_ok:
+        _try_discover()
+    return TOOLS
+
+
+_try_discover()
 
 
 def dispatch_tool(name: str, arguments: dict[str, Any]) -> Any:
