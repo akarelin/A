@@ -1,0 +1,23 @@
+---
+name: research
+description: >
+  Research router. Use when the user needs to search knowledge sources,
+  explore databases, query data, find information, or investigate across
+  systems. Routes to search-knowledge or dex based on intent.
+---
+
+# Research
+
+Search and data exploration across all connected sources.
+
+## Tools
+
+| Tool | Description |
+|------|-------------|
+| search | Search across providers (Obsidian, m365, Everything, Neo4j) |
+| data | Interactive data exploration: Neo4j (Cypher) |
+
+## Routing
+
+- **"search for", "find", "look up", "where is"** → search
+- **"query", "explore data", "schema", "cypher", "SQL", "database"** → data
