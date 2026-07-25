@@ -116,6 +116,7 @@ Both JSON and SSE (`event: message\ndata: {...}\n\n`) upstream response formats 
 | `MCP_AUTH_MODE` | `entra` (validate JWT — production, default), `disabled` (no auth — dev only). |
 | `AZURE_KEYVAULT_NAME` | Name of the Azure Key Vault the container reads all secrets from. The container's identity must have `get` (and `list`/`set` for `/keys` write tools) on the vault. |
 | `MCP_TOOL_TEXT_LIMIT` | Max characters per tool response before truncation. Default `12000`. |
+| `MCP_TOOL_TEXT_LIMIT_EXEMPT` | Comma-separated tool names exempt from `MCP_TOOL_TEXT_LIMIT` — single-item full-content reads whose truncation would corrupt read→rewrite workflows. Default `note_read,note_active,note_daily,mail_read`. |
 | `MCP_DEFAULT_USER` | Legacy default for the (now-ignored) `user` parameter on M365 tools. |
 | `MCP_PROXIES_JSON` | JSON list of `/mcp-proxy/<slug>` upstreams to wire up at startup. Each entry needs `slug` + `secret_prefix`; optional `upstream_url`, `scope`, `tool_prefix`. See the proxy-framework section above. |
 | `MCP_PROXY_UPSTREAM_TIMEOUT` / `MCP_PROXY_DISCOVERY_TIMEOUT` | Timeouts (seconds) for proxy `tools/call` forwarding and startup `tools/list` discovery. Defaults `120` / `30`. |
