@@ -117,6 +117,14 @@ TOOLS = [
         },
         "required": ["path", "content", "target_type", "target"]
     }},
+    {"name": "note_move", "description": "Move or rename a note. Server-side read+write+delete (the Local REST API has no move endpoint); content never round-trips through the client. Fails if destination exists.", "inputSchema": {
+        "type": "object",
+        "properties": {
+            "path": _PATH,
+            "new_path": {"type": "string", "description": "Destination path relative to vault root (e.g. 'Archive/daily.md')"}
+        },
+        "required": ["path", "new_path"]
+    }},
     {"name": "note_delete", "description": "Delete a note or folder", "inputSchema": {
         "type": "object",
         "properties": {"path": _PATH},
@@ -241,6 +249,29 @@ def _note_patch(a):
                         data=a["content"].encode("utf-8"),
                         extra_headers=hdrs)
 
+def _note_move(a):
+    src = a["path"]
+    if not src.startswith("/"):
+        src = "/" + src
+    dst = a["new_path"]
+    if not dst.startswith("/"):
+        dst = "/" + dst
+    existing = _request("GET", f"/vault{dst}")
+    if "content" in existing:
+        return {"error": f"destination already exists: {dst}"}
+    read = _request("GET", f"/vault{src}")
+    if "content" not in read:
+        return {"error": f"source read failed: {src}", "response": read}
+    write = _request("PUT", f"/vault{dst}",
+                         data=read["content"].encode("utf-8"),
+                         extra_headers={"Content-Type": "text/markdown"})
+    if write.get("status") != "ok":
+        return {"error": f"write failed: {dst} (source untouched)", "response": write}
+    delete = _request("DELETE", f"/vault{src}")
+    if delete.get("status") != "ok":
+        return {"error": f"copied to {dst} but source delete failed: {src}", "response": delete}
+    return {"status": "ok", "from": src, "to": dst}
+
 def _note_delete(a):
     path = a["path"]
     if not path.startswith("/"):
@@ -271,7 +302,7 @@ HANDLERS = {
     "note_tags": _note_tags, "note_active": _note_active,
     "note_commands": _note_commands, "note_status": _note_status,
     "note_write": _note_write, "note_append": _note_append,
-    "note_patch": _note_patch, "note_delete": _note_delete,
+    "note_patch": _note_patch, "note_move": _note_move, "note_delete": _note_delete,
     "note_open": _note_open, "note_command": _note_command,
     "note_daily": _note_daily, "note_daily_append": _note_daily_append,
 }

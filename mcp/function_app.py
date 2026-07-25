@@ -44,6 +44,17 @@ app = func.FunctionApp()
 PROTOCOL_VERSION = "2025-03-26"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TOOL_TEXT_LIMIT = int(os.environ.get("MCP_TOOL_TEXT_LIMIT", "12000"))
+# Tools that return the full content of a single document/message. Truncating
+# these corrupts read→rewrite workflows (e.g. note_read of a 500KB transcript
+# comes back partial, then note_write persists the partial copy), and "refine
+# query" is meaningless for a single-item read. Exempt from TOOL_TEXT_LIMIT;
+# search/list-style tools keep the cap.
+TOOL_TEXT_LIMIT_EXEMPT = {
+    t.strip() for t in os.environ.get(
+        "MCP_TOOL_TEXT_LIMIT_EXEMPT",
+        "note_read,note_active,note_daily,mail_read",
+    ).split(",") if t.strip()
+}
 AUTH_MODE = os.environ.get("MCP_AUTH_MODE", "entra").lower()
 BASE_URL = os.environ["MCP_BASE_URL"].rstrip("/")
 
@@ -242,7 +253,7 @@ def _handle(body, tools, dispatcher, server_name, req=None):
         try:
             result = dispatcher(name, args)
             text = json.dumps(result, default=str)
-            if len(text) > TOOL_TEXT_LIMIT:
+            if name not in TOOL_TEXT_LIMIT_EXEMPT and len(text) > TOOL_TEXT_LIMIT:
                 text = (f"{text[:TOOL_TEXT_LIMIT]}\n\n"
                         f"[truncated at {TOOL_TEXT_LIMIT} chars; refine query for narrower results]")
             return _ok(msg_id, {"content": [{"type": "text", "text": text}]})
