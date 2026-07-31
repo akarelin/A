@@ -1,8 +1,0 @@
-azure-functions
-msal
-requests
-pyjwt[crypto]
-gppu @ git+https://github.com/akarelin/gppu.git@gppu/latest
-azure-identity
-azure-keyvault-secrets
-neo4j
