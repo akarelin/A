@@ -90,7 +90,7 @@ Deeper nesting is intentionally avoided to keep the mental model simple.
 
 ### Connections (MCP Servers)
 
-Most plugins talk to a self-hosted MCP service (source in [`mcp/`](mcp/)) at `https://mcp.{yourorg}.com` — 7 endpoints, ~77 tools, Entra OAuth 2.0 with JWT validation. See [`mcp/README.md`](mcp/README.md) for the full tool inventory.
+Most plugins talk to a privately hosted MCP service at `https://mcp.{yourorg}.com`. This public repository contains only the plugin marketplace bundles and their client manifests; the MCP United runtime is maintained privately.
 
 | Endpoint | URL | Tools | Used by |
 |---|---|---|---|
