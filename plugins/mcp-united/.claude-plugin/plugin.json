@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "mcp-united",
   "displayName": "MCP United",
-  "version": "2.0.1",
-  "description": "Entra-authenticated access to Karelin services through MCP United.",
+  "version": "2.0.2",
+  "description": "One Entra-authenticated MCP gateway for Microsoft 365 and Karelin services.",
   "author": {
     "name": "Alex Karelin",
     "email": "alex@karelin.ai",

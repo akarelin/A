@@ -1,6 +1,6 @@
 interface:
   display_name: "MCP United"
-  short_description: "Use Karelin services through one MCP gateway"
+  short_description: "Microsoft 365 + Karelin MCP"
   default_prompt: "Use $mcp-united to read my latest Obsidian daily note."
 
 dependencies:

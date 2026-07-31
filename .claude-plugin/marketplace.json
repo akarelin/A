@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "mcp-united",
-  "description": "MCP United.",
-  "version": "2.0.1",
+  "description": "One Entra-authenticated MCP gateway for Microsoft 365 and Karelin services.",
+  "version": "2.0.2",
   "owner": {
     "name": "Alex Karelin",
     "email": "alex@karelin.ai"
@@ -10,8 +10,8 @@
   "plugins": [
     {
       "name": "mcp-united",
-      "version": "2.0.1",
-      "description": "Entra-authenticated access to Karelin services through MCP United.",
+      "version": "2.0.2",
+      "description": "One Entra-authenticated MCP gateway for Microsoft 365 and Karelin services.",
       "source": "./plugins/mcp-united",
       "category": "productivity",
       "keywords": ["mcp", "entra", "obsidian", "microsoft-365", "ticktick", "openviking", "key-vault"],
