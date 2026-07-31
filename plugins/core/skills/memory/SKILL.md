@@ -5,21 +5,28 @@ description: >
   Use when the user says "remember this", "save this", "where does X go",
   "archive this project", "add this to daily notes", or any operation involving
   storing or retrieving persistent state. For credentials (API keys, tokens,
-  passwords), route to the `secrets` tool in the parent `core` skill instead.
-allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
+  passwords), route to the secrets section of the parent `core` skill instead.
+metadata:
+  id: memory
+  mcp-united-version: "2.0.0"
 ---
 
 # Memory
 
 Get, set, and save operations on persistent state. All operations happen within a scope.
 
-Secrets/credentials are **not** handled here — see the `secrets` section of the parent `core` skill, which routes to the `secret_*` tools on the MCP United connector (Azure Key Vault).
+Each platform's native memory remains authoritative. OpenViking is a secondary
+read-only recall layer and does not replace or relocate native memory.
+
+Secrets and credentials are not handled here. Route a named, authorized
+credential request to the parent `core` skill and its canonical
+`keyvault_secret_*` tools.
 
 ## Scopes
 
 | Scope | Storage backends | Examples |
 |-------|-----------------|----------|
-| my | Hindsight (agent memory), Obsidian vault | recalled facts/directives, daily notes, personal config |
+| my | Native platform memory, OpenViking projection, Obsidian vault | recalled facts, daily notes, personal config |
 | team | shared repos, shared drives | team config |
 | project | project repo, project docs | project state, project config |
 | company | company systems | company-wide config |
@@ -30,7 +37,12 @@ Scope is detected from context or elicited from the user.
 
 ### get
 Recall a fact or piece of state.
-- Facts: `hindsight_recall` / `hindsight_reflect` (ranked recall / synthesized answer), Obsidian vault (`note_search` / `note_search_jsonlogic`), AGENTS.md, auto-memory
+- Native facts: use the current platform's native memory first.
+- Secondary recall: use `openviking_find` or `openviking_search`, then read only
+  canonical `viking://` URIs returned by those tools.
+- Vault facts: use `obsidian_search_text`, `obsidian_search_metadata`,
+  `obsidian_search_regex`, or `obsidian_search_semantic`, followed by
+  `obsidian_note_read`.
 - Config: project files, AGENTS.md locations
 
 ### set
@@ -42,12 +54,15 @@ Persist a fact or piece of state to the correct location.
 
 Known entity → backend mappings:
 - Locations → AGENTS.md Locations section
-- Recalled facts / mistakes / mental models → `hindsight_retain` / `hindsight_sync_retain` (per-bank via `bank_id`)
-- Daily notes → Obsidian vault daily notes (`note_daily_append`)
+- Recalled facts, mistakes, and mental models → native platform memory
+- Daily notes → `obsidian_periodic` plus `obsidian_note_insert` or
+  `obsidian_note_patch`
 - Project facts → project docs or AGENTS.md
 - Skill metadata → SKILL.md frontmatter
 
-Hindsight tools (`hindsight_bank_list`, `hindsight_directive_list`, `hindsight_mental_model_list`, `hindsight_memory_list`, `hindsight_health`) are reached via the same MCP United connector as everything else in this skill — no separate server.
+MCP United exposes OpenViking as read-only. Do not attempt to retain, upload,
+promote, or edit memory through it. Released client integrations own capture,
+and a local-resource upload is a snapshot rather than a live filesystem mount.
 
 ### save (export/archive)
 Bundle a project folder's complete state for handover or archival:

@@ -1,26 +1,32 @@
 # A — Agentic Skills Marketplace
 
-**v0.0.1** — A personal Claude Code plugin marketplace (`karelin`). 6 plugins, 24 skills — meta-skills, reusable agents, MCP connections, and nested skill hierarchies packaged as installable plugins.
+**v2.0.0** — A personal ChatGPT, Codex, and Claude plugin marketplace
+(`karelin`). 8 plugins, 27 skills.
 
 [![core](https://img.shields.io/badge/plugin-core-green?style=flat-square)](#core)
 [![manage](https://img.shields.io/badge/plugin-manage-red?style=flat-square)](#manage)
 [![organize](https://img.shields.io/badge/plugin-organize-orange?style=flat-square)](#organize)
+[![develop](https://img.shields.io/badge/plugin-develop-gray?style=flat-square)](#develop)
 [![work](https://img.shields.io/badge/plugin-work-blue?style=flat-square)](#work)
 [![administer](https://img.shields.io/badge/plugin-administer-purple?style=flat-square)](#administer)
 [![research](https://img.shields.io/badge/plugin-research-teal?style=flat-square)](#research)
+[![mcp-united](https://img.shields.io/badge/plugin-mcp--united-black?style=flat-square)](#mcp-united)
 
 ## Quick Start
 
 ```bash
-# Add the marketplace
-/plugin marketplace add akarelin/A
+# Claude Code
+claude plugin marketplace add akarelin/A
+claude plugin install mcp-united@karelin --scope user
 
-# Browse available plugins
-/plugin marketplace list karelin
-
-# Install a plugin
-/plugin install work@karelin
+# Codex
+codex plugin marketplace add akarelin/A
+codex plugin add mcp-united@karelin
 ```
+
+ChatGPT and Claude web/desktop users add `akarelin/A` as a personal
+marketplace, install MCP United, start a new task or chat, and complete the
+Entra sign-in.
 
 ---
 
@@ -82,27 +88,25 @@ Real example:
 
 ```
 work/                              ← meta-skill (routes by platform)
-├── work-m365/                     ← concrete skill (Graph API via self-hosted MCP)
-└── work-ticktick/                 ← concrete skill (TickTick via self-hosted MCP)
+├── work-m365/                     ← concrete skill (MCP United)
+└── work-ticktick/                 ← concrete skill (MCP United)
 ```
 
 Deeper nesting is intentionally avoided to keep the mental model simple.
 
 ### Connections (MCP Servers)
 
-Most plugins talk to a privately hosted MCP service at `https://mcp.{yourorg}.com`. This public repository contains only the plugin marketplace bundles and their client manifests; the MCP United runtime is maintained privately.
+MCP United is the single remote connection for Key Vault, Microsoft 365,
+Entra, Obsidian, TickTick, and OpenViking:
 
-| Endpoint | URL | Tools | Used by |
-|---|---|---|---|
-| Keys | `https://mcp.{yourorg}.com/keys` | 2 | `core`, `administer` |
-| M365 (user) | `https://mcp.{yourorg}.com/m365` | 31 | `work-m365` |
-| M365 Admin | `https://mcp.{yourorg}.com/m365-admin` | 13 | `admin-m365` |
-| Obsidian | `https://mcp.{yourorg}.com/obsidian` | 16 | `organize`, `research` |
-| Neo4j | `https://mcp.{yourorg}.com/neo4j` | 5 | `research` |
-| TickTick | `https://mcp.{yourorg}.com/ticktick` | 6 | `work-ticktick` |
-| QMD | `https://mcp.{yourorg}.com/qmd` | 4 | `research` |
+| Endpoint | URL | Catalog |
+|---|---|---|
+| MCP United | `https://mcp.karelin.ai/mcp` | 82 canonical `system_action` tools |
 
-External MCPs used by `work`: Slack (`https://mcp.slack.com/mcp`, OAuth) and Atlassian (`https://mcp.atlassian.com/v1/mcp`, browser auth).
+The runtime is maintained in the private infrastructure repository. This
+repository contains the public marketplace package, client manifests, skills,
+and canonical tool catalog. Entra users receive delegated Microsoft 365 tools;
+the gateway's privileged role adds the other systems.
 
 ### Reusable Agents
 
@@ -125,10 +129,10 @@ Install via `/plugin install <name>@karelin`. Once installed, skills appear in C
 
 ---
 
-## Available Plugins (6)
+## Available Plugins (8)
 
 ### core
-**v0.2.1** — Core agent primitives: memory, sessions, skills, agents, and learning.
+**v0.3.1** — Core agent primitives: memory, sessions, skills, agents, learning, and Obsidian daily notes.
 
 | Sub-skill | Description |
 |---|---|
@@ -139,6 +143,7 @@ Install via `/plugin install <name>@karelin`. Once installed, skills appear in C
 | `agent` | Subagent definitions |
 | `compose-agent` | Compose multi-step agent workflows |
 | `learn` | Mistake-driven improvement loop |
+| `obsidian-daily` | Read and update the daily note through MCP United |
 
 ### manage
 **v0.2.0** — Session and skill management: sync, list, resume, patch, test, deploy.
@@ -148,7 +153,7 @@ Install via `/plugin install <name>@karelin`. Once installed, skills appear in C
 | `manage` | Lifecycle for plugin skills and Claude Code sessions |
 
 ### organize
-**v0.2.0** — File organizer with sub-skill discovery. Scans a folder, runs each sub-skill in `--scan` (dry-run) mode, presents a combined plan, waits for approval.
+**v0.3.0** — File organizer with sub-skill discovery. Scans a folder, runs each sub-skill in `--scan` (dry-run) mode, presents a combined plan, waits for approval.
 
 | Sub-skill | Description |
 |---|---|
@@ -157,8 +162,16 @@ Install via `/plugin install <name>@karelin`. Once installed, skills appear in C
 | `organize-scan` | Generic scan triage |
 | `organize-scan-medical` | Convert medical scans into a bilingual EN/RU Obsidian vault |
 
+### develop
+**v0.1.0** — Developer tooling.
+
+| Sub-skill | Description |
+|---|---|
+| `gppu` | gppu framework support |
+| `rewrite-history` | Git history rewriting |
+
 ### work
-**v0.2.1** — Workplace productivity hub. Routes to the right platform based on your request.
+**v0.2.3** — Workplace productivity hub. Routes to the right platform based on your request.
 
 | Sub-skill | Description |
 |---|---|
@@ -167,22 +180,30 @@ Install via `/plugin install <name>@karelin`. Once installed, skills appear in C
 | `work-ticktick` | TickTick task management (self-hosted TickTick MCP) |
 
 ### administer
-**v0.1.1** — Tenant administration: M365 tenant admin and Portainer stack deploys.
+**v0.1.2** — Read-only Entra directory inspection and Portainer stack deploys.
 
 | Sub-skill | Description |
 |---|---|
 | `administer` | Meta-skill router across admin domains |
-| `admin-m365` | M365 tenant admin: Users, Groups, Licenses, Devices, Roles, Domains |
+| `admin-m365` | Entra users, groups, licenses, devices, roles, domains, and organization details |
 | `admin-portainer` | Portainer Docker stack deploys for the karel.in fleet |
 
 ### research
-**v0.1.1** — Search and data exploration: knowledge search across providers, Neo4j graph queries, SQL database exploration.
+**v0.1.3** — Search and data exploration across Obsidian, Microsoft 365, Everything, OpenViking, and Neo4j.
 
 | Sub-skill | Description |
 |---|---|
 | `research` | Meta-skill router across research backends |
-| `search` | Knowledge search across providers (Obsidian via self-hosted MCP, QMD index, web) |
+| `search` | Knowledge search across Obsidian, Microsoft 365, Everything, and OpenViking |
 | `data` | Neo4j Cypher queries and SQL exploration |
+
+### mcp-united
+**v2.0.0** — Entra-authenticated MCP United connection and canonical
+cross-system workflow skill for ChatGPT, Codex, and Claude.
+
+| Sub-skill | Description |
+|---|---|
+| `mcp-united` | Route reads, searches, and authorized changes through the unified MCP catalog |
 
 ---
 
@@ -217,8 +238,8 @@ This repository evolved from a series of earlier experiments in agentic tooling.
 ---
 
 ```
-karelin — Claude Code Plugin Marketplace
-v0.0.1
+karelin — ChatGPT, Codex, and Claude Plugin Marketplace
+v2.0.0
 ```
 
 ---

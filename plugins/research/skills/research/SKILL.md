@@ -3,7 +3,10 @@ name: research
 description: >
   Research router. Use when the user needs to search knowledge sources,
   explore databases, query data, find information, or investigate across
-  systems. Routes to search-knowledge or dex based on intent.
+  systems. Routes to search or data based on intent.
+metadata:
+  id: research
+  mcp-united-version: "2.0.0"
 ---
 
 # Research
@@ -14,7 +17,7 @@ Search and data exploration across all connected sources.
 
 | Tool | Description |
 |------|-------------|
-| search | Search across providers (Obsidian, m365, Everything, Neo4j) |
+| search | Search Obsidian, Microsoft 365, Everything, and secondary OpenViking memory |
 | data | Interactive data exploration: Neo4j (Cypher) |
 
 ## Routing

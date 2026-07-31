@@ -1,0 +1,20 @@
+{
+  "name": "karelin",
+  "interface": {
+    "displayName": "Karelin"
+  },
+  "plugins": [
+    {
+      "name": "mcp-united",
+      "source": {
+        "source": "local",
+        "path": "./plugins/mcp-united"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

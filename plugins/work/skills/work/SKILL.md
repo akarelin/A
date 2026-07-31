@@ -3,7 +3,11 @@ name: work
 description: >
   This skill should be used when the user asks to "check my email",
   "schedule a meeting", "check my calendar", "send a Teams message",
-  "search OneDrive", or any workplace productivity task involving M365.
+  "search OneDrive", manage TickTick tasks or projects, inspect focus
+  sessions, or perform another workplace productivity task.
+metadata:
+  id: work
+  mcp-united-version: "2.0.0"
 ---
 
 # Work
@@ -14,8 +18,8 @@ Meta-skill that routes to the appropriate workplace sub-skill.
 
 | Sub-skill | Scope | Connector |
 |-----------|-------|-----------|
-| work-m365 | Microsoft 365: Mail, Calendar, Teams, Files, Tasks, Contacts, OneNote, Presence | CLI (Graph API) |
-| work-ticktick | TickTick tasks and projects | CLI (TickTick Open API) |
+| work-m365 | Microsoft 365: Mail, Calendar, Teams, Files, Tasks, Contacts, OneNote, Presence | MCP United |
+| work-ticktick | TickTick tasks, projects, and focus sessions | MCP United |
 
 ## Routing
 

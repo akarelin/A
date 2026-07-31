@@ -1,0 +1,29 @@
+{
+  "name": "mcp-united",
+  "version": "2.0.0",
+  "description": "Entra-authenticated access to Karelin services through MCP United.",
+  "author": {
+    "name": "Alex Karelin",
+    "email": "alex@karelin.ai",
+    "url": "https://github.com/akarelin"
+  },
+  "homepage": "https://github.com/akarelin/A/tree/master/plugins/mcp-united",
+  "repository": "https://github.com/akarelin/A",
+  "keywords": ["mcp", "entra", "obsidian", "microsoft-365", "ticktick", "openviking", "key-vault"],
+  "skills": "./skills/",
+  "apps": "./.app.json",
+  "interface": {
+    "displayName": "MCP United",
+    "shortDescription": "Entra-authenticated access to Karelin services.",
+    "longDescription": "Use one Entra-authenticated MCP gateway for Key Vault, Microsoft 365, Entra, Obsidian, TickTick, and OpenViking.",
+    "developerName": "Alex Karelin",
+    "category": "Productivity",
+    "capabilities": ["Key Vault", "Microsoft 365", "Entra", "Obsidian", "TickTick", "OpenViking"],
+    "websiteURL": "https://github.com/akarelin/A/tree/master/plugins/mcp-united",
+    "defaultPrompt": [
+      "Read my latest Obsidian daily note.",
+      "Check OpenViking health.",
+      "Find recent Microsoft 365 mail."
+    ]
+  }
+}
