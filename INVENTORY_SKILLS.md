@@ -1,5 +1,9 @@
 # `~/A` Skills Inventory
 
+> Historical snapshot. The legacy bundles in this inventory are not published
+> by the MCP United marketplace. Their review copies are in
+> `RAN/Skills/4review`; do not use the counts or paths below as current state.
+
 _Generated 2026-05-20 for kanban task t_1cba250b._
 
 **Total skills:** 32 across 7 plugin dirs (7 dirs; 6 published to `akarelin/A` marketplace, 1 unpublished).

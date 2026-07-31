@@ -1,15 +1,10 @@
-# A — Agentic Skills Marketplace
+# MCP United
 
-**v2.0.0** — A personal ChatGPT, Codex, and Claude plugin marketplace
-(`karelin`). 8 plugins, 27 skills.
+**Plugin version 2.0.1. MCP United runtime version 2.0.0.**
 
-[![core](https://img.shields.io/badge/plugin-core-green?style=flat-square)](#core)
-[![manage](https://img.shields.io/badge/plugin-manage-red?style=flat-square)](#manage)
-[![organize](https://img.shields.io/badge/plugin-organize-orange?style=flat-square)](#organize)
-[![develop](https://img.shields.io/badge/plugin-develop-gray?style=flat-square)](#develop)
-[![work](https://img.shields.io/badge/plugin-work-blue?style=flat-square)](#work)
-[![administer](https://img.shields.io/badge/plugin-administer-purple?style=flat-square)](#administer)
-[![research](https://img.shields.io/badge/plugin-research-teal?style=flat-square)](#research)
+A private ChatGPT, Codex, and Claude plugin marketplace. It publishes one
+plugin containing one skill: MCP United.
+
 [![mcp-united](https://img.shields.io/badge/plugin-mcp--united-black?style=flat-square)](#mcp-united)
 
 ## Quick Start
@@ -17,11 +12,11 @@
 ```bash
 # Claude Code
 claude plugin marketplace add akarelin/A
-claude plugin install mcp-united@karelin --scope user
+claude plugin install mcp-united@mcp-united --scope user
 
 # Codex
 codex plugin marketplace add akarelin/A
-codex plugin add mcp-united@karelin
+codex plugin add mcp-united@mcp-united
 ```
 
 ChatGPT and Claude web/desktop users add `akarelin/A` as a personal
@@ -29,6 +24,11 @@ marketplace, install MCP United, start a new task or chat, and complete the
 Entra sign-in.
 
 ---
+
+> Current marketplace scope: only MCP United is published. The `core`,
+> `manage`, `organize`, `develop`, `work`, `administer`, and `research`
+> bundles documented below are preserved under `RAN/Skills/4review` and are
+> not marketplace entries.
 
 ## Core Concepts
 
@@ -116,7 +116,8 @@ Skills and their scripts are designed to be reusable across plugins. The `manage
 
 ## Using Plugins in Claude Code
 
-Install via `/plugin install <name>@karelin`. Once installed, skills appear in Claude's available skill list and are triggered automatically by keywords in your request.
+Install MCP United via `/plugin install mcp-united@mcp-united`. Once installed,
+its skill appears in Claude's available skill list.
 
 **How dispatch works**: When you say "check my Jira backlog", Claude matches your request against installed skill descriptions, loads the `work` meta-skill, reads its routing table, and dispatches to `work-atlassian`. No slash commands needed — just describe what you want.
 
@@ -130,6 +131,9 @@ Install via `/plugin install <name>@karelin`. Once installed, skills appear in C
 ---
 
 ## Available Plugins (8)
+
+This section preserves the legacy bundle documentation. Only the
+`mcp-united` entry is currently published.
 
 ### core
 **v0.3.1** — Core agent primitives: memory, sessions, skills, agents, learning, and Obsidian daily notes.
@@ -198,7 +202,7 @@ Install via `/plugin install <name>@karelin`. Once installed, skills appear in C
 | `data` | Neo4j Cypher queries and SQL exploration |
 
 ### mcp-united
-**v2.0.0** — Entra-authenticated MCP United connection and canonical
+**v2.0.1** — Entra-authenticated MCP United connection and canonical
 cross-system workflow skill for ChatGPT, Codex, and Claude.
 
 | Sub-skill | Description |
@@ -238,8 +242,8 @@ This repository evolved from a series of earlier experiments in agentic tooling.
 ---
 
 ```
-karelin — ChatGPT, Codex, and Claude Plugin Marketplace
-v2.0.0
+MCP United — ChatGPT, Codex, and Claude Plugin Marketplace
+plugin v2.0.1 / runtime v2.0.0
 ```
 
 ---

@@ -1,7 +1,7 @@
 {
-  "name": "karelin",
+  "name": "mcp-united",
   "interface": {
-    "displayName": "Karelin"
+    "displayName": "MCP United"
   },
   "plugins": [
     {

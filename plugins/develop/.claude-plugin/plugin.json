@@ -1,9 +1,0 @@
-{
-  "name": "develop",
-  "version": "0.1.0",
-  "description": "Developer tooling: gppu framework support and git history rewriting.",
-  "author": {
-    "name": "Alex Karelin"
-  },
-  "keywords": ["develop", "gppu", "git", "history"]
-}
