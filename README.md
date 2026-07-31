@@ -1,6 +1,6 @@
 # MCP United
 
-**Plugin version 2.0.1. MCP United runtime version 2.0.0.**
+**Plugin version 2.0.2. MCP United runtime version 2.0.0.**
 
 A private ChatGPT, Codex, and Claude plugin marketplace. It publishes one
 plugin containing one skill: MCP United.
@@ -19,9 +19,10 @@ codex plugin marketplace add akarelin/A
 codex plugin add mcp-united@mcp-united
 ```
 
-ChatGPT and Claude web/desktop users add `akarelin/A` as a personal
-marketplace, install MCP United, start a new task or chat, and complete the
-Entra sign-in.
+ChatGPT desktop and Claude users add `akarelin/A` as a personal marketplace,
+install MCP United, start a new task or chat, and complete the Entra sign-in.
+ChatGPT web manages the MCP connection but does not add the repository
+marketplace source.
 
 ---
 
@@ -202,7 +203,7 @@ This section preserves the legacy bundle documentation. Only the
 | `data` | Neo4j Cypher queries and SQL exploration |
 
 ### mcp-united
-**v2.0.1** — Entra-authenticated MCP United connection and canonical
+**v2.0.2** — Entra-authenticated MCP United connection and canonical
 cross-system workflow skill for ChatGPT, Codex, and Claude.
 
 | Sub-skill | Description |
@@ -243,7 +244,7 @@ This repository evolved from a series of earlier experiments in agentic tooling.
 
 ```
 MCP United — ChatGPT, Codex, and Claude Plugin Marketplace
-plugin v2.0.1 / runtime v2.0.0
+plugin v2.0.2 / runtime v2.0.0
 ```
 
 ---

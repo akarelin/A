@@ -1,9 +1,9 @@
 # MCP United
 
-Plugin version 2.0.1. MCP United runtime version 2.0.0.
+Plugin version 2.0.2. MCP United runtime version 2.0.0.
 
-MCP United provides one Entra-authenticated connection to Key Vault,
-Microsoft 365, Entra, Obsidian, TickTick, and OpenViking at
+MCP United provides one Entra-authenticated connection to Microsoft 365,
+Entra, Obsidian, TickTick, OpenViking, and Azure Key Vault at
 `https://mcp.karelin.ai/mcp`.
 
 The OpenAI package binds to the registered MCP United connection through
@@ -24,8 +24,9 @@ Start a new task after installation.
 
 In the ChatGPT desktop app, open the plugin marketplace, add `akarelin/A` as a
 source, and install MCP United from `MCP United`. Start a new chat and complete
-the Entra sign-in. The Codex CLI command above does not install the plugin in
-ChatGPT.
+the Entra sign-in in the browser. The browser manages the MCP connection but
+does not add the repository marketplace source. The Codex CLI command above
+does not install the plugin in ChatGPT.
 
 ## Install in Claude Code
 

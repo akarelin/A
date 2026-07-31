@@ -1,7 +1,7 @@
 {
   "name": "mcp-united",
-  "version": "2.0.1",
-  "description": "Entra-authenticated access to Karelin services through MCP United.",
+  "version": "2.0.2",
+  "description": "One Entra-authenticated MCP gateway for Microsoft 365 and Karelin services.",
   "author": {
     "name": "Alex Karelin",
     "email": "alex@karelin.ai",
@@ -14,16 +14,25 @@
   "apps": "./.app.json",
   "interface": {
     "displayName": "MCP United",
-    "shortDescription": "Entra-authenticated access to Karelin services.",
-    "longDescription": "Use one Entra-authenticated MCP gateway for Key Vault, Microsoft 365, Entra, Obsidian, TickTick, and OpenViking.",
+    "shortDescription": "Microsoft 365 + Karelin MCP",
+    "longDescription": "MCP United connects ChatGPT, Codex, and Claude to Microsoft 365, Entra, Obsidian, TickTick, OpenViking, and Azure Key Vault through one authenticated MCP gateway. Microsoft 365 access follows the signed-in user's delegated permissions; private services require the configured MCP United role.",
     "developerName": "Alex Karelin",
     "category": "Productivity",
-    "capabilities": ["Key Vault", "Microsoft 365", "Entra", "Obsidian", "TickTick", "OpenViking"],
+    "capabilities": [
+      "Microsoft 365 delegated access",
+      "Entra administration",
+      "Obsidian notes",
+      "TickTick tasks",
+      "OpenViking memory",
+      "Azure Key Vault"
+    ],
     "websiteURL": "https://github.com/akarelin/A/tree/master/plugins/mcp-united",
+    "composerIcon": "./assets/mcp-united.png",
+    "logo": "./assets/mcp-united.png",
     "defaultPrompt": [
-      "Read my latest Obsidian daily note.",
-      "Check OpenViking health.",
-      "Find recent Microsoft 365 mail."
+      "Read my latest Obsidian daily note with MCP United.",
+      "Find my recent Microsoft 365 mail with MCP United.",
+      "Search my OpenViking memory with MCP United."
     ]
   }
 }
