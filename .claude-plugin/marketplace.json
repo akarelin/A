@@ -1,71 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
-  "name": "karelin",
-  "description": "Personal productivity plugins for Claude Code — agentic cognition, file organization, workplace tools, and administration.",
-  "version": "2.0.0",
+  "name": "mcp-united",
+  "description": "MCP United.",
+  "version": "2.0.1",
   "owner": {
     "name": "Alex Karelin",
     "email": "alex@karelin.ai"
   },
   "plugins": [
     {
-      "name": "core",
-      "description": "Core agent primitives: memory, sessions, skills, agents, learning, and Obsidian daily notes.",
-      "source": "./plugins/core",
-      "category": "development",
-      "keywords": ["core", "memory", "session", "skill", "agent", "learn", "obsidian"],
-      "homepage": "https://github.com/akarelin/A/tree/master/plugins/core"
-    },
-    {
-      "name": "manage",
-      "description": "Session and skill management: sync, list, resume, patch, test, deploy.",
-      "source": "./plugins/manage",
-      "category": "development",
-      "keywords": ["manage", "sessions", "skills", "plugins"],
-      "homepage": "https://github.com/akarelin/A/tree/master/plugins/manage"
-    },
-    {
-      "name": "organize",
-      "description": "File organizer: arxiv papers, medical scans, and PDF triage to Obsidian.",
-      "source": "./plugins/organize",
-      "category": "productivity",
-      "keywords": ["organize", "files", "arxiv", "papers", "medical", "scan", "pdf", "obsidian"],
-      "homepage": "https://github.com/akarelin/A/tree/master/plugins/organize"
-    },
-    {
-      "name": "develop",
-      "description": "Developer tooling: gppu framework support and git history rewriting.",
-      "source": "./plugins/develop",
-      "category": "development",
-      "keywords": ["develop", "gppu", "git", "history"],
-      "homepage": "https://github.com/akarelin/A/tree/master/plugins/develop"
-    },
-    {
-      "name": "work",
-      "description": "Workplace productivity: Microsoft 365 (mail, calendar, Teams, tasks) and TickTick.",
-      "source": "./plugins/work",
-      "category": "productivity",
-      "keywords": ["work", "m365", "outlook", "email", "calendar", "teams", "ticktick"],
-      "homepage": "https://github.com/akarelin/A/tree/master/plugins/work"
-    },
-    {
-      "name": "administer",
-      "description": "Read-only Entra directory inspection and Portainer stack deploys.",
-      "source": "./plugins/administer",
-      "category": "development",
-      "keywords": ["admin", "entra", "tenant", "users", "groups", "portainer"],
-      "homepage": "https://github.com/akarelin/A/tree/master/plugins/administer"
-    },
-    {
-      "name": "research",
-      "description": "Search and data exploration: knowledge search across providers, Neo4j graph queries.",
-      "source": "./plugins/research",
-      "category": "development",
-      "keywords": ["research", "search", "data", "neo4j", "cypher", "obsidian", "knowledge"],
-      "homepage": "https://github.com/akarelin/A/tree/master/plugins/research"
-    },
-    {
       "name": "mcp-united",
+      "version": "2.0.1",
       "description": "Entra-authenticated access to Karelin services through MCP United.",
       "source": "./plugins/mcp-united",
       "category": "productivity",

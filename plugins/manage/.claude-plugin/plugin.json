@@ -1,9 +1,0 @@
-{
-  "name": "manage",
-  "version": "0.2.0",
-  "description": "Session and skill management: sync, list, resume, patch, test, deploy.",
-  "author": {
-    "name": "Alex Karelin"
-  },
-  "keywords": ["manage", "sessions", "skills", "plugins"]
-}

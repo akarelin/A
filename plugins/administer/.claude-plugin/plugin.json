@@ -1,9 +1,0 @@
-{
-  "name": "administer",
-  "version": "0.1.2",
-  "description": "Read-only Entra directory inspection and Portainer stack deploys.",
-  "author": {
-    "name": "Alex Karelin"
-  },
-  "keywords": ["admin", "entra", "tenant", "users", "groups", "portainer"]
-}

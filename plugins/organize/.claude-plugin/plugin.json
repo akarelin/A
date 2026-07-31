@@ -1,9 +1,0 @@
-{
-  "name": "organize",
-  "version": "0.3.0",
-  "description": "File organizer: arxiv papers, medical scans, and PDF triage to Obsidian.",
-  "author": {
-    "name": "Alex Karelin"
-  },
-  "keywords": ["organize", "files", "arxiv", "papers", "medical", "scan", "pdf", "obsidian"]
-}
