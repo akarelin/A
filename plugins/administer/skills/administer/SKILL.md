@@ -1,9 +1,11 @@
 ---
 name: administer
 description: >
-  Cloud and tenant administration router. Use when the user needs to
-  administer M365 tenant (users, groups, licenses), redeploy Portainer
-  Docker stacks, or perform other cloud admin tasks.
+  Cloud administration router. Use when the user needs read-only Entra
+  directory inspection or a Portainer Docker stack deployment.
+metadata:
+  id: administer
+  mcp-united-version: "2.0.0"
 ---
 
 # Administer
@@ -14,12 +16,12 @@ Cloud and tenant administration.
 
 | Skill | Platform | Description |
 |-------|----------|-------------|
-| admin-m365 | Microsoft 365 | Tenant admin: users, groups, teams, licenses, audit, security |
+| admin-m365 | Entra | Read-only users, groups and members, domains, licenses, devices, roles and organization details |
 | admin-portainer | Portainer | Docker Compose stack deploys on the karel.in fleet |
 
 ## Routing
 
-- **"M365", "users", "groups", "licenses", "teams admin", "tenant"** → admin-m365
+- **"Entra", "directory users", "groups", "licenses", "directory roles", "tenant organization"** → admin-m365
 - **"Portainer", "redeploy stack", "compose deploy", "roll image", host names (seven/kolme/five/trix/kiiro)** → admin-portainer
 
 GCP (`admin-gcp`) is archived — not in use.

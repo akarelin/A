@@ -1,9 +1,9 @@
 {
   "name": "administer",
-  "version": "0.1.1",
-  "description": "Tenant administration: M365 tenant admin and Portainer stack deploys.",
+  "version": "0.1.2",
+  "description": "Read-only Entra directory inspection and Portainer stack deploys.",
   "author": {
     "name": "Alex Karelin"
   },
-  "keywords": ["admin", "m365", "tenant", "users", "groups", "portainer"]
+  "keywords": ["admin", "entra", "tenant", "users", "groups", "portainer"]
 }

@@ -1,0 +1,15 @@
+interface:
+  display_name: "MCP United"
+  short_description: "Use Karelin services through one MCP gateway"
+  default_prompt: "Use $mcp-united to read my latest Obsidian daily note."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "mcp-united"
+      description: "MCP United"
+      transport: "streamable_http"
+      url: "https://mcp.karelin.ai/mcp"
+
+policy:
+  allow_implicit_invocation: true

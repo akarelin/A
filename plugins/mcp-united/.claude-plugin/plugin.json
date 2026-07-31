@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "mcp-united",
+  "displayName": "MCP United",
+  "version": "2.0.0",
+  "description": "Entra-authenticated access to Karelin services through MCP United.",
+  "author": {
+    "name": "Alex Karelin",
+    "email": "alex@karelin.ai",
+    "url": "https://github.com/akarelin"
+  },
+  "homepage": "https://github.com/akarelin/A/tree/master/plugins/mcp-united",
+  "repository": "https://github.com/akarelin/A",
+  "keywords": ["mcp", "entra", "obsidian", "microsoft-365", "ticktick", "openviking", "key-vault"],
+  "mcpServers": "./mcp.claude.json"
+}

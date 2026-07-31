@@ -1,8 +1,8 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "karelin",
   "description": "Personal productivity plugins for Claude Code — agentic cognition, file organization, workplace tools, and administration.",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "owner": {
     "name": "Alex Karelin",
     "email": "alex@karelin.ai"
@@ -50,10 +50,10 @@
     },
     {
       "name": "administer",
-      "description": "Tenant administration: M365 tenant admin and Portainer stack deploys.",
+      "description": "Read-only Entra directory inspection and Portainer stack deploys.",
       "source": "./plugins/administer",
       "category": "development",
-      "keywords": ["admin", "m365", "tenant", "users", "groups", "portainer"],
+      "keywords": ["admin", "entra", "tenant", "users", "groups", "portainer"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/administer"
     },
     {
@@ -63,6 +63,14 @@
       "category": "development",
       "keywords": ["research", "search", "data", "neo4j", "cypher", "obsidian", "knowledge"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/research"
+    },
+    {
+      "name": "mcp-united",
+      "description": "Entra-authenticated access to Karelin services through MCP United.",
+      "source": "./plugins/mcp-united",
+      "category": "productivity",
+      "keywords": ["mcp", "entra", "obsidian", "microsoft-365", "ticktick", "openviking", "key-vault"],
+      "homepage": "https://github.com/akarelin/A/tree/master/plugins/mcp-united"
     }
   ]
 }

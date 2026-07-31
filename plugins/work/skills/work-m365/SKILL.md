@@ -1,148 +1,55 @@
 ---
 name: work-m365
-description: "User-level Microsoft 365 operations via Graph beta API. Use when the user mentions: outlook, email, calendar, onedrive, microsoft, office 365, ms365, my meetings, my emails, schedule meeting, send email, check calendar, to do, tasks, teams chat, onenote, presence, contacts."
-user-invocable: true
-argument-hint: "<command> [subcommand] [options]"
-allowed-tools:
-  - Bash
-  - Read
-  - Skill(get-secret)
+description: >
+  Use Microsoft 365 through MCP United for mail, calendar, Teams chats and
+  channels, files, Microsoft To Do, contacts, OneNote notebooks, presence,
+  and cross-entity search. Invoke for Outlook, Office 365, OneDrive, Teams,
+  meetings, messages, contacts, tasks, or presence requests.
+metadata:
+  id: work-m365
+  mcp-united-version: "2.0.0"
 ---
 
-# /m365 — User Microsoft 365 Operations
+# Microsoft 365 through MCP United
 
-Access Microsoft 365 as a specific user via delegated permissions (Graph beta API).
-Mail, Calendar, Teams Chat, Channels, Files, Tasks, Contacts, OneNote, Meetings, Presence.
+Requires the MCP United 2.0.0 plugin. Calls run with the signed-in user's
+delegated Entra permissions. Do not provide the compatibility `user` argument,
+retrieve Graph client credentials, or run the bundled direct Graph script.
 
-Arguments passed: $ARGUMENTS
+## Tool map
 
-## Authentication
+| Area | Canonical tools |
+|---|---|
+| Mail | `m365_mail_list`, `m365_mail_read`, `m365_mail_search`, `m365_mail_send`, `m365_mail_draft`, `m365_mail_reply`, `m365_mail_folder_list` |
+| Calendar | `m365_calendar_list`, `m365_calendar_today`, `m365_calendar_search`, `m365_calendar_create`, `m365_calendar_delete` |
+| Teams chats | `m365_chat_list`, `m365_chat_message_list`, `m365_chat_search`, `m365_chat_send` |
+| Teams channels | `m365_channel_list`, `m365_channel_message_list`, `m365_channel_send` |
+| Files | `m365_file_list`, `m365_file_search` |
+| To Do | `m365_tasklist_list`, `m365_task_list`, `m365_task_create`, `m365_task_complete` |
+| Contacts | `m365_contact_list`, `m365_contact_search` |
+| Other | `m365_notebook_list`, `m365_presence_get`, `m365_presence_set`, `m365_search` |
 
-Application permissions via client credentials flow — routes `/me/` to `/users/{aad_id}/` per user.
+## Workflow
 
-**Credentials**: Use `/get-secret` to retrieve from Azure Key Vault:
-- `chmo-graph-app-id` → set as `MS365_CLIENT_ID`
-- `chmo-graph-client-secret` → set as `MS365_CLIENT_SECRET`
-- Tenant ID: `052461ba-115a-49f9-8564-1857461f2161` → set as `MS365_TENANT_ID`
+1. Start with the narrowest relevant list or search tool and a bounded result
+   count when the schema supports it.
+2. Resolve stable IDs before reading, replying, sending to a chat or channel,
+   deleting an event, or changing a task.
+3. Keep file and communication searches directly relevant to the user's stated
+   scope. Do not widen a request into speculative personal-data discovery.
+4. Before mail or Teams delivery, verify recipient or destination and final
+   content. A draft request does not authorize sending.
+5. Before calendar creation, verify subject, start, end, timezone, attendees,
+   and whether the meeting is online.
+6. After a change, use an available read or list tool to verify the result.
 
-Or configure `tenants.json` alongside the script.
+## Observed successful patterns
 
-**App Registration**: Chmo Graph API (App ID: fa9fd725-d395-4db5-ba88-cf48325f17ac)
+Recent interaction logs successfully used bounded calendar, chat, contact,
+mail, notebook, presence, task-list, and cross-entity searches. The reliable
+pattern is collection or search first, then a narrower call using returned IDs.
 
-## User Routing
-
-The `--user` flag selects which M365 mailbox to act on:
-- `--user alex` → Alex Karelin (be083348-9398-4a22-acef-c48ab74806c1)
-- `--user irina` → Irina Bushmakina (6fff1ee8-31ca-4480-b7b2-04dc6d20c81e)
-- Default: alex
-
-## CLI Reference
-
-The script is at `${CLAUDE_PLUGIN_ROOT}/scripts/m365.py`. Run via:
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" [--user USER] [--tenant TENANT] <command> [subcommand] [options]
-```
-
-If $ARGUMENTS is provided, parse and execute the matching command below.
-If no arguments, show available commands.
-
-### Auth
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex login
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex status
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex whoami
-```
-
-### Mail
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex mail list [--top N] [--folder FOLDER_ID]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex mail read MESSAGE_ID
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex mail search "query" [--top N]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex mail send --to "a@b.com" --subject "Subj" --body "Body" [--cc "c@d.com"] [--html] [--attach file1.pdf file2.docx]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex mail draft --to "a@b.com" --subject "Subj" --body "Body" [--cc "c@d.com"] [--html] [--attach file1.pdf]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex mail reply MESSAGE_ID --body "Reply text" [--html] [--attach report.pdf]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex mail folders
-```
-
-### Calendar
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex cal list [--top N]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex cal today
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex cal search "query" [--top N]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex cal create --subject "Meeting" --start "2026-04-01T10:00:00" --end "2026-04-01T11:00:00" [--attendees "a@b.com,c@d.com"] [--online] [--timezone "America/Los_Angeles"]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex cal delete EVENT_ID
-```
-
-### Teams Chat
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex chat list [--top N]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex chat messages CHAT_ID [--top N]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex chat send CHAT_ID "message"
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex chat search "query" [--top N]
-```
-
-### Teams Channels
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex channel list TEAM_ID
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex channel messages TEAM_ID CHANNEL_ID [--top N]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex channel send TEAM_ID CHANNEL_ID "message"
-```
-
-### Files (OneDrive)
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex files list [--path "Documents/subfolder"]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex files search "query" [--all-drives]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex files download --path "Documents/file.pdf" [-o local_name.pdf]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex files download --id ITEM_ID [--drive-id DRIVE_ID] [-o output.pdf]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex files sites "query"
-```
-
-### Tasks (To Do)
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex tasks lists
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex tasks list LIST_ID
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex tasks create LIST_ID --title "Task" [--due "2026-04-01"] [--body "Details"]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex tasks complete LIST_ID TASK_ID
-```
-
-### Contacts
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex contacts list [--top N]
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex contacts search "name"
-```
-
-### OneNote
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex notes notebooks
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex notes sections NOTEBOOK_ID
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex notes pages SECTION_ID
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex notes search "query" [--top N]
-```
-
-### Meetings
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex meetings create --subject "Standup" --start "2026-04-01T10:00:00Z" --end "2026-04-01T10:30:00Z"
-```
-
-### Presence
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex presence get
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex presence set Available [--activity "Available"]
-```
-
-### Unified Search (cross-entity)
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/m365.py" --user alex search "query" [--top N] [--types "message,driveItem,event,chatMessage,site,list,listItem"]
-```
-Searches across multiple entity types in a single call via `/search/query`. Default types: message, driveItem, event.
-
-## Implementation Notes
-
-- All API calls use Graph beta endpoint
-- The `--user` flag maps to AAD object IDs internally; `/me/` paths are rewritten to `/users/{aad_id}/`
-- Output is JSON
-- Requires `msal` and `requests` Python packages
-- **Attachments**: Files ≤3MB use inline base64; larger files use Graph upload sessions (4MB chunks)
-- **Env vars**: Accepts both `MS365_CLIENT_ID` and `MS365_MCP_CLIENT_ID` prefixes (plus `_TENANT_ID`, `_CLIENT_SECRET`)
-- **OneDrive shortcuts**: `files list` auto-resolves shortcuts/remote items to their target folders
-- **Cross-drive search**: `files search --all-drives` uses `/search/query` to find files across personal and shared drives
+The logs do not contain successful mail send/draft/reply, calendar
+create/delete, Teams send, To Do create/complete, or presence-set calls. Treat
+those as catalog capabilities, not proven examples, and never exercise them
+only to test installation.

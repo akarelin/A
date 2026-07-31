@@ -4,6 +4,9 @@ description: >
   Core agent primitives. Use when the agent needs to manage secrets,
   memorize/recall facts, manage sessions, manage skills, coordinate agents,
   or learn from feedback.
+metadata:
+  id: core
+  mcp-united-version: "2.0.0"
 ---
 
 # Core
@@ -23,16 +26,21 @@ Foundational tools for agent self-management. These are primitives consumed by o
 
 ## Secrets
 
-Secrets live in the `karelin` Azure Key Vault and are accessed via the `secret_*` tools on the MCP United connector (`mcp.karelin.ai/mcp`). Four tools, all routed here — not through `memory`:
+Secrets live in the `karelin` Azure Key Vault and are accessed through MCP
+United. Use only canonical tool names:
 
 | MCP tool | Use when |
 |----------|----------|
-| `secret_get(name)` | "what's the X key", "get the Y token", reading a stored credential |
-| `secret_list()` | "what secrets do we have", browsing for the right name |
-| `secret_create(name, value)` | First-time storage of a freshly minted credential. Fails on name collision so a typo can't silently clobber an existing secret. |
-| `secret_update(name, value, create?)` | Rotating an existing credential. Fails if missing — pass `create=true` to upsert when you don't know whether the name pre-exists. |
+| `keyvault_secret_get` | Read a named credential required by the authorized task. |
+| `keyvault_secret_list` | List secret names only when the user explicitly requests the inventory. |
+| `keyvault_secret_create` | Store a new credential under a user-approved name. |
+| `keyvault_secret_update` | Change an existing named credential when the user explicitly requests it. |
 
-**Policy:** every credential generated during a task (SAS, account key, OAuth token, API key, PGP key) must be persisted via `secret_create` (or `secret_update` with `create=true`) before the task is considered complete — terminal-only credentials are treated as lost. Naming is kebab-case with a service/purpose prefix matching existing vault conventions (`slack-*`, `msgraph-*`, `ssl-karelin-*`, etc.).
+Never list secrets for exploratory discovery. Never echo returned values into
+notes, chat, logs, examples, or source files. Do not rotate, rename, duplicate,
+delete, or migrate credentials unless the user explicitly requests that
+action. Resolve an approved secret name from the consuming configuration or
+ask when it cannot be determined.
 
 ## Routing
 

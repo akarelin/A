@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mcp-united": {
+      "type": "http",
+      "url": "https://mcp.karelin.ai/mcp"
+    }
+  }
+}
