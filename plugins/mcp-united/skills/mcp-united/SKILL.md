@@ -7,7 +7,7 @@ description: >
   coordinate a workflow that spans more than one connected system.
 metadata:
   id: mcp-united
-  version: "2.0.2"
+  version: "2.0.0"
 ---
 
 # MCP United
@@ -40,9 +40,9 @@ assigned by the gateway.
 
 ## Change boundaries
 
-- A request to send, create, update, complete, abandon, move, patch, overwrite,
-  or delete authorizes that named action. Otherwise, stop after the read or
-  draft stage.
+- A request to send, create, update, complete, reopen, abandon, move, copy,
+  forward, reply, cancel, accept, decline, share, recover, overwrite, or delete
+  authorizes that named action. Otherwise, stop after the read or draft stage.
 - Before sending mail or Teams messages, verify recipients, destination, and
   final content.
 - Before deleting or overwriting, read the exact target and obtain explicit
@@ -60,22 +60,26 @@ assigned by the gateway.
 Use `keyvault_secret_get` only for a named secret required by an authorized
 task. Do not list secrets as exploratory discovery. Use
 `keyvault_secret_create` for a new name and `keyvault_secret_update` for an
-existing name. Do not rotate, rename, duplicate, or delete credentials unless
-explicitly requested.
+existing name. Use the version tools only for the named secret's history.
+Delete or recover a secret only when explicitly requested. Do not rotate,
+rename, or duplicate credentials unless explicitly requested.
 
 ### Microsoft 365
 
 Use list or search tools to obtain stable message, event, chat, channel, task
-list, task, and file IDs before follow-up calls. Keep queries and result limits
-bounded to the user's request. Treat mail send/reply, calendar create/delete,
-Teams send, task create/complete, and presence set as external changes.
+list, task, site, drive, and file IDs before follow-up calls. Business file
+operations use SharePoint sites and document-library drives. Keep queries and
+result limits bounded to the user's request. Treat mail send or mutation,
+calendar mutation or response, Teams mutation, file or folder mutation, task
+mutation, contact mutation, OneNote mutation, and presence set as external
+changes.
 
 ### Entra
 
-The exposed Entra set is read-only: users, groups and members, domains,
-licenses, devices, roles and members, and organization details. If a requested
-mutation is not in the catalog, report it as unavailable; do not fall back to
-raw Graph calls.
+Use the catalog for users, groups and members, group owners, domains, licenses,
+devices, roles and members, and organization details. User, group, membership,
+ownership, license, device, and role-member mutations are external changes.
+Resolve the exact object first and do not fall back to raw Graph calls.
 
 ### Obsidian
 
@@ -88,8 +92,8 @@ then read the note back.
 ### TickTick
 
 List projects or tasks before changing an ambiguous task. Prefer IDs returned
-by the service when titles collide. Treat create, update, complete, abandon,
-and focus-delete as changes.
+by the service when titles collide. Treat project or task create, update,
+delete, complete, abandon, reopen, and focus-delete as changes.
 
 ### OpenViking
 
