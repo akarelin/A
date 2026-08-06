@@ -1,4 +1,4 @@
-# MCP United 2.0.0 tool catalog
+# MCP United 2.0.1 tool catalog
 
 The unified endpoint's privileged catalog exposes 199 canonical tool names.
 An Entra user without `MCP.Privileged` receives the 118 Microsoft 365 tools.

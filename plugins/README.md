@@ -1,6 +1,6 @@
 # MCP United
 
-Plugin version 2.0.0. MCP United runtime version 2.0.0.
+Plugin version 2.0.1. MCP United runtime version 2.0.1.
 
 This marketplace publishes one plugin containing one skill: `mcp-united`.
 
