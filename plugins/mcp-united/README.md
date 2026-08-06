@@ -1,6 +1,6 @@
 # MCP United
 
-Plugin version 2.0.2. MCP United runtime version 2.0.0.
+Plugin version 2.0.0. MCP United runtime version 2.0.0.
 
 MCP United provides one Entra-authenticated connection to Microsoft 365,
 Entra, Obsidian, TickTick, OpenViking, and Azure Key Vault at

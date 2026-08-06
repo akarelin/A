@@ -1,6 +1,6 @@
 # MCP United
 
-**Plugin version 2.0.2. MCP United runtime version 2.0.0.**
+**Plugin version 2.0.0. MCP United runtime version 2.0.0.**
 
 A private ChatGPT, Codex, and Claude plugin marketplace. It publishes one
 plugin containing one skill: MCP United.
@@ -102,7 +102,7 @@ Entra, Obsidian, TickTick, and OpenViking:
 
 | Endpoint | URL | Catalog |
 |---|---|---|
-| MCP United | `https://mcp.karelin.ai/mcp` | 82 canonical `system_action` tools |
+| MCP United | `https://mcp.karelin.ai/mcp` | 199 canonical tools |
 
 The runtime is maintained in the private infrastructure repository. This
 repository contains the public marketplace package, client manifests, skills,
@@ -203,7 +203,7 @@ This section preserves the legacy bundle documentation. Only the
 | `data` | Neo4j Cypher queries and SQL exploration |
 
 ### mcp-united
-**v2.0.2** — Entra-authenticated MCP United connection and canonical
+**v2.0.0** — Entra-authenticated MCP United connection and canonical
 cross-system workflow skill for ChatGPT, Codex, and Claude.
 
 | Sub-skill | Description |
@@ -244,7 +244,7 @@ This repository evolved from a series of earlier experiments in agentic tooling.
 
 ```
 MCP United — ChatGPT, Codex, and Claude Plugin Marketplace
-plugin v2.0.2 / runtime v2.0.0
+plugin v2.0.0 / runtime v2.0.0
 ```
 
 ---
