@@ -7,7 +7,7 @@ description: >
   coordinate a workflow that spans more than one connected system.
 metadata:
   id: mcp-united
-  version: "2.0.1"
+  version: "2.0.3"
 ---
 
 # MCP United
