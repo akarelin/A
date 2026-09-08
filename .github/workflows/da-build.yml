@@ -96,18 +96,18 @@ jobs:
       - uses: actions/setup-python@v6
         if: matrix.os != 'linux'
         with:
-          python-version: '3.12'
+          python-version: '3.14'
 
       - name: Build binary (Linux)
         if: matrix.os == 'linux'
         env:
           SETUPTOOLS_SCM_PRETEND_VERSION: ${{ needs.bump.outputs.clean }}
         run: |
-          python3 -m venv .venv
-          .venv/bin/pip install pyinstaller setuptools-scm
-          .venv/bin/pip install git+https://github.com/akarelin/gppu.git
-          .venv/bin/pip install -e .
-          .venv/bin/pyinstaller --onefile --name da \
+          python3.14 -m venv "$HOME/.venv"
+          "$HOME/.venv/bin/pip" install pyinstaller setuptools-scm
+          "$HOME/.venv/bin/pip" install git+https://github.com/akarelin/gppu.git
+          "$HOME/.venv/bin/pip" install -e .
+          "$HOME/.venv/bin/pyinstaller" --onefile --name da \
             --hidden-import=da --hidden-import=da.cli --hidden-import=da.client \
             --hidden-import=da.config --hidden-import=da.session --hidden-import=da.tui \
             --hidden-import=da.rich_tui --hidden-import=da.rich_render --hidden-import=da.obsidian \
