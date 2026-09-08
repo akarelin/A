@@ -5,17 +5,17 @@ set -e
 DA_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 # Create/update venv
-if [ ! -d "$DA_DIR/.venv" ]; then
-    python3 -m venv "$DA_DIR/.venv"
+if [ ! -d "$HOME/.venv" ]; then
+    python3.14 -m venv "$HOME/.venv"
 fi
 
-"$DA_DIR/.venv/bin/pip" install -e "$DA_DIR" -q
+"$HOME/.venv/bin/pip" install -e "$DA_DIR" -q
 
 # Create symlink in ~/bin
 mkdir -p "$HOME/bin"
 cat > "$HOME/bin/da" << EOF
 #!/bin/bash
-exec "$DA_DIR/.venv/bin/da" "\$@"
+exec "$HOME/.venv/bin/da" "\$@"
 EOF
 chmod +x "$HOME/bin/da"
 

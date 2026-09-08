@@ -30,8 +30,8 @@ jobs:
 
       - name: Create venv
         run: |
-          python3 -m venv .venv
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          python3.14 -m venv "$HOME/.venv"
+          echo "$HOME/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Cache pip
         uses: actions/cache@v5
