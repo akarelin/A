@@ -390,8 +390,37 @@ p{ text-wrap:pretty; }
   .impact-grid{gap:30px}
 }
 </style>
+
+<style id="guided-walkthrough-v7">
+.walk-progress{
+  position:fixed;left:0;top:0;right:0;height:3px;z-index:120;
+  background:rgba(98,85,216,.10)
+}
+.walk-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--blue));transition:width .2s linear}
+.walk-nav{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+  margin-top:28px;padding-top:18px;border-top:1px solid rgba(33,34,66,.10)
+}
+.walk-nav .btn{min-width:122px}
+.walk-count{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.prototype-cta{
+  margin-top:28px;padding:26px;border:1px solid rgba(98,85,216,.18);
+  background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(238,240,255,.8));
+  border-radius:24px;
+}
+.prototype-cta h3{font-size:34px;line-height:1.02;margin-bottom:10px}
+.prototype-cta p{color:var(--muted);margin:0 0 16px;max-width:720px}
+.prototype-cta .btn.primary{background:var(--violet);border-color:var(--violet)}
+@media(max-width:600px){
+  .walk-nav{margin-top:20px;padding-top:14px}
+  .walk-nav .btn{min-width:0;flex:1;font-size:11px}
+  .walk-count{display:none}
+  .prototype-cta{padding:18px;border-radius:18px}
+  .prototype-cta h3{font-size:27px}
+}
+</style>
 </head>
-<body>
+<body><div class="walk-progress" aria-hidden="true"><span id="walkProgress"></span></div>
 <nav><div class="container navin"><div class="brand">LifeSpan<small>Medicine</small></div><div class="links"><a data-scroll-target="letter" href="#letter">Chris</a><a data-scroll-target="journey" href="#journey">The journey</a><a data-scroll-target="constellation" href="#constellation">Constellation</a><a data-scroll-target="wisdom" href="#wisdom">Wisdom medicine</a><a data-scroll-target="impact" href="#impact">ImpactSoul</a><a data-scroll-target="people" href="#people">People</a></div><a class="navcta" data-scroll-target="letter" href="#letter">Concept for Chris Renna</a></div></nav>
 <main>
 <section class="hero" id="letter"><div class="container hero-grid">
@@ -399,7 +428,7 @@ p{ text-wrap:pretty; }
 <div class="kicker">A reimagining of the practice Chris Renna founded</div>
 <h1>The human is the <span class="accent"><span class="keep-tail">center of gravity.</span></span></h1>
 <p>LifeSpan should not look like another longevity clinic. It should feel like a practice that has spent more than thirty years learning how to create health, connect the whole human, and <span class="keep-tail">help people flourish.</span></p>
-<div class="hero-actions"><a class="btn primary" data-scroll-target="journey" href="#journey">Enter the patient journey</a><a class="btn" data-scroll-target="wisdom" href="#wisdom">Why wisdom medicine</a></div>
+<div class="hero-actions"><a class="btn primary" data-scroll-target="journey" href="#journey">Start the walkthrough</a><a class="btn" href="/live-example/">See the live example</a></div>
 </div>
 <article class="letter">
 <div class="letter-photo"><div class="wisdom-portraitless"><div class="years">30+</div><div class="years-label">years of seeing what works, what doesn't, and what must come first</div><div class="wisdom-seal">WISDOM<br/>MEDICINE</div></div></div>
@@ -499,6 +528,25 @@ p{ text-wrap:pretty; }
 <div class="person"><div class="person-mark">MB</div><div><div class="role">Movement + repair</div><h3><span class="keep-tail">Moshe Ben-Roohi</span></h3><p>Longevity becomes abstract when the body can no longer move through <span class="keep-tail">life with freedom.</span></p><div class="q">“What does function reveal that a <span class="keep-tail">blood test cannot?”</span></div></div></div>
 </div>
 </div></section>
+
+<section class="section" id="prototype">
+  <div class="container">
+    <div class="kicker">From concept to experience</div>
+    <h2>Now see what this could become as a live patient-facing website.</h2>
+    <p class="lede">The walkthrough explains the idea. The prototype removes the explanation and lets the idea behave like a real LifeSpan site: clearer, faster, patient-centered, and designed around sequence rather than a menu of services.</p>
+    <div class="prototype-cta">
+      <h3>Open the live-site prototype.</h3>
+      <p>This is not the final brand or final copy. It is a working direction for how LifeSpan could feel when the philosophy becomes the interface.</p>
+      <a class="btn primary" href="/live-example/">Enter the live example</a>
+    </div>
+    <div class="walk-nav">
+      <span class="walk-count">Prototype</span>
+      <a class="btn" data-scroll-target="letter" href="#letter">Back to the beginning</a>
+      <a class="btn primary" href="/live-example/">Open live example</a>
+    </div>
+  </div>
+</section>
+
 <section class="destination"><div class="container"><div class="dest">
 <div class="kicker">The destination</div>
 <h2><span class="keep-tail">Not immortality. Flourishing.</span></h2>
@@ -524,5 +572,14 @@ p{ text-wrap:pretty; }
   },false);
   window.__qaGo=go;
 })();
+
+  var progress=document.getElementById('walkProgress');
+  function updateProgress(){
+    if(!progress) return;
+    var max=Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+    progress.style.width=Math.min(100,(window.scrollY/max)*100)+'%';
+  }
+  window.addEventListener('scroll',updateProgress,{passive:true});
+  updateProgress();
 </script></body>
 </html>
