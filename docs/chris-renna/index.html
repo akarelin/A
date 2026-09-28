@@ -149,7 +149,201 @@ p{ text-wrap:pretty; }
 </style><style>
 .wisdom>*{min-width:0}
 @media(max-width:600px){#people h2{font-size:clamp(40px,11vw,46px)}}
-</style></head>
+</style>
+<style id="esoteric-mobile-architecture-v5">
+/* Mobile-first editorial compression: sequence over cards */
+@media(max-width:600px){
+  body{
+    background:
+      radial-gradient(circle at 85% 7%,rgba(142,200,247,.20),transparent 20%),
+      radial-gradient(circle at 5% 31%,rgba(185,234,220,.16),transparent 18%),
+      linear-gradient(180deg,#fffefb 0,#f8f6f1 58%,#fbfaf7 100%);
+  }
+
+  /* Compact header: identity + thin scroll rail */
+  nav{background:rgba(255,254,251,.93);border-bottom:1px solid rgba(33,34,66,.10)}
+  .navin{padding:7px 0 5px;gap:5px;min-height:0}
+  .brand{font-size:23px;line-height:.92}
+  .brand small{font-size:7px;letter-spacing:.28em;margin-top:3px}
+  .links{gap:0;padding:2px 0 1px;border-top:1px solid rgba(33,34,66,.07)}
+  .links a{
+    min-height:34px!important;
+    padding:7px 12px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    font-size:10px!important;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:#55586b;
+  }
+  .links a + a{border-left:1px solid rgba(33,34,66,.09)!important}
+
+  /* Tight global rhythm */
+  .hero{padding:24px 0 18px}
+  .hero-copy{padding:7px 0 0}
+  .hero-grid{gap:16px}
+  .hero-copy>p{margin:16px 0 18px;font-size:17px;line-height:1.45}
+  .hero-actions{gap:8px}
+  .btn{min-height:42px;padding:11px 15px;font-size:12px}
+  .section{padding:50px 0}
+  .manifesto{padding:16px 0 42px}
+  .destination{padding:58px 0 68px}
+  .kicker{margin-bottom:11px;font-size:9px;letter-spacing:.24em}
+  .lede{font-size:17px;line-height:1.45;margin-top:14px}
+  .section h2{font-size:clamp(38px,10.5vw,48px);line-height:.98}
+  h1{font-size:clamp(46px,12vw,64px)!important;line-height:.91}
+
+  /* Letter becomes an intentional manuscript, not a giant card */
+  .letter{
+    border-radius:24px;
+    box-shadow:0 14px 48px rgba(44,42,86,.08);
+    grid-template-rows:165px auto;
+  }
+  .letter-body{padding:0 18px 20px!important;margin-top:-8px}
+  .letter-body h2{font-size:29px!important;line-height:1.02;margin:8px 0 13px}
+  .letter-body p{font-size:14px;line-height:1.44;margin-bottom:9px}
+  .letter-body .lead{font-size:18px;line-height:1.35}
+  .wisdom-portraitless{padding:18px 20px}
+  .years{font-size:62px}
+  .years-label{font-size:10px;max-width:190px}
+  .wisdom-seal{width:76px;height:76px;font-size:8px;letter-spacing:.14em}
+
+  /* Manifesto as a compact signal */
+  .manifesto-strip{padding:20px;border-radius:20px;gap:12px}
+  .manifesto-strip h3{font-size:27px;line-height:1.02}
+  .manifesto-strip p{font-size:13px;line-height:1.4}
+
+  /* The journey becomes one continuous esoteric sequence spine */
+  #journey{position:relative;overflow:hidden}
+  #journey:after{
+    content:"○  ·  ◇  ·  ○";
+    position:absolute;
+    right:-20px;top:86px;
+    font:26px/1 Georgia,serif;
+    letter-spacing:.28em;
+    color:rgba(98,85,216,.10);
+    transform:rotate(90deg);
+    pointer-events:none;
+  }
+  .spine{
+    display:block!important;
+    position:relative;
+    margin-top:24px;
+    padding:0 0 0 36px;
+  }
+  .spine:before{
+    content:"";
+    position:absolute;
+    left:9px;top:7px;bottom:7px;width:1px;
+    background:linear-gradient(180deg,rgba(98,85,216,.18),rgba(98,85,216,.75),rgba(142,200,247,.28));
+  }
+  .step{
+    min-height:0!important;
+    padding:12px 0 15px 0!important;
+    margin:0!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    overflow:visible!important;
+    position:relative;
+  }
+  .step + .step{border-top:1px solid rgba(33,34,66,.08)!important}
+  .step small{
+    position:absolute;
+    left:-36px;top:16px;
+    width:19px;height:19px;border-radius:50%;
+    display:grid;place-items:center;
+    background:#fffefb;
+    border:1px solid rgba(98,85,216,.40);
+    color:var(--violet);
+    font-size:7px;letter-spacing:0;
+    box-shadow:0 0 0 4px rgba(98,85,216,.05);
+  }
+  .step h3{font-size:28px;line-height:1;margin:0 0 5px}
+  .step p{font-size:14px;line-height:1.4;max-width:31em}
+  .step:after{display:none}
+
+  /* Constellation: smaller physical footprint, stronger symbol */
+  .constellation-wrap{margin-top:24px;gap:18px}
+  .constellation{min-height:560px;border-radius:26px;box-shadow:0 14px 52px rgba(44,42,86,.09)}
+  .core{width:116px;height:116px;box-shadow:0 0 0 8px rgba(255,255,255,.74),0 18px 44px rgba(72,63,155,.16)}
+  .core b{font-size:32px}
+  .core span{font-size:7px}
+  .doc{width:82px}
+  .portrait{width:54px;height:54px}
+  .portrait.initials{font-size:19px}
+  .doc b{font-size:9px}
+  .doc span{font-size:7px}
+  .r1{left:37%;top:3%}.r2{right:0;top:14%}.r3{right:-2%;top:40%}.r4{right:2%;bottom:8%}
+  .r5{left:36%;bottom:2%}.r6{left:2%;bottom:9%}.r7{left:-2%;top:41%}.r8{left:0;top:14%}
+  .r9{left:18%;top:28%}.r10{right:18%;top:28%}
+  .constellation-copy{padding:0}
+  .constellation-copy h3{font-size:34px!important;line-height:1.02}
+  .constellation-copy p{font-size:15px;line-height:1.43}
+  .pull{font-size:20px;line-height:1.22;padding:14px 0 14px 16px;margin:13px 0}
+
+  /* Wisdom: remove nested-card syndrome */
+  .wisdom{gap:20px}
+  .wisdom-card{
+    padding:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+  }
+  .wisdom-card h3{font-size:31px}
+  .wisdom-card p{font-size:15px;margin:9px 0 14px}
+  .formula{gap:0;border-top:1px solid rgba(33,34,66,.12)}
+  .formula div{
+    padding:12px 0;
+    border:0;
+    border-bottom:1px solid rgba(33,34,66,.10);
+    border-radius:0;
+    background:transparent;
+    display:grid;
+    grid-template-columns:88px 1fr;
+    gap:12px;
+    align-items:baseline;
+  }
+  .formula b{font-size:21px;margin:0}
+  .formula span{font-size:13px;line-height:1.35}
+
+  /* ImpactSoul: denser manifesto */
+  .impact-grid{gap:18px}
+  .impact-copy{font-size:15px;line-height:1.45}
+  .impact-copy p{margin-bottom:12px}
+
+  /* People: editorial index, not cards */
+  .people{margin-top:22px;gap:0}
+  .person{
+    min-height:0!important;
+    grid-template-columns:54px 1fr!important;
+    gap:14px;
+    padding:14px 0!important;
+    border:0!important;
+    border-top:1px solid rgba(33,34,66,.10)!important;
+    border-radius:0!important;
+    background:transparent!important;
+  }
+  .person:last-child{border-bottom:1px solid rgba(33,34,66,.10)!important}
+  .person-mark{
+    width:54px!important;height:54px!important;border-radius:50%!important;
+    font-size:21px!important;
+  }
+  .person h3{font-size:24px;margin:3px 0 4px}
+  .person p{font-size:13px;line-height:1.36}
+  .person .q{font-size:16px;line-height:1.25;margin-top:7px}
+
+  /* Destination: compressed talisman, not oversized card */
+  .dest{padding:30px 18px;border-radius:26px}
+  .dest p{font-size:16px;line-height:1.42;margin:14px auto 18px}
+  .pills{gap:6px}
+  .pill{padding:7px 10px;font-size:10px}
+  footer{padding-bottom:28px;font-size:10px;line-height:1.4}
+}
+</style>
+</head>
 <body>
 <nav><div class="container navin"><div class="brand">LifeSpan<small>Medicine</small></div><div class="links"><a data-scroll-target="letter" href="#letter">Chris</a><a data-scroll-target="journey" href="#journey">The journey</a><a data-scroll-target="constellation" href="#constellation">Constellation</a><a data-scroll-target="wisdom" href="#wisdom">Wisdom medicine</a><a data-scroll-target="impact" href="#impact">ImpactSoul</a><a data-scroll-target="people" href="#people">People</a></div><a class="navcta" data-scroll-target="letter" href="#letter">Concept for Chris Renna</a></div></nav>
 <main>
