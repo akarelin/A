@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>LifeSpan Medicine — Wisdom Medicine</title>
+<meta content="A cinematic patient-centered concept for LifeSpan Medicine, built around wisdom medicine, the human as the center of gravity, and a coordinated constellation of care." name="description"/>
+<style>
+:root{
+  --ink:#17172a; --muted:#62657a; --paper:#f8f6f1; --paper2:#fffefb;
+  --violet:#6255d8; --indigo:#302a7a; --blue:#8ec8f7; --mint:#b9eadc;
+  --gold:#c6a457; --gold2:#ead8a0; --line:rgba(33,34,66,.13);
+  --shadow:0 24px 80px rgba(44,42,86,.13); --serif:Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--paper)}
+body{margin:0;color:var(--ink);background:
+ radial-gradient(circle at 82% 6%,rgba(142,200,247,.28),transparent 26%),
+ radial-gradient(circle at 8% 22%,rgba(185,234,220,.22),transparent 22%),
+ linear-gradient(180deg,#fffefb 0,#f7f5ef 48%,#fbfaf7 100%);
+ font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.48}
+a{color:inherit;text-decoration:none}.container{width:min(1220px,calc(100% - 40px));margin:auto}
+nav{position:sticky;top:0;z-index:99;background:rgba(255,254,251,.84);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid rgba(34,35,70,.08)}
+.navin{height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{font:29px/1 var(--serif);letter-spacing:-.03em}.brand small{display:block;font:700 9px/1.6 Inter,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.links{display:flex;gap:22px;font-size:13px;color:var(--muted)}
+.navcta{font-size:13px;padding:11px 16px;border:1px solid var(--line);border-radius:999px;background:#fff;box-shadow:0 8px 24px rgba(50,48,90,.06)}
+.hero{padding:54px 0 42px;position:relative;overflow:hidden}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,255,255,.8),rgba(255,255,255,.15));pointer-events:none}
+.hero-grid{position:relative;display:grid;grid-template-columns:1fr .9fr;gap:44px;align-items:stretch}
+.hero-copy{padding:42px 0 10px}.kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:var(--violet);margin-bottom:18px}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.045em;margin:0}
+h1{font-size:clamp(58px,7.6vw,104px);line-height:.92;max-width:820px}.accent{color:var(--violet)}
+.hero-copy>p{font-size:clamp(18px,2vw,24px);color:var(--muted);max-width:740px;margin:28px 0 28px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}.btn{padding:14px 20px;border-radius:999px;border:1px solid var(--line);font-size:14px;font-weight:700;background:rgba(255,255,255,.72)}.btn.primary{background:var(--ink);color:white;border-color:var(--ink)}
+.letter{position:relative;border-radius:34px;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(242,242,255,.84));border:1px solid var(--line);box-shadow:var(--shadow);min-height:650px;display:grid;grid-template-rows:245px auto}
+.letter-photo{position:relative;overflow:hidden}.letter-photo img{width:100%;height:100%;object-fit:cover;object-position:center 22%;filter:saturate(.9) contrast(1.02)}.letter-photo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(248,246,241,.96) 100%)}
+.letter-body{padding:0 34px 34px;margin-top:-18px;position:relative;z-index:2}.letter-body .overline{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--violet);font-weight:800}.letter-body h2{font-size:38px;line-height:1.03;margin:10px 0 18px}.letter-body p{color:#46495e;font-size:15px;margin:0 0 13px}.letter-body .lead{font-family:var(--serif);font-size:21px;color:var(--ink)}
+.signature{margin-top:18px;font:italic 20px var(--serif);color:var(--indigo)}
+.manifesto{padding:26px 0 92px}.manifesto-strip{border-radius:28px;background:linear-gradient(100deg,#201f3f,#413b92);color:white;padding:28px 34px;display:grid;grid-template-columns:1.2fr .8fr;gap:30px;align-items:center;box-shadow:0 24px 70px rgba(48,42,122,.18)}
+.manifesto-strip h3{font-size:34px}.manifesto-strip p{margin:0;color:rgba(255,255,255,.76);font-size:16px}.wisdom-mark{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold2);font-weight:800;margin-bottom:7px}
+.section{padding:106px 0;border-top:1px solid rgba(36,38,76,.07)}.section h2{font-size:clamp(46px,6.1vw,80px);line-height:.97;max-width:980px}.lede{font-size:21px;color:var(--muted);max-width:770px;margin:22px 0 0}
+.spine{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:40px}.step{padding:24px 20px 26px;background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:22px;min-height:200px;position:relative;overflow:hidden}.step small{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--violet);font-weight:800}.step h3{font-size:27px;margin:28px 0 8px}.step p{margin:0;color:var(--muted);font-size:13px}.step:after{content:"";position:absolute;left:18px;right:18px;bottom:16px;height:2px;background:linear-gradient(90deg,var(--violet),var(--blue));opacity:.55}
+.constellation-wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:30px;margin-top:44px}.constellation{min-height:780px;position:relative;border-radius:38px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(circle at 50% 50%,#fff 0 10%,#eef0ff 31%,#f9f7f1 72%);box-shadow:var(--shadow)}
+.constellation svg{position:absolute;inset:0;width:100%;height:100%;opacity:.6}.core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:176px;height:176px;border-radius:50%;background:white;display:grid;place-items:center;text-align:center;box-shadow:0 0 0 13px rgba(255,255,255,.72),0 28px 70px rgba(72,63,155,.18);z-index:5}.core b{font:46px/1 var(--serif)}.core span{display:block;margin-top:6px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.doc{position:absolute;width:124px;text-align:center;z-index:6}.portrait{width:90px;height:90px;margin:0 auto 8px;border-radius:50%;overflow:hidden;border:4px solid rgba(255,255,255,.96);box-shadow:0 10px 34px rgba(38,36,80,.2);outline:1px solid rgba(89,77,189,.2);background:white}.portrait img{width:100%;height:100%;object-fit:cover}.doc b{display:block;font-size:12px;line-height:1.15}.doc span{display:block;font-size:9px;color:var(--muted);margin-top:3px;line-height:1.15}.r1{left:42%;top:4%}.r2{right:8%;top:14%}.r3{right:2%;top:41%}.r4{right:10%;bottom:9%}.r5{left:41%;bottom:3%}.r6{left:10%;bottom:10%}.r7{left:1%;top:42%}.r8{left:8%;top:15%}.r9{left:25%;top:27%}.r10{right:25%;top:27%}
+.constellation-copy{padding:18px 8px 18px 10px;display:flex;flex-direction:column;justify-content:center}.constellation-copy h3{font-size:48px;line-height:1.02}.constellation-copy p{font-size:18px;color:var(--muted)}.pull{font:26px/1.25 var(--serif);padding:24px 0 24px 22px;border-left:3px solid var(--violet);margin:18px 0;color:var(--ink)}
+.wisdom{display:grid;grid-template-columns:.9fr 1.1fr;gap:38px;align-items:start}.wisdom-card{border-radius:34px;padding:42px;background:linear-gradient(145deg,#fff,#f1f0ff);border:1px solid var(--line);box-shadow:var(--shadow)}.wisdom-card h3{font-size:42px;line-height:1.02}.wisdom-card p{color:var(--muted);font-size:17px}.formula{display:grid;gap:12px}.formula div{padding:20px 22px;border-radius:20px;background:white;border:1px solid var(--line)}.formula b{display:block;font:25px var(--serif);margin-bottom:5px}.formula span{font-size:14px;color:var(--muted)}
+.people{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:38px}.person{display:grid;grid-template-columns:118px 1fr;gap:20px;padding:22px;border-radius:26px;background:white;border:1px solid var(--line);min-height:210px}.person img{width:118px;height:150px;object-fit:cover;border-radius:20px}.person .role{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--violet);font-weight:800}.person h3{font-size:28px;margin:8px 0 8px}.person p{margin:0;color:var(--muted);font-size:14px}.person .q{font:19px var(--serif);margin-top:12px;color:var(--ink)}
+.destination{padding:124px 0 150px}.dest{border-radius:42px;padding:64px 48px;text-align:center;background:linear-gradient(135deg,#fff,#eef0ff 55%,#edf9f5);border:1px solid var(--line);box-shadow:var(--shadow)}.dest h2{margin:auto}.dest p{font-size:20px;color:var(--muted);max-width:760px;margin:22px auto}.pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.pill{padding:10px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13px}
+footer{padding:0 0 46px;color:var(--muted);font-size:12px;text-align:center}
+@media(max-width:960px){.links{display:none}.hero-grid,.constellation-wrap,.wisdom{grid-template-columns:1fr}.hero-copy{padding-top:15px}.letter{min-height:auto}.spine{grid-template-columns:repeat(2,1fr)}.constellation{min-height:720px}.people{grid-template-columns:1fr}.manifesto-strip{grid-template-columns:1fr}}
+@media(max-width:600px){.container{width:min(100% - 24px,1220px)}.navcta{display:none}.hero{padding-top:28px}.letter-body{padding:0 22px 26px}.letter-body h2{font-size:32px}.section{padding:78px 0}.spine{grid-template-columns:1fr}.constellation{min-height:720px}.doc{width:96px}.portrait{width:68px;height:68px}.r1{left:36%}.r2{right:2%}.r3{right:-2%}.r4{right:4%}.r5{left:35%}.r6{left:4%}.r7{left:-2%}.r8{left:2%}.r9{left:19%;top:28%}.r10{right:19%;top:28%}.core{width:142px;height:142px}.core b{font-size:38px}.people{gap:12px}.person{grid-template-columns:92px 1fr;padding:16px}.person img{width:92px;height:126px}.manifesto-strip{padding:24px}.dest{padding:48px 22px}}
+</style>
+<style>
+/* QA/QC resilience pass */
+p,h1,h2,h3,h4,.lead,.name,.role,.wisdom-line{widows:3;orphans:3}
+h1,h2,h3,h4{break-after:avoid;page-break-after:avoid}
+.card,.person,.step,.letter,.wisdom-card,.journey-card{break-inside:avoid;page-break-inside:avoid}
+img{background:linear-gradient(135deg,#eef0f7,#f8f6f1);font-size:0}
+img[data-original-src]{transition:opacity .35s ease;opacity:1}
+.image-fallback{display:none}
+@media (max-width:720px){
+  .container{width:min(100% - 28px,1220px)}
+  .links{display:none}
+  .hero{padding-top:24px}
+  .hero-grid{gap:24px}
+  .letter{min-height:0}
+  .letter-body{padding-left:22px;padding-right:22px}
+  .letter-body h2{font-size:32px}
+}
+</style><meta content="#f8f6f1" name="theme-color"/><style>
+/* Self-contained image pass: no remote image dependencies */
+img{display:block;max-width:100%;}
+</style><style>
+/* QA/QC navigation + mobile hardening */
+[id]{scroll-margin-top:92px}
+a[data-scroll-target]{cursor:pointer;-webkit-tap-highlight-color:rgba(98,85,216,.15);touch-action:manipulation}
+a[data-scroll-target]:focus-visible{outline:3px solid #6255d8;outline-offset:3px}
+@media(max-width:600px){
+  .hero-actions .btn{min-height:48px;display:inline-flex;align-items:center;justify-content:center}
+  .navin{height:64px}.hero{padding-top:22px}
+  h1{font-size:clamp(46px,13vw,70px)}
+  .constellation-copy h3{font-size:40px}
+}
+</style><style>
+.impact{background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(238,240,255,.62));}
+.impact-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:52px;align-items:start}
+.impact-copy{font-size:18px;color:var(--muted);max-width:760px}.impact-copy p{margin:0 0 18px}
+.impact-link{color:var(--violet);font-weight:800;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+@media(max-width:960px){.impact-grid{grid-template-columns:1fr;gap:24px}}
+@media(max-width:600px){.impact-copy{font-size:16px}.impact-grid{gap:16px}}
+</style><style>
+/* Final QA visual hardening: no fake or remote portraits */
+.letter{grid-template-rows:245px auto}
+.letter-photo{display:grid;place-items:center;background:radial-gradient(circle at 72% 20%,rgba(142,200,247,.48),transparent 30%),radial-gradient(circle at 18% 82%,rgba(185,234,220,.52),transparent 34%),linear-gradient(135deg,#f8f6f1,#eef0ff)}
+.letter-photo:after{display:none}
+.wisdom-portraitless{width:100%;height:100%;padding:28px 32px;display:grid;grid-template-columns:1fr auto;grid-template-rows:1fr auto;align-items:end;position:relative}
+.years{font:92px/.78 var(--serif);letter-spacing:-.07em;color:var(--indigo)}
+.years-label{grid-column:1/2;font-size:12px;line-height:1.35;max-width:240px;color:var(--muted);margin-top:10px}
+.wisdom-seal{grid-column:2;grid-row:1/3;width:112px;height:112px;border-radius:50%;border:1px solid rgba(48,42,122,.28);display:grid;place-items:center;text-align:center;font-size:10px;line-height:1.3;letter-spacing:.18em;font-weight:800;color:var(--violet);background:rgba(255,255,255,.68);box-shadow:0 14px 34px rgba(48,42,122,.12)}
+.portrait.initials{display:grid;place-items:center;background:linear-gradient(145deg,#fff,#eceafd);font:24px/1 var(--serif);color:var(--indigo);letter-spacing:-.04em}
+.person{grid-template-columns:90px 1fr}.person-mark{width:90px;height:126px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(160deg,#eef0ff,#edf9f5);border:1px solid var(--line);font:34px/1 var(--serif);color:var(--indigo)}
+@media(max-width:600px){.wisdom-portraitless{padding:24px}.years{font-size:72px}.wisdom-seal{width:94px;height:94px}.person{grid-template-columns:76px 1fr}.person-mark{width:76px;height:112px;font-size:28px}}
+</style>
+<style id="mobile-nav-qaqc-v2">
+html{scroll-padding-top:0}
+section[id],article[id]{scroll-margin-top:0}
+@media(max-width:960px){
+  nav{overflow:visible}
+  .navin{height:auto;min-height:68px;flex-wrap:wrap;padding:10px 0 8px;gap:8px 14px}
+  .brand{flex:1 0 auto}
+  .links{order:3;display:flex !important;width:100%;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 4px;scrollbar-width:none}
+  .links::-webkit-scrollbar{display:none}
+  .links a{flex:0 0 auto;min-height:44px;padding:10px 12px;border:1px solid rgba(33,34,66,.12);border-radius:999px;background:rgba(255,255,255,.88);font-size:12px;line-height:1.2;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
+  .navcta{display:none}
+}
+@media(max-width:600px){
+  html{scroll-padding-top:0}
+  section[id],article[id]{scroll-margin-top:0}
+  .container{width:min(100% - 24px,1220px)}
+  .brand{font-size:25px}
+  .links a{min-height:44px;padding:10px 11px;font-size:11px}
+}
+
+/* Cross-platform interaction QA */
+@media(min-width:961px){
+  .links a{min-height:44px;display:inline-flex;align-items:center;padding:0 2px}
+  .navcta{min-height:44px;display:inline-flex;align-items:center}
+}
+.btn{min-height:46px;display:inline-flex;align-items:center;justify-content:center}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
+</style>
+<style>
+/* Widow/orphan typography hardening */
+h1,h2,h3,.lead,.lede,.pull,.q{ text-wrap:balance; }
+p{ text-wrap:pretty; }
+.keep-tail{white-space:nowrap;}
+@media(max-width:420px){.keep-tail{white-space:nowrap;}}
+</style><style>
+.mobile-break{display:none}
+@media(max-width:600px){
+  .container{width:calc(100% - 24px);max-width:1220px;}
+  .mobile-break{display:block}
+}
+@media(min-width:601px) and (max-width:720px){
+  .container{width:calc(100% - 28px);max-width:1220px;}
+}
+</style><style>
+.wisdom>*{min-width:0}
+@media(max-width:600px){#people h2{font-size:clamp(40px,11vw,46px)}}
+</style></head>
+<body>
+<nav><div class="container navin"><div class="brand">LifeSpan<small>Medicine</small></div><div class="links"><a data-scroll-target="letter" href="#letter">Chris</a><a data-scroll-target="journey" href="#journey">The journey</a><a data-scroll-target="constellation" href="#constellation">Constellation</a><a data-scroll-target="wisdom" href="#wisdom">Wisdom medicine</a><a data-scroll-target="impact" href="#impact">ImpactSoul</a><a data-scroll-target="people" href="#people">People</a></div><a class="navcta" data-scroll-target="letter" href="#letter">Concept for Chris Renna</a></div></nav>
+<main>
+<section class="hero" id="letter"><div class="container hero-grid">
+<div class="hero-copy">
+<div class="kicker">A reimagining of the practice Chris Renna founded</div>
+<h1>The human is the <span class="accent"><span class="keep-tail">center of gravity.</span></span></h1>
+<p>LifeSpan should not look like another longevity clinic. It should feel like a practice that has spent more than thirty years learning how to create health, connect the whole human, and <span class="keep-tail">help people flourish.</span></p>
+<div class="hero-actions"><a class="btn primary" data-scroll-target="journey" href="#journey">Enter the patient journey</a><a class="btn" data-scroll-target="wisdom" href="#wisdom">Why wisdom medicine</a></div>
+</div>
+<article class="letter">
+<div class="letter-photo"><div class="wisdom-portraitless"><div class="years">30+</div><div class="years-label">years of seeing what works, what doesn't, and what must come first</div><div class="wisdom-seal">WISDOM<br/>MEDICINE</div></div></div>
+<div class="letter-body">
+<div class="overline">A note to Chris</div>
+<h2>You did not arrive for longevity’s moment. You helped <span class="keep-tail">create the category.</span></h2>
+<p class="lead">Chris, you mentioned that you want new patients to flourish in your practice. I think everything required is already there: the medicine, the people, the judgment, and more than thirty years <span class="keep-tail">of earned wisdom.</span></p>
+<p>What may be missing is not another service, another test, or another longevity claim. It is a different magnet: the human at the center, a constellation around them, and a practice designed not merely to extend life but to help someone <span class="keep-tail">flourish inside it.</span></p>
+<p>You have lived through the evolution of this field. You have seen ideas arrive early, disappear, return under new names, get overhyped, and sometimes finally become useful. That history creates something more valuable <span class="keep-tail">than novelty: discernment.</span></p>
+<p><strong>But wisdom goes deeper than discernment. Wisdom <span class="keep-tail">is knowing sequence.</span></strong></p>
+<p>The same intervention can be brilliant at the right moment and wasteful, ineffective, or counterproductive at the wrong one. Wisdom is knowing what has to happen first, what can wait, what needs to be stabilized, which signal matters, which signal is noise, and when the body is actually ready for <span class="keep-tail">the next move.</span></p>
+<p>That is why I wonder whether LifeSpan could stand for something larger than longevity: not a place that promises to add more interventions, but a practice that helps each person understand what matters, what is ready, what can wait, and <span class="keep-tail">what may not be necessary at all.</span></p>
+<p class="lead">Better medicine is not always more medicine. Sometimes the deepest expertise is knowing what <span class="keep-tail">not to do.</span></p>
+<p>The patient remains the spine. The team becomes the constellation. Technology serves as instrumentation. Judgment becomes the differentiator. <strong>Sequence becomes the craft. Restraint becomes part <span class="keep-tail">of the intelligence.</span></strong></p>
+<p>After more than thirty years of learning what to do, what not to do, when to act, and what must come first, you have earned the right to give that approach a name: <strong><span class="keep-tail">wisdom medicine.</span></strong></p>
+<p>You have already built the substance. The opportunity, as I see it, is simply to make the meaning easier to feel and <span class="keep-tail">impossible to misunderstand.</span></p>
+<div class="signature">Tony</div>
+</div>
+</article>
+</div></section>
+<section class="manifesto"><div class="container"><div class="manifesto-strip">
+<div><div class="wisdom-mark">The different magnet</div><h3>Wisdom medicine. <span class="keep-tail">Earned, not labeled.</span></h3></div>
+<p>Science tells us what is possible. Data tells us what is happening. Experience tells us what we have seen before. Wisdom tells us what <span class="keep-tail">deserves attention and what to do next.</span></p>
+</div></div></section>
+<section class="section" id="journey"><div class="container">
+<div class="kicker">The operating spine</div>
+<h2>The website should behave <span class="keep-tail">like the medicine.</span></h2>
+<p class="lede">It listens, reveals, connects, acts, measures and adapts. The visitor does not browse a clinic. They move through <span class="keep-tail">a health journey.</span></p>
+<div class="spine">
+<div class="step"><small>01</small><h3>Listen</h3><p>Begin with the human. Goals, history, fears, function, environment and the life they <span class="keep-tail">want to protect.</span></p></div>
+<div class="step"><small>02</small><h3>Reveal</h3><p>Use diagnostics to expose what symptoms <span class="keep-tail">alone cannot show.</span></p></div>
+<div class="step"><small>03</small><h3>Connect</h3><p>Turn fragmented signals into <span class="keep-tail">one biological story.</span></p></div>
+<div class="step"><small>04</small><h3>Act</h3><p>Prioritize and sequence. Make the <span class="keep-tail">next move understandable.</span></p></div>
+<div class="step"><small>05</small><h3>Measure</h3><p>Watch the response. Learn what changed and <span class="keep-tail">what did not.</span></p></div>
+<div class="step"><small>06</small><h3>Become</h3><p>Move toward greater function, resilience, energy, <span class="keep-tail">clarity and agency.</span></p></div>
+</div>
+</div></section>
+<section class="section" id="constellation"><div class="container">
+<div class="kicker">The constellation of care</div>
+<h2>Not a roster of experts. A coordinated intelligence <span class="keep-tail">around one human.</span></h2>
+<div class="constellation-wrap">
+<div class="constellation">
+<svg aria-hidden="true" preserveaspectratio="none" viewbox="0 0 800 800"><g fill="none" stroke="#7e74df" stroke-width="1.2"><circle cx="400" cy="400" r="250"></circle><circle cx="400" cy="400" r="170"></circle><path d="M400 400L400 100M400 400L670 210M400 400L740 400M400 400L650 650M400 400L400 740M400 400L150 650M400 400L60 400M400 400L140 210M400 400L270 280M400 400L530 280"></path></g></svg>
+<div class="core"><div><b>YOU</b><span>the center of gravity</span></div></div>
+<div class="doc r1"><div class="portrait initials">CR</div><b>Chris Renna</b><span>vision + orchestration</span></div>
+<div class="doc r2"><div class="portrait initials">LC</div><b>Laura Caldwell</b><span>precision + synthesis</span></div>
+<div class="doc r3"><div class="portrait initials">PW</div><b>Paris Whitney</b><span>root cause + systems</span></div>
+<div class="doc r4"><div class="portrait initials">KX</div><b>Kathy Xydis</b><span>microbiome + cellular</span></div>
+<div class="doc r5"><div class="portrait initials">MS</div><b>Melissa Sundermann</b><span>lifestyle + mind/body</span></div>
+<div class="doc r6"><div class="portrait initials">RS</div><b>Rachel Swanson</b><span>nutrition + performance</span></div>
+<div class="doc r7"><div class="portrait initials">MD</div><b>Mary Dohrmann</b><span>mind + meaning</span></div>
+<div class="doc r8"><div class="portrait initials">AL</div><b>Alison Levitt</b><span>regeneration + environment</span></div>
+<div class="doc r9"><div class="portrait initials">OL</div><b>Olivia Lesslar</b><span>complexity + prevention</span></div>
+<div class="doc r10"><div class="portrait initials">MB</div><b>Moshe Ben-Roohi</b><span>movement + repair</span></div>
+</div>
+<div class="constellation-copy">
+<h3>The patient does not move through departments. Expertise moves <span class="keep-tail">toward the patient.</span></h3>
+<p>The body never respected medical silos. Sleep changes hormones. Hormones change metabolism. Pain changes movement. Movement changes cardiovascular risk. The gut can change inflammatory <span class="keep-tail">and cognitive signals.</span></p>
+<div class="pull">The value is not that every person knows everything. It is that each person knows when another perspective <span class="keep-tail">changes the picture.</span></div>
+<p>Clicking a clinician in the finished site should reveal not a résumé first, but a worldview: what they notice, what they have changed their mind about, what they think their field gets wrong, and when they bring someone else <span class="keep-tail">into the constellation.</span></p>
+</div>
+</div>
+</div></section>
+<section class="section" id="wisdom"><div class="container wisdom">
+<div>
+<div class="kicker">Thirty-plus years of discernment</div>
+<h2>Wisdom medicine is <span class="keep-tail">earned, not labeled.</span></h2>
+<p class="lede">The strongest competitive advantage is not another modality. It is knowing what matters, what comes first, what can wait, and what should not be <span class="keep-tail">done at all.</span></p>
+</div>
+<div class="wisdom-card">
+<h3>What time has <span class="keep-tail">taught the practice.</span></h3>
+<p>LifeSpan has had the rare vantage point of watching preventive, functional, regenerative, precision and longevity medicine evolve <span class="keep-tail">from the inside.</span></p>
+<div class="formula">
+<div><b>Science</b><span>What is biologically possible?</span></div>
+<div><b>Data</b><span>What is happening in this particular person?</span></div>
+<div><b>Experience</b><span>What have we seen before?</span></div>
+<div><b>Wisdom</b><span>What actually deserves attention, and what should we do next?</span></div>
+<div><b>Sequence</b><span>What must happen first, and what becomes useful only later?</span></div><div><b>Restraint</b><span>What adds complexity without adding proportional human value?</span></div></div>
+</div>
+</div></section>
+<section class="section impact" id="impact"><div class="container impact-grid">
+<div><div class="kicker">The wider thesis</div><h2>Less waste. <span class="keep-tail">More human value.</span></h2><p class="lede">This is where LifeSpan intersects with the work I am doing as an investor and <span class="keep-tail">activist through ImpactSoul.</span></p></div>
+<div class="impact-copy">
+<p>Across healthcare, regenerative medicine, psychedelics, technology and infrastructure, I keep returning to the same question: <strong>where <span class="keep-tail">is the waste?</span></strong></p>
+<p>Not only financial waste. Human waste. Energy waste. Material waste. Diagnostic waste. Intervention <span class="keep-tail">waste. Time waste.</span></p>
+<p>Healthcare often adds before it subtracts: another test, another bottle, another protocol, another procedure, another layer. Emerging medicine can fall into the same trap when a catalog of modalities replaces <span class="keep-tail">a coherent sequence.</span></p>
+<div class="pull">The abundant future is not built by doing more of everything. It is built by using intelligence to remove what does not <span class="keep-tail">create proportional value.</span></div>
+<p>That is the connection to <a aria-label="ImpactSoul.is (opens in a new tab)" class="impact-link" href="https://impactsoul.is" rel="noopener noreferrer" target="_blank">ImpactSoul.is</a>: greater human flourishing with less waste, less extraction and <span class="keep-tail">less unnecessary complexity.</span></p>
+</div></div></section><section class="section" id="people"><div class="container">
+<div class="kicker">People as conversations</div>
+<h2>Credentials establish trust. Worldview creates human fit.</h2>
+<p class="lede">Use the authentic LifeSpan photography. Then make the biography feel like a conversation with the clinician rather than <span class="keep-tail">a credential warehouse.</span></p>
+<div class="people">
+<div class="person"><div class="person-mark">LC</div><div><div class="role">Precision + synthesis</div><h3><span class="keep-tail">Laura Caldwell</span></h3><p>She sees patterns where other people see numbers. Her page should live in the space between <span class="keep-tail">data and meaning.</span></p><div class="q">“When does more data <span class="keep-tail">become worse medicine?”</span></div></div></div>
+<div class="person"><div class="person-mark">PW</div><div><div class="role">Root cause + systems</div><h3><span class="keep-tail">Paris Whitney</span></h3><p>She keeps asking the question beneath the question, without confusing endless <span class="keep-tail">investigation for progress.</span></p><div class="q">“What happens when there is not <span class="keep-tail">one root cause?”</span></div></div></div>
+<div class="person"><div class="person-mark">KX</div><div><div class="role">Cellular + microbiome</div><h3><span class="keep-tail">Kathy Xydis</span></h3><p>She works in systems most patients cannot see, but which can shape energy, inflammation, <span class="keep-tail">cognition and metabolism.</span></p><div class="q">“What signal in the gut changes <span class="keep-tail">the story elsewhere?”</span></div></div></div>
+<div class="person"><div class="person-mark">MB</div><div><div class="role">Movement + repair</div><h3><span class="keep-tail">Moshe Ben-Roohi</span></h3><p>Longevity becomes abstract when the body can no longer move through <span class="keep-tail">life with freedom.</span></p><div class="q">“What does function reveal that a <span class="keep-tail">blood test cannot?”</span></div></div></div>
+</div>
+</div></section>
+<section class="destination"><div class="container"><div class="dest">
+<div class="kicker">The destination</div>
+<h2><span class="keep-tail">Not immortality. Flourishing.</span></h2>
+<p>The site should make people feel the movement from fragmentation to coherence. Not a perfect dashboard. A body understood, a plan that makes sense, and more life <span class="keep-tail">inside the life.</span></p>
+<div class="pills"><span class="pill">More movement</span><span class="pill">More cognition</span><span class="pill">More resilience</span><span class="pill">More independence</span><span class="pill">More energy</span><span class="pill">More possibility</span><span class="pill">More flourishing</span></div>
+</div></div></section>
+</main>
+<footer><div class="container">Concept prototype for LifeSpan Medicine. Uses the current LifeSpan team photography and public team information. Concept language is for discussion and should be clinically and legally reviewed before publication.</div></footer>
+<script>
+(function(){
+  function go(id){
+    var el=document.getElementById(id);
+    if(!el) return false;
+    var reduce=false;try{reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){} var nav=document.querySelector('nav'); var offset=(nav?nav.getBoundingClientRect().height:0)+12; var top=window.pageYOffset+el.getBoundingClientRect().top-offset; if(top<0) top=0; try{window.scrollTo({top:top,behavior:reduce?'auto':'smooth'});}catch(e){window.scrollTo(0,top);}
+    try{history.replaceState(null,'','#'+id);}catch(e){}
+    return true;
+  }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest && e.target.closest('a[data-scroll-target]');
+    if(!a) return;
+    e.preventDefault();
+    go(a.getAttribute('data-scroll-target'));
+  },false);
+  window.__qaGo=go;
+})();
+</script></body>
+</html>
