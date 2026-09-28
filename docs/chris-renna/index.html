@@ -343,6 +343,53 @@ p{ text-wrap:pretty; }
   footer{padding-bottom:28px;font-size:10px;line-height:1.4}
 }
 </style>
+
+<style id="qaqc-cross-platform-v6">
+/* Show that mobile/tablet nav continues without adding height */
+@media(max-width:960px){
+  nav:after{
+    content:"";
+    position:absolute;
+    right:0;
+    bottom:0;
+    width:34px;
+    height:43px;
+    pointer-events:none;
+    background:linear-gradient(90deg,rgba(255,254,251,0),rgba(255,254,251,.96));
+  }
+}
+
+/* Tablet should be denser than desktop, not taller than phone */
+@media(min-width:601px) and (max-width:960px){
+  .section{padding:68px 0}
+  .manifesto{padding:20px 0 54px}
+  .destination{padding:76px 0 88px}
+  .hero{padding:38px 0 30px}
+  .hero-grid{gap:28px}
+  .letter{grid-template-rows:190px auto;min-height:0}
+  .letter-body{padding:0 26px 26px}
+  .letter-body h2{font-size:34px}
+  .letter-body p{font-size:14px;line-height:1.43}
+  .letter-body .lead{font-size:19px}
+  .wisdom-portraitless{padding:22px 26px}
+  .years{font-size:76px}
+  .wisdom-seal{width:90px;height:90px}
+  .manifesto-strip{padding:24px 28px}
+  .spine{grid-template-columns:repeat(2,1fr);gap:10px;margin-top:28px}
+  .step{min-height:132px;padding:18px 18px 20px}
+  .step h3{font-size:25px;margin:18px 0 6px}
+  .step p{font-size:12.5px;line-height:1.38}
+  .constellation{min-height:620px}
+  .constellation-wrap{gap:24px;margin-top:30px}
+  .wisdom{gap:28px}
+  .wisdom-card{padding:30px}
+  .formula div{padding:16px 18px}
+  .people{gap:12px;margin-top:28px}
+  .person{min-height:170px;padding:18px}
+  .person-mark{height:100px}
+  .impact-grid{gap:30px}
+}
+</style>
 </head>
 <body>
 <nav><div class="container navin"><div class="brand">LifeSpan<small>Medicine</small></div><div class="links"><a data-scroll-target="letter" href="#letter">Chris</a><a data-scroll-target="journey" href="#journey">The journey</a><a data-scroll-target="constellation" href="#constellation">Constellation</a><a data-scroll-target="wisdom" href="#wisdom">Wisdom medicine</a><a data-scroll-target="impact" href="#impact">ImpactSoul</a><a data-scroll-target="people" href="#people">People</a></div><a class="navcta" data-scroll-target="letter" href="#letter">Concept for Chris Renna</a></div></nav>
@@ -459,7 +506,7 @@ p{ text-wrap:pretty; }
 <div class="pills"><span class="pill">More movement</span><span class="pill">More cognition</span><span class="pill">More resilience</span><span class="pill">More independence</span><span class="pill">More energy</span><span class="pill">More possibility</span><span class="pill">More flourishing</span></div>
 </div></div></section>
 </main>
-<footer><div class="container">Concept prototype for LifeSpan Medicine. Uses the current LifeSpan team photography and public team information. Concept language is for discussion and should be clinically and legally reviewed before publication.</div></footer>
+<footer><div class="container">Concept prototype for LifeSpan Medicine. Team roles and public information are used for discussion; authentic LifeSpan photography should be added only from verified source assets. Concept language should be clinically and legally reviewed before publication.</div></footer>
 <script>
 (function(){
   function go(id){
