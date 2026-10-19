@@ -60,3 +60,25 @@ test('a press returns at once and the speech goes on after it', async ($, on) =>
   expect(done).toBe(true)
   await ui.unmount()
 })
+
+test('auto speaks each finished reply only after Alex turns it on', async ($, on) => {
+  const usage = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
+  const spoken: string[] = []
+  on('model.fork', () => ({ value: { isAnswered: true, text: 'spoken', usage } }))
+  on('turn.complete', ($, e) => ({ text: e.answer }))
+  on('process.run', ($, e) => {
+    spoken.push(e.argv.at(-1)!)
+    return { value: { exitCode: 0, stdout: '', stderr: '' } }
+  })
+  on('fs.read', () => ({ value: '## What to say' }))
+  on('ui.status', () => ({ value: undefined }))
+  await $.turn.complete({ answer: 'first', reason: 'answer' } as never)
+  await new Promise(r => setTimeout(r, 200))
+  expect(spoken).toEqual([])
+  const ui = await $.ui.mount({ plugin: 'read-aloud', surface: 'terminal', ...BAND })
+  await ui.press({ key: 'read-aloud-auto' })
+  await $.turn.complete({ answer: 'second', reason: 'answer' } as never)
+  await new Promise(r => setTimeout(r, 200))
+  expect(spoken).toEqual(['spoken'])
+  await ui.unmount()
+})

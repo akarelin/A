@@ -1,9 +1,13 @@
+import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 // Alt+R (keybindings.json binds it to this otherwise idle engine action)
 const READ_ACTION = 'app:toggleDiffNoiseFilter'
 const PYTHON = 'C:/Users/Alex/.venv/Scripts/python.exe'
 
+
+// Auto: each finished reply is spoken without a press, in this session only; off until Alex turns it on
+const isAuto = atom({ plugin: 'read-aloud', key: 'isAuto' } as const, false)
 
 let answer = ''
 let isSpeaking = false
@@ -35,16 +39,21 @@ async function readAloud($: EngineInterface) {
 
 export const register: Register = on => {
   on('turn.complete', async ($, e, next) => {
-    if (e.agentId === undefined && e.reason === 'answer' && e.answer.trim()) answer = e.answer
+    if (e.agentId === undefined && e.reason === 'answer' && e.answer.trim()) {
+      answer = e.answer
+      if (await read($, isAuto)) void readAloud($)
+    }
     return next(e)
   })
 
-  on('ui.render', { component: 'AbovePrompt' }, ($, e, next) => {
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (e.props.hasSurvey) return next(e)
     const { Box, Button } = $.ui.resolve(e)
+    const auto = await read($, isAuto)
     return (
       <Box>
         <Button key="read-aloud" label="🔊 Read aloud · Alt+R" action={READ_ACTION} onPress={() => { void readAloud($) }} />
+        <Button key="read-aloud-auto" label={auto ? ' 🔁 Auto: on' : ' 🔁 Auto: off'} onPress={() => update($, isAuto, wasOn => !wasOn)} />
       </Box>
     )
   })
