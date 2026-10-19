@@ -1,6 +1,6 @@
 {
   "name": "read-aloud",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Alt+R or the button speaks what Alex must do or answer in Claude's last reply, by the rules in read-aloud.md; the read-aloud skill lets the model do the same",
   "author": { "name": "Alex Karelin" }
 }

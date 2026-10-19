@@ -18,4 +18,5 @@ The last reply Claude gave Alex, as he would see it at the end of the turn.
 - Plain spoken English, as one person talking to another.
 - No markdown, lists, paths, code, identifiers, or numbers he would need to see.
 - Never point at the screen.
+- Never repeat his own words back to him. When the reply quotes or answers what he said, say only what follows for him.
 - Answer with the spoken text alone.
