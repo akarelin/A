@@ -1,4 +1,0 @@
-# The speaker of the read-aloud mod (speak.py), run with ~/.venv on each press
-litellm: https://litellm.karelin.ai/v1
-key_file: ~/.voicemode/voicemode.env  # OPENAI_API_KEY there is the LiteLLM key the speech models answer to
-voice: alloy

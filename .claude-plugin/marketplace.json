@@ -16,15 +16,6 @@
       "category": "productivity",
       "keywords": ["mcp", "entra", "obsidian", "microsoft-365", "ticktick", "openviking", "key-vault"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/mcp-united"
-    },
-    {
-      "name": "read-aloud",
-      "version": "0.3.0",
-      "description": "Alt+R or the button speaks what Alex must do or answer in Claude's last reply; the read-aloud skill lets the model do the same.",
-      "source": "./plugins/read-aloud",
-      "category": "productivity",
-      "keywords": ["voice", "read-aloud", "litellm", "realtime"],
-      "homepage": "https://github.com/akarelin/A/tree/master/plugins/read-aloud"
     }
   ]
 }
