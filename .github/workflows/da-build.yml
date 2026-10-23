@@ -27,7 +27,7 @@ jobs:
       clean: ${{ steps.version.outputs.clean }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-tags: true
           fetch-depth: 0
@@ -87,7 +87,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.bump.outputs.tag || github.ref }}
           fetch-tags: true
@@ -149,7 +149,7 @@ jobs:
     runs-on: [self-hosted, linux]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-tags: true
           fetch-depth: 0
