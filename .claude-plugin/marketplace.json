@@ -16,6 +16,15 @@
       "category": "productivity",
       "keywords": ["mcp", "entra", "obsidian", "microsoft-365", "ticktick", "openviking", "key-vault"],
       "homepage": "https://github.com/akarelin/A/tree/master/plugins/mcp-united"
+    },
+    {
+      "name": "output-styles",
+      "version": "0.1.0",
+      "description": "Output styles: With highlights, Closing block, Headings.",
+      "source": "./plugins/output-styles",
+      "category": "productivity",
+      "keywords": ["output-style"],
+      "homepage": "https://github.com/akarelin/A/tree/master/plugins/output-styles"
     }
   ]
 }
