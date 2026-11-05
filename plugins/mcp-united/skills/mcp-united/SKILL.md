@@ -1,13 +1,13 @@
 ---
 name: mcp-united
 description: >
-  Use MCP United for Key Vault, Microsoft 365, Entra, Obsidian, TickTick,
-  or OpenViking work. Invoke for requests to read or change connected
+  Use MCP United for Key Vault, Microsoft 365, Entra, Obsidian, Operon tasks
+  and time, TickTick, or OpenViking work. Invoke for requests to read or change connected
   Karelin data, search across these systems, inspect service health, or
   coordinate a workflow that spans more than one connected system.
 metadata:
   id: mcp-united
-  version: "2.0.3"
+  version: "2.0.4"
 ---
 
 # MCP United
@@ -35,7 +35,7 @@ mcp__plugin_mcp-united_mcp-united__<canonical-tool-name>
 The gateway uses the caller's Entra identity for delegated Microsoft 365
 operations. Do not set the compatibility `user` argument. A signed-in Entra
 user receives the Microsoft 365 subset. Key Vault, Entra directory, Obsidian,
-TickTick, OpenViking, and configured proxy tools require the privileged role
+TickTick, Operon, OpenViking, and configured proxy tools require the privileged role
 assigned by the gateway.
 
 ## Change boundaries
@@ -88,6 +88,18 @@ yearly note. Before a targeted edit, use `obsidian_note_inspect` with
 `view="targets"`. Prefer `obsidian_note_insert` or `obsidian_note_patch` over
 full-note overwrite. Preserve existing frontmatter and user-authored prose,
 then read the note back.
+
+### Operon
+
+Operon is Alex's task manager and time tracker. Read with `operon_task_get`,
+`operon_query`, `operon_filter_query` or `operon_finder`; `operon_catalog` gives
+the pipeline, status and priority ids. Every change is two calls through
+Operon's Mutation Gateway: the change tool previews and returns a sealed plan
+with its `planRef`, then `operon_plan_apply` applies that unchanged plan and
+returns the receipt and postflight; `operon_plan_discard` drops a plan not
+applied. A plan marked `requiresConfirmation` stays for Alex. If apply returns
+`outcome-unknown`, stop: do not apply again and do not recover. Record your own
+completed work with `operon_timer_session_add`; Alex's running timer is his.
 
 ### TickTick
 

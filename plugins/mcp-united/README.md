@@ -3,7 +3,7 @@
 Plugin version 2.0.3. MCP United runtime version 2.0.1.
 
 MCP United provides one Entra-authenticated connection to Microsoft 365,
-Entra, Obsidian, TickTick, OpenViking, and Azure Key Vault at
+Entra, Obsidian, Operon, TickTick, OpenViking, and Azure Key Vault at
 `https://mcp.karelin.ai/mcp`.
 
 The OpenAI package binds to the registered MCP United connection through

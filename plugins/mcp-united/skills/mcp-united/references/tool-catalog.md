@@ -24,4 +24,7 @@ An Entra user without `MCP.Privileged` receives the 118 Microsoft 365 tools.
 | TickTick projects | `ticktick_project_list`, `ticktick_project_get`, `ticktick_project_create`, `ticktick_project_update`, `ticktick_project_delete` |
 | TickTick tasks | `ticktick_task_list`, `ticktick_task_create`, `ticktick_task_update`, `ticktick_task_complete`, `ticktick_task_abandon`, `ticktick_task_get`, `ticktick_task_delete`, `ticktick_task_reopen` |
 | TickTick focus | `ticktick_focus_list`, `ticktick_focus_get`, `ticktick_focus_delete` |
+| Operon reads | `operon_health`, `operon_capabilities`, `operon_catalog`, `operon_entity_resolve`, `operon_task_get`, `operon_query`, `operon_filter_query`, `operon_finder`, `operon_relationships`, `operon_context`, `operon_timer_state` |
+| Operon changes, each a preview that returns a sealed plan | `operon_task_create`, `operon_task_update`, `operon_task_complete`, `operon_task_reopen`, `operon_task_cancel`, `operon_task_transition`, `operon_task_pin`, `operon_task_unpin`, `operon_reminder_add`, `operon_reminder_replace`, `operon_reminder_remove`, `operon_timer_session_add`, `operon_timer_session_update`, `operon_timer_session_remove` |
+| Operon plans | `operon_plan_show`, `operon_plan_apply`, `operon_plan_discard` |
 | OpenViking | `openviking_code_expand`, `openviking_code_outline`, `openviking_code_search`, `openviking_find`, `openviking_glob`, `openviking_grep`, `openviking_health`, `openviking_list`, `openviking_read`, `openviking_search` |
